@@ -21,7 +21,9 @@ public class TeleOpStateMachineOld extends LinearOpMode {
         CHAMBER_DEPOSIT
 
     }
+
     States state = States.RESTING;
+
     @Override
     public void runOpMode() throws InterruptedException {
         StateMachine stateMachine = new StateMachine();
@@ -33,17 +35,17 @@ public class TeleOpStateMachineOld extends LinearOpMode {
         arm.initiate(hardwareMap);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
-        
+
         waitForStart();
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
-            driveTrain.run(gamepad1.left_stick_x *1.1,-gamepad1.left_stick_y, -gamepad1.right_stick_x);
+            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
             verticalSlides.reset(gamepad1.options);
 
-            switch (state){
+            switch (state) {
                 case RESTING:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.RESTING);
@@ -94,40 +96,39 @@ public class TeleOpStateMachineOld extends LinearOpMode {
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
             }
-            
-            if (currentGamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger <0.1){
-                if (state == States.RESTING){
+
+            if (currentGamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1) {
+                if (state == States.RESTING) {
                     state = States.CHAMBER;
-                } else if (state == States.CHAMBER){
+                } else if (state == States.CHAMBER) {
                     state = States.CHAMBER_DEPOSIT;
-                }
-                else if (state == States.CHAMBER_DEPOSIT){
+                } else if (state == States.CHAMBER_DEPOSIT) {
                     state = States.RESTING;
                 }
             }
-            if (currentGamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger <0.1){
-                if (state == States.RESTING){
+            if (currentGamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger < 0.1) {
+                if (state == States.RESTING) {
                     state = States.BUCKET;
-                } else if (state == States.BUCKET){
+                } else if (state == States.BUCKET) {
                     state = States.BUCKET_DEPOSIT;
-                } else if (state == States.BUCKET_DEPOSIT){
+                } else if (state == States.BUCKET_DEPOSIT) {
                     state = States.RESTING;
                 }
             }
-            if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper){
-                if (state == States.RESTING){
+            if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
+                if (state == States.RESTING) {
                     state = States.INTAKING;
-                } else if (state == States.INTAKING){
+                } else if (state == States.INTAKING) {
                     state = States.INTAKE_STOP;
-                } else if (state == States.INTAKE_STOP){
+                } else if (state == States.INTAKE_STOP) {
                     state = States.INTAKING;
                 }
             }
-            if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper){
+            if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
                 state = States.RESTING;
             }
-          //  stateMachine.update(state);
-            if (currentGamepad1.cross){
+            //  stateMachine.update(state);
+            if (currentGamepad1.cross) {
                 arm.intake(Arm.Intake.OUTTAKING);
             }
             arm.update();

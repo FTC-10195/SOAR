@@ -9,71 +9,81 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Arm {
-    public enum Extendo{
+    public enum Extendo {
         RETRACTED,
         EXTENDED
     }
-    public enum Shoulder{
+
+    public enum Shoulder {
         STARTING,
         RESTING,
         DOWN
     }
+
     public enum Wrist {
         FORWARD,
         SIDEWAYS
     }
+
     public enum Intake {
         INTAKING,
         OUTTAKING,
         STOPPED
     }
-    Shoulder shoulderState = Shoulder.RESTING;
-    Wrist wristState = Wrist.FORWARD;
-    Extendo extendoState = Extendo.RETRACTED;
-    Intake intakeState = Intake.STOPPED;
+
+    public Shoulder shoulderState = Shoulder.RESTING;
+    public Wrist wristState = Wrist.FORWARD;
+    public Extendo extendoState = Extendo.RETRACTED;
+    public Intake intakeState = Intake.STOPPED;
     CRServo intakeServo;
     Servo extendoServo;
     Servo wristServo;
     Servo rightServo;
     Servo leftServo;
     double restPos = 0.1;
-    double extendoExtendedPos =.43;
+    double extendoExtendedPos = .43;
     double wristForwardPos = 0.5;
     double wristSidewaysPos = .83;
     double extendoRetractedPos = .15;
     double shoulderDownOffset = .392;
     double startOffset = -.1;
+
     //returns a sin out value (from 0 to 1)
-    public double easeOutSine(double x){
+    public double easeOutSine(double x) {
         return Math.sin((x * Math.PI) / 2);
     }
 
 
-    public void initiate(HardwareMap hardwareMap){
+    public void initiate(HardwareMap hardwareMap) {
         extendoServo = hardwareMap.servo.get("Arm Servo");
         extendoServo.setPosition(extendoExtendedPos);
         intakeServo = hardwareMap.crservo.get("Intake");
         rightServo = hardwareMap.servo.get("Right Servo");
         leftServo = hardwareMap.servo.get("Left Servo");
         rightServo.setPosition(restPos);
-        leftServo.setPosition(1-restPos);
+        leftServo.setPosition(1 - restPos);
         wristServo = hardwareMap.servo.get("Wrist");
         wristServo.setPosition(wristForwardPos);
     }
-    public void shoulder(Shoulder shoulderState){
+
+    public void shoulder(Shoulder shoulderState) {
         this.shoulderState = shoulderState;
     }
-    public void extendo(Extendo extendoState){
+
+    public void extendo(Extendo extendoState) {
         this.extendoState = extendoState;
     }
-    public void wrist(Wrist wristState){
+
+    public void wrist(Wrist wristState) {
         this.wristState = wristState;
     }
-    public void intake(Intake intakeState){
+
+    public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
-    public void update(){
-        switch (shoulderState){
+
+    public void update() {
+        switch (shoulderState) {
             case DOWN:
                 rightServo.setPosition(restPos + shoulderDownOffset);
                 break;
@@ -84,8 +94,8 @@ public class Arm {
                 rightServo.setPosition(restPos + startOffset);
                 break;
         }
-        leftServo.setPosition(1-rightServo.getPosition());
-        switch (extendoState){
+        leftServo.setPosition(1 - rightServo.getPosition());
+        switch (extendoState) {
             case EXTENDED:
                 extendoServo.setPosition(extendoExtendedPos);
                 break;
@@ -93,7 +103,7 @@ public class Arm {
                 extendoServo.setPosition(extendoRetractedPos);
                 break;
         }
-        switch (wristState){
+        switch (wristState) {
             case FORWARD:
                 wristServo.setPosition(wristForwardPos);
                 break;
@@ -101,20 +111,24 @@ public class Arm {
                 wristServo.setPosition(wristSidewaysPos);
                 break;
         }
-        switch (intakeState){
+        switch (intakeState) {
             case INTAKING:
-                intakeServo.setPower(-1);;
+                intakeServo.setPower(-1);
+                ;
                 break;
             case OUTTAKING:
-                intakeServo.setPower(1);;
+                intakeServo.setPower(1);
+                ;
                 break;
             case STOPPED:
-                intakeServo.setPower(0);;
+                intakeServo.setPower(0);
+                ;
                 break;
         }
 
     }
-    public Action updateAction(){
+
+    public Action updateAction() {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -123,7 +137,8 @@ public class Arm {
             }
         };
     }
-    public Action extendoAction(Extendo state){
+
+    public Action extendoAction(Extendo state) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -132,7 +147,8 @@ public class Arm {
             }
         };
     }
-    public Action wristAction(Wrist state){
+
+    public Action wristAction(Wrist state) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -141,7 +157,8 @@ public class Arm {
             }
         };
     }
-    public Action intakeAction(Intake state){
+
+    public Action intakeAction(Intake state) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -150,7 +167,8 @@ public class Arm {
             }
         };
     }
-    public Action shoulderAction(Shoulder state){
+
+    public Action shoulderAction(Shoulder state) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -159,7 +177,8 @@ public class Arm {
             }
         };
     }
-    public Action bucketAction(){
+
+    public Action bucketAction() {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
