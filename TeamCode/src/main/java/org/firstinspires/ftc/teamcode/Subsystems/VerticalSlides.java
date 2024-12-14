@@ -2,59 +2,81 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.opencv.core.Mat;
 
 import java.util.Objects;
-
+@Config
 public class VerticalSlides {
+    public static double kP = 0.006;
+    public static  double kI = 0;
+    public static double kD = 0;
+    public static  double kF = 0;
+    public static double POSITION_TOLERANCE = 20;
     public enum SlidePositions {
         DOWN,
         BUCKET,
         CHAMBER
     }
+    double targetPos;
+    PIDFController controller = new PIDFController(kP, kI, kD, kF);
 
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    int max = 720;
+    public static int max = 900;
     int down = 0;
-    int chamber = 350;
+    public static int chamber = 350;
     double maxPower = 1;
     double lockPower = .1;
+    public static double downPower = .3;
     boolean lock = false;
     int lockPosition;
 
     public void initiate(HardwareMap hardwareMap) {
         rightSlide = hardwareMap.dcMotor.get("Right Slide");
+        rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide = hardwareMap.dcMotor.get("Left Slide");
-        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        controller.setTolerance(POSITION_TOLERANCE);
     }
 
     public void update() {
+        controller.setP(kP);
+        controller.setD(kD);
+        controller.setI(kI);
+        controller.setF(kF);
         switch (slidePosition) {
             case DOWN:
-                leftSlide.setTargetPosition(down);
-                rightSlide.setTargetPosition(-down);
+                targetPos = down;
+                maxPower =downPower;
                 break;
             case BUCKET:
-                leftSlide.setTargetPosition(max);
-                rightSlide.setTargetPosition(-max);
+                targetPos = max;
+                maxPower = 1;
                 break;
             case CHAMBER:
-                leftSlide.setTargetPosition(chamber);
-                rightSlide.setTargetPosition(-chamber);
+                targetPos = chamber;
+                maxPower =1;
                 break;
         }
-        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftSlide.setPower(maxPower);
-        rightSlide.setPower(maxPower);
+        double power = controller.calculate(leftSlide.getCurrentPosition(),targetPos);
+        if (Math.abs(power) > maxPower){
+            power = maxPower * Math.signum(power);
+        }
+        leftSlide.setPower(power);
+        rightSlide.setPower(power);
     }
 
     public void setSlidePosition(SlidePositions slidePosition) {
@@ -123,4 +145,6 @@ public class VerticalSlides {
             }
         };
     }
+
+
 }

@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 
 @TeleOp
-public class TeleOpStateMachineOld extends LinearOpMode {
+public class TeleOpRed extends LinearOpMode {
     public enum States {
         RESTING,
         INTAKING,
@@ -42,7 +42,7 @@ public class TeleOpStateMachineOld extends LinearOpMode {
         while (opModeIsActive()) {
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
-            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
+            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x,telemetry);
             verticalSlides.reset(gamepad1.options);
 
             switch (state) {
@@ -128,11 +128,10 @@ public class TeleOpStateMachineOld extends LinearOpMode {
                 state = States.RESTING;
             }
             //  stateMachine.update(state);
-            if (currentGamepad1.cross) {
+            if (currentGamepad1.cross || arm.checkColor("red")) {
                 arm.intake(Arm.Intake.OUTTAKING);
             }
-            arm.update();
-            verticalSlides.setSlidePosition(stateMachine.slidePosition);
+            arm.update(telemetry,"red");
             verticalSlides.update();
             telemetry.addData("CurrentState", state);
             telemetry.update();

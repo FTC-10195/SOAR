@@ -10,16 +10,15 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
-import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 
 import com.acmerobotics.roadrunner.ftc.Actions;
 
 @Autonomous
-public class AutonomousBasic extends LinearOpMode {
+public class AutoRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        Pose2d beginPose = new Pose2d(0, -63.75, Math.toRadians(180));
+        Pose2d beginPose = new Pose2d(-24, -63.75, Math.toRadians(180));
         MecanumDrive mecanumDrive = new MecanumDrive(hardwareMap, beginPose);
         Arm arm = new Arm();
         VerticalSlides verticalSlides = new VerticalSlides();
@@ -44,9 +43,13 @@ public class AutonomousBasic extends LinearOpMode {
                                             .build(),
                                     arm.intakeAction(Arm.Intake.OUTTAKING),
                                     new SleepAction(.5),
-                                    arm.intakeAction(Arm.Intake.STOPPED)
+                                    arm.intakeAction(Arm.Intake.STOPPED),
+                                    mecanumDrive.actionBuilder(beginPose)
+                                            .strafeToLinearHeading(new Vector2d(-48, -48), Math.toRadians(225))
+                                            .build(),
+                                    verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
                             ),
-                            arm.updateAction(),
+                            arm.updateAction(telemetry, "red"),
                             verticalSlides.updateAction()
                     )
             );

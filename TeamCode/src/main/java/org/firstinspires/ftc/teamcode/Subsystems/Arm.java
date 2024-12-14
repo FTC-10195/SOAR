@@ -2,12 +2,19 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
+import java.util.Objects;
+
+@Config
 public class Arm {
     public enum Extendo {
         RETRACTED,
@@ -40,12 +47,13 @@ public class Arm {
     Servo wristServo;
     Servo rightServo;
     Servo leftServo;
+    ColorSensor colorSensor;
     double restPos = 0.1;
-    double extendoExtendedPos = .43;
+    public static double extendoExtendedPos = .19;
     double wristForwardPos = 0.5;
     double wristSidewaysPos = .83;
-    double extendoRetractedPos = .15;
-    double shoulderDownOffset = .392;
+    public static double extendoRetractedPos = .43;
+    public static double shoulderDownOffset = .25;
     double startOffset = -.1;
 
     //returns a sin out value (from 0 to 1)
@@ -64,6 +72,7 @@ public class Arm {
         leftServo.setPosition(1 - restPos);
         wristServo = hardwareMap.servo.get("Wrist");
         wristServo.setPosition(wristForwardPos);
+        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
     }
 
     public void shoulder(Shoulder shoulderState) {
@@ -82,7 +91,7 @@ public class Arm {
         this.intakeState = intakeState;
     }
 
-    public void update() {
+    public void update(Telemetry telemetry, String teamColor) {
         switch (shoulderState) {
             case DOWN:
                 rightServo.setPosition(restPos + shoulderDownOffset);
@@ -125,14 +134,30 @@ public class Arm {
                 ;
                 break;
         }
-
+        if (checkColor(teamColor)){
+            intakeServo.setPower(1);
+        }
     }
-
-    public Action updateAction() {
+public boolean checkColor(String teamColor){
+    int red = colorSensor.red();  // Get the red value
+    int green = colorSensor.green();  // Get the green value
+    int blue = colorSensor.blue();  // Get the blue value
+    if (Objects.equals(teamColor, "blue")) {
+        if (red > blue && red > green) {
+            return true;
+        }
+    }else if (Objects.equals(teamColor, "red")){
+        if (blue > red && blue > green) {
+            return true;
+        }
+    }
+    return false;
+}
+    public Action updateAction(Telemetry telemetry, String teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                update();
+                update(telemetry, teamColor);
                 return true;
             }
         };
