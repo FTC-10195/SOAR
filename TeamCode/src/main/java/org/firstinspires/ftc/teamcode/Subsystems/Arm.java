@@ -48,13 +48,13 @@ public class Arm {
     Servo rightServo;
     Servo leftServo;
     ColorSensor colorSensor;
-    double restPos = 0.1;
+    public static double restPos = 0;
     public static double extendoExtendedPos = .19;
     double wristForwardPos = 0.5;
     double wristSidewaysPos = .83;
     public static double extendoRetractedPos = .43;
-    public static double shoulderDownOffset = .25;
-    double startOffset = -.1;
+    public static double shoulderDownOffset = .32;
+   public static double startOffset = -restPos;
 
     //returns a sin out value (from 0 to 1)
     public double easeOutSine(double x) {
@@ -64,7 +64,7 @@ public class Arm {
 
     public void initiate(HardwareMap hardwareMap) {
         extendoServo = hardwareMap.servo.get("Arm Servo");
-        extendoServo.setPosition(extendoExtendedPos);
+        extendoServo.setPosition(extendoRetractedPos);
         intakeServo = hardwareMap.crservo.get("Intake");
         rightServo = hardwareMap.servo.get("Right Servo");
         leftServo = hardwareMap.servo.get("Left Servo");

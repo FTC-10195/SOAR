@@ -14,7 +14,6 @@ public class AutoExtremelyBasicFar extends LinearOpMode {
         Arm arm = new Arm();
         VerticalSlides verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
-        arm.initiate(hardwareMap);
         DriveTrain driveTrain = new DriveTrain();
         driveTrain.initiate(hardwareMap);
         waitForStart();

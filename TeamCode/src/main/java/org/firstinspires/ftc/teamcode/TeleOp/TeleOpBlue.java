@@ -128,10 +128,10 @@ public class TeleOpBlue extends LinearOpMode {
                 state = States.RESTING;
             }
             //  stateMachine.update(state);
-            if (currentGamepad1.cross || arm.checkColor("red")) {
+            if (currentGamepad1.cross || arm.checkColor("blue")) {
                 arm.intake(Arm.Intake.OUTTAKING);
             }
-            arm.update(telemetry,"red");
+            arm.update(telemetry,"blue");
             verticalSlides.update();
             telemetry.addData("CurrentState", state);
             telemetry.update();

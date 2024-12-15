@@ -32,9 +32,9 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int max = 900;
+    public static int max = 1020;
     int down = 0;
-    public static int chamber = 350;
+    public static int chamber = 400;
     double maxPower = 1;
     double lockPower = .1;
     public static double downPower = .3;
