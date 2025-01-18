@@ -15,14 +15,12 @@ public class DriveTrain {
     DcMotor backRightMotor;
 
     public void initiate(HardwareMap hardwareMap) {
-        frontLeftMotor = hardwareMap.dcMotor.get("motor3");
-        frontRightMotor = hardwareMap.dcMotor.get("motor2");
-        backLeftMotor = hardwareMap.dcMotor.get("motor1");
-        backRightMotor = hardwareMap.dcMotor.get("motor0");
+        frontLeftMotor = hardwareMap.dcMotor.get("motor0");
+        frontRightMotor = hardwareMap.dcMotor.get("motor1");
+        backLeftMotor = hardwareMap.dcMotor.get("motor2");
+        backRightMotor = hardwareMap.dcMotor.get("motor3");
 
-        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -31,6 +29,7 @@ public class DriveTrain {
     }
 
     public void run(double x, double y, double rx, Telemetry telemetry) {
+        rx = -rx;
         double denominator = (Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1));
         frontLeftMotor.setPower((y + x + rx) / denominator);
         backLeftMotor.setPower((y - x + rx) / denominator);

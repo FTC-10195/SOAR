@@ -49,7 +49,7 @@ public class AutoRed extends LinearOpMode {
                                             .build(),
                                     verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
                             ),
-                            arm.updateAction(telemetry, "red"),
+                            arm.updateAction(telemetry, Arm.TeamColor.RED),
                             verticalSlides.updateAction()
                     )
             );

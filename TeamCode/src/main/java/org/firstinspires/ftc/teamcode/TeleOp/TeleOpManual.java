@@ -21,7 +21,7 @@ public class TeleOpManual extends LinearOpMode {
         arm.initiate(hardwareMap);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
-
+        Arm.TeamColor teamColor = Arm.TeamColor.NONE;
         waitForStart();
         if (isStopRequested()) return;
 
@@ -33,10 +33,14 @@ public class TeleOpManual extends LinearOpMode {
 
 
             if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
-                if (arm.shoulderState == Arm.Shoulder.DOWN) {
-                    arm.shoulder(Arm.Shoulder.RESTING);
-                } else if (arm.shoulderState == Arm.Shoulder.RESTING) {
-                    arm.shoulder(Arm.Shoulder.RESTING);
+                if (arm.shoulderState == Arm.Shoulder.DOWNWARDS) {
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                } else if (arm.shoulderState == Arm.Shoulder.BACKWARDS) {
+                    arm.shoulder(Arm.Shoulder.UPWARDS);
+                }else if (arm.shoulderState == Arm.Shoulder.UPWARDS) {
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                } else if (arm.shoulderState == Arm.Shoulder.FORWARDS) {
+                    arm.shoulder(Arm.Shoulder.DOWNWARDS);
                 }
             }
             if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
@@ -53,7 +57,6 @@ public class TeleOpManual extends LinearOpMode {
                     arm.intakeState = Arm.Intake.OUTTAKING;
                 }
             }
-        }
         if (currentGamepad1.triangle && !previousGamepad1.triangle) {
             if (arm.intakeState == Arm.Intake.INTAKING) {
                 arm.intakeState = Arm.Intake.STOPPED;
@@ -63,13 +66,16 @@ public class TeleOpManual extends LinearOpMode {
         }
         if (currentGamepad1.square && !previousGamepad1.square) {
             if (arm.wristState == Arm.Wrist.FORWARD) {
-                arm.wristState = Arm.Wrist.SIDEWAYS;
-            } else {
+                arm.wristState = Arm.Wrist.DOWNWARDS;
+            } else if (arm.wristState == Arm.Wrist.DOWNWARDS) {
+                arm.wristState = Arm.Wrist.UPWARDS;
+            }else if (arm.wristState == Arm.Wrist.UPWARDS) {
                 arm.wristState = Arm.Wrist.FORWARD;
             }
         }
         verticalSlides.manual((gamepad1.left_trigger - gamepad1.right_trigger) / 2, false, telemetry);
-        arm.update(telemetry,"");
+        arm.update(telemetry,teamColor);
         telemetry.update();
+        }
     }
 }
