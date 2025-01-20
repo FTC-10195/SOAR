@@ -39,6 +39,13 @@ public class TeleOpChamberBlue extends LinearOpMode {
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean SwitchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean SwitchColor = gamepad1.cross && !previousGamepad1.cross;
+            double rumblePower = 0;
+            int rumbleTime = 0;
+            if (state == StateMachine.States.SAMPLE_LOADED) {
+                rumblePower = .3;
+                rumbleTime = 10;
+            }
+            gamepad1.rumble(rumblePower, rumblePower, rumbleTime);
             stateMachine.update(state,mode,RT,LT,RB,LB,SwitchMode,telemetry);
             arm.switchColor(teamColor,SwitchColor);
             arm.update(telemetry,teamColor);
