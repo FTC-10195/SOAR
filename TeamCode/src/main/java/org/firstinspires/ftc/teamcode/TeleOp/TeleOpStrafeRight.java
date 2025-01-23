@@ -1,26 +1,25 @@
-package org.firstinspires.ftc.teamcode.Autonomous;
+package org.firstinspires.ftc.teamcode.TeleOp;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 
-@Autonomous
-public class AutoStraight extends LinearOpMode {
+@TeleOp
+public class TeleOpStrafeRight extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Arm arm = new Arm();
-        VerticalSlides verticalSlides = new VerticalSlides();
-        verticalSlides.initiate(hardwareMap);
+        arm.initiate(hardwareMap);
         DriveTrain driveTrain = new DriveTrain();
         driveTrain.initiate(hardwareMap);
         waitForStart();
-        double startTime = 0;
         if (isStopRequested()) return;
         while (opModeIsActive()) {
-                driveTrain.run(0, .3,-0, telemetry);
+            driveTrain.runRight(gamepad1.right_trigger - gamepad1.left_trigger);
         }
     }
 }

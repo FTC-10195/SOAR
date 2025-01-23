@@ -58,25 +58,26 @@ public class Arm {
     Servo leftShoulder; //Copys rightShoulder
     ColorSensor colorSensor;
     public static double extendoRetractedPos = .5;
-    public static double extendoExtendedPos = .7;
-    public static  double wristForwardPos = 0.5; //Should be facing straight forwards
-    public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
-    public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
+    public static double extendoExtendedPos = .16;
+    public static  double wristForwardPos = 0.45; //Should be facing straight forwards
+    public static double wristDownwardsPos = 0.9; //Should be facing towards the ground
+    public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
     //Shoulder Positions:
-    public static double shoulderBackwards = 0;
-    public static double shoulderUpwards = 0.2;
-    public static double shoulderForwards = 0.4;   //Should be parallel to the ground
+    public static double shoulderBackwards = 0.14;
+    public static double shoulderUpwards = 0.35;
+    public static double shoulderForwards = 0.48;   //Should be parallel to the ground
     public static double shoulderDownwards = 0.5;   //Should be low enough to intake
-
+    public static double leftOffset = -.12;
+    public static double rightOffset = 0;
     public void initiate(HardwareMap hardwareMap) {
-        extendoServo = hardwareMap.servo.get("Arm Servo");
+        extendoServo = hardwareMap.servo.get("Extendo");
         extendoServo.setPosition(extendoRetractedPos);
-        intakeServoRight = hardwareMap.crservo.get("IntakeRight");
-        intakeServoLeft = hardwareMap.crservo.get("IntakeLeft");
-        rightShoulder = hardwareMap.servo.get("Right Servo");
-        leftShoulder = hardwareMap.servo.get("Left Servo");
+        intakeServoRight = hardwareMap.crservo.get("RightIntake");
+        intakeServoLeft = hardwareMap.crservo.get("LeftIntake");
+        rightShoulder = hardwareMap.servo.get("RightShoulder");
+        leftShoulder = hardwareMap.servo.get("LeftShoulder");
         rightShoulder.setPosition(shoulderUpwards);
-        leftShoulder.setPosition(1 - shoulderUpwards);
+        leftShoulder.setPosition(1 - shoulderUpwards - leftOffset);
         wristServo = hardwareMap.servo.get("Wrist");
         wristServo.setPosition(wristForwardPos);
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
@@ -97,32 +98,37 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
-public void switchColor(TeamColor teamColor,boolean Switch){
+public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         if (Switch){
             if (teamColor == TeamColor.BLUE){
-                teamColor = TeamColor.RED;
+                return TeamColor.RED;
             }else {
-                teamColor = TeamColor.BLUE;
+                return TeamColor.BLUE;
             }
         }
+        return teamColor;
 }
     public void update(Telemetry telemetry, TeamColor teamColor) {
         telemetry.addData("IntakeState",this.intakeState);
+        telemetry.addData("extendoState",extendoState);
         switch (shoulderState) {
             case DOWNWARDS:
-                rightShoulder.setPosition(shoulderDownwards);
+                rightShoulder.setPosition(shoulderDownwards+ rightOffset);
+                leftShoulder.setPosition(1 - (shoulderDownwards + leftOffset));
                 break;
             case UPWARDS:
-                rightShoulder.setPosition(shoulderUpwards);
+                rightShoulder.setPosition(shoulderUpwards+ rightOffset);
+                leftShoulder.setPosition(1 - (shoulderUpwards + leftOffset));
                 break;
             case FORWARDS:
-                rightShoulder.setPosition(shoulderForwards);
+                rightShoulder.setPosition(shoulderForwards+ rightOffset);
+                leftShoulder.setPosition(1 - (shoulderForwards + leftOffset));
                 break;
             case BACKWARDS:
-                rightShoulder.setPosition(shoulderBackwards);
+                rightShoulder.setPosition(shoulderBackwards+ rightOffset);
+                leftShoulder.setPosition(1 - (shoulderBackwards + leftOffset));
                 break;
         }
-        leftShoulder.setPosition(1 - rightShoulder.getPosition());
         switch (extendoState) {
             case EXTENDED:
                 extendoServo.setPosition(extendoExtendedPos);
@@ -170,12 +176,13 @@ public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
     telemetry.addData("red:",red);
     telemetry.addData("green:",green);
     telemetry.addData("distance",colorSensor.alpha());
+    telemetry.addData("isGrabbed", isGrabbed());
     telemetry.addData("teamColor",teamColor);
-    if (intakeState == Intake.OUTTAKING){
-        return Intake.OUTTAKING;
+    if (intakeState == Intake.OUTTAKING || intakeState == Intake.SHOOTING){
+        return this.intakeState;
     }
-    if ((teamColor == TeamColor.BLUE && red > blue && red > green) || (teamColor == TeamColor.RED && blue > red && blue > green)){
-        return Intake.OUTTAKING;
+    if ((teamColor == TeamColor.BLUE && red > blue && red > green && colorSensor.alpha() > 100) || (teamColor == TeamColor.RED && blue > red && blue > green && colorSensor.alpha() > 100)){
+        return Intake.SHOOTING;
     }
     if (isGrabbed()) {
         return Intake.STOPPED;
@@ -183,7 +190,12 @@ public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
     return this.intakeState;
 }
 public boolean isGrabbed(){
-        return colorSensor.alpha() < 400;
+       if (colorSensor != null){
+           return colorSensor.alpha() > 400;
+       }else {
+           return false;
+       }
+
 }
     public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
         return new Action() {
