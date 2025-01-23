@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
-import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 
 @TeleOp
@@ -21,26 +20,22 @@ public class TeleOpManual extends LinearOpMode {
         arm.initiate(hardwareMap);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
-        Arm.TeamColor teamColor = Arm.TeamColor.NONE;
+
         waitForStart();
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
-            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, gamepad1.right_stick_x,telemetry);
+            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x,telemetry);
             verticalSlides.reset(gamepad1.options);
 
 
             if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
-                if (arm.shoulderState == Arm.Shoulder.DOWNWARDS) {
-                    arm.shoulder(Arm.Shoulder.BACKWARDS);
-                } else if (arm.shoulderState == Arm.Shoulder.BACKWARDS) {
-                    arm.shoulder(Arm.Shoulder.UPWARDS);
-                }else if (arm.shoulderState == Arm.Shoulder.UPWARDS) {
-                    arm.shoulder(Arm.Shoulder.FORWARDS);
-                } else if (arm.shoulderState == Arm.Shoulder.FORWARDS) {
-                    arm.shoulder(Arm.Shoulder.DOWNWARDS);
+                if (arm.shoulderState == Arm.Shoulder.DOWN) {
+                    arm.shoulder(Arm.Shoulder.RESTING);
+                } else if (arm.shoulderState == Arm.Shoulder.RESTING) {
+                    arm.shoulder(Arm.Shoulder.RESTING);
                 }
             }
             if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
@@ -57,6 +52,7 @@ public class TeleOpManual extends LinearOpMode {
                     arm.intakeState = Arm.Intake.OUTTAKING;
                 }
             }
+        }
         if (currentGamepad1.triangle && !previousGamepad1.triangle) {
             if (arm.intakeState == Arm.Intake.INTAKING) {
                 arm.intakeState = Arm.Intake.STOPPED;
@@ -66,16 +62,13 @@ public class TeleOpManual extends LinearOpMode {
         }
         if (currentGamepad1.square && !previousGamepad1.square) {
             if (arm.wristState == Arm.Wrist.FORWARD) {
-                arm.wristState = Arm.Wrist.DOWNWARDS;
-            } else if (arm.wristState == Arm.Wrist.DOWNWARDS) {
-                arm.wristState = Arm.Wrist.UPWARDS;
-            }else if (arm.wristState == Arm.Wrist.UPWARDS) {
+                arm.wristState = Arm.Wrist.SIDEWAYS;
+            } else {
                 arm.wristState = Arm.Wrist.FORWARD;
             }
         }
         verticalSlides.manual((gamepad1.left_trigger - gamepad1.right_trigger) / 2, false, telemetry);
-        arm.update(telemetry,teamColor);
+        arm.update(telemetry,"");
         telemetry.update();
-        }
     }
 }

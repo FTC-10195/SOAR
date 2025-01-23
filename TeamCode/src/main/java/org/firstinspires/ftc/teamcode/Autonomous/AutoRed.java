@@ -5,14 +5,13 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
-
-import com.acmerobotics.roadrunner.ftc.Actions;
 
 @Autonomous
 public class AutoRed extends LinearOpMode {
@@ -49,7 +48,7 @@ public class AutoRed extends LinearOpMode {
                                             .build(),
                                     verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
                             ),
-                            arm.updateAction(telemetry, Arm.TeamColor.RED),
+                            arm.updateAction(telemetry, "red"),
                             verticalSlides.updateAction()
                     )
             );

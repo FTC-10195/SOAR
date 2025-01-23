@@ -22,62 +22,54 @@ public class Arm {
     }
 
     public enum Shoulder {
-        UPWARDS,//Upwards is what it will do during resting
-        FORWARDS, //Parallel to the ground
-        DOWNWARDS, //Used for intaking only
-        BACKWARDS,
+        STARTING,
+        RESTING,
+        DOWN
     }
 
     public enum Wrist {
-        FORWARD, //Used for most tasks
-        DOWNWARDS, //Used for intaking/scouting
-        UPWARDS, //Used for scoring chamber
+        FORWARD,
+        SIDEWAYS
     }
 
     public enum Intake {
         INTAKING,
         OUTTAKING,
-        SHOOTING,
         STOPPED
     }
-    public enum TeamColor {
-        RED,
-        BLUE,
-        NONE
-    }
 
-    public Shoulder shoulderState = Shoulder.UPWARDS;
+    public Shoulder shoulderState = Shoulder.RESTING;
     public Wrist wristState = Wrist.FORWARD;
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.STOPPED;
-    CRServo intakeServoRight;
-    CRServo intakeServoLeft;
+    CRServo intakeServo;
     Servo extendoServo;
     Servo wristServo;
-    Servo rightShoulder; //Dominant servo
-    Servo leftShoulder; //Copys rightShoulder
+    Servo rightServo;
+    Servo leftServo;
     ColorSensor colorSensor;
-    public static double extendoRetractedPos = .5;
-    public static double extendoExtendedPos = .16;
-    public static  double wristForwardPos = 0.45; //Should be facing straight forwards
-    public static double wristDownwardsPos = 0.9; //Should be facing towards the ground
-    public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
-    //Shoulder Positions:
-    public static double shoulderBackwards = 0.14;
-    public static double shoulderUpwards = 0.35;
-    public static double shoulderForwards = 0.48;   //Should be parallel to the ground
-    public static double shoulderDownwards = 0.5;   //Should be low enough to intake
-    public static double leftOffset = -.12;
-    public static double rightOffset = 0;
+    public static double restPos = 0;
+    public static double extendoExtendedPos = .19;
+    double wristForwardPos = 0.5;
+    double wristSidewaysPos = .83;
+    public static double extendoRetractedPos = .43;
+    public static double shoulderDownOffset = .32;
+   public static double startOffset = -restPos;
+
+    //returns a sin out value (from 0 to 1)
+    public double easeOutSine(double x) {
+        return Math.sin((x * Math.PI) / 2);
+    }
+
+
     public void initiate(HardwareMap hardwareMap) {
-        extendoServo = hardwareMap.servo.get("Extendo");
+        extendoServo = hardwareMap.servo.get("Arm Servo");
         extendoServo.setPosition(extendoRetractedPos);
-        intakeServoRight = hardwareMap.crservo.get("RightIntake");
-        intakeServoLeft = hardwareMap.crservo.get("LeftIntake");
-        rightShoulder = hardwareMap.servo.get("RightShoulder");
-        leftShoulder = hardwareMap.servo.get("LeftShoulder");
-        rightShoulder.setPosition(shoulderUpwards);
-        leftShoulder.setPosition(1 - shoulderUpwards - leftOffset);
+        intakeServo = hardwareMap.crservo.get("Intake");
+        rightServo = hardwareMap.servo.get("Right Servo");
+        leftServo = hardwareMap.servo.get("Left Servo");
+        rightServo.setPosition(restPos);
+        leftServo.setPosition(1 - restPos);
         wristServo = hardwareMap.servo.get("Wrist");
         wristServo.setPosition(wristForwardPos);
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
@@ -98,37 +90,20 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
-public TeamColor switchColor(TeamColor teamColor,boolean Switch){
-        if (Switch){
-            if (teamColor == TeamColor.BLUE){
-                return TeamColor.RED;
-            }else {
-                return TeamColor.BLUE;
-            }
-        }
-        return teamColor;
-}
-    public void update(Telemetry telemetry, TeamColor teamColor) {
-        telemetry.addData("IntakeState",this.intakeState);
-        telemetry.addData("extendoState",extendoState);
+
+    public void update(Telemetry telemetry, String teamColor) {
         switch (shoulderState) {
-            case DOWNWARDS:
-                rightShoulder.setPosition(shoulderDownwards+ rightOffset);
-                leftShoulder.setPosition(1 - (shoulderDownwards + leftOffset));
+            case DOWN:
+                rightServo.setPosition(restPos + shoulderDownOffset);
                 break;
-            case UPWARDS:
-                rightShoulder.setPosition(shoulderUpwards+ rightOffset);
-                leftShoulder.setPosition(1 - (shoulderUpwards + leftOffset));
+            case RESTING:
+                rightServo.setPosition(restPos);
                 break;
-            case FORWARDS:
-                rightShoulder.setPosition(shoulderForwards+ rightOffset);
-                leftShoulder.setPosition(1 - (shoulderForwards + leftOffset));
-                break;
-            case BACKWARDS:
-                rightShoulder.setPosition(shoulderBackwards+ rightOffset);
-                leftShoulder.setPosition(1 - (shoulderBackwards + leftOffset));
+            case STARTING:
+                rightServo.setPosition(restPos + startOffset);
                 break;
         }
+        leftServo.setPosition(1 - rightServo.getPosition());
         switch (extendoState) {
             case EXTENDED:
                 extendoServo.setPosition(extendoExtendedPos);
@@ -141,63 +116,44 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
             case FORWARD:
                 wristServo.setPosition(wristForwardPos);
                 break;
-            case DOWNWARDS:
-                wristServo.setPosition(wristDownwardsPos);
-                break;
-            case UPWARDS:
-                wristServo.setPosition(wristUpwardsPos);
+            case SIDEWAYS:
+                wristServo.setPosition(wristSidewaysPos);
                 break;
         }
-        intakeState = checkColor(teamColor,telemetry);
         switch (intakeState) {
             case INTAKING:
-                intakeServoRight.setPower(-1);
-                intakeServoLeft.setPower(1);
-                break;
-            case SHOOTING:
-                intakeServoRight.setPower(1);
-                intakeServoLeft.setPower(-1);
+                intakeServo.setPower(-1);
+                ;
                 break;
             case OUTTAKING:
-                intakeServoRight.setPower(.3);
-                intakeServoLeft.setPower(-.3);
+                intakeServo.setPower(1);
+                ;
                 break;
             case STOPPED:
-                intakeServoRight.setPower(0);
-                intakeServoLeft.setPower(0);
+                intakeServo.setPower(0);
+                ;
                 break;
         }
+        if (checkColor(teamColor)){
+            intakeServo.setPower(1);
+        }
     }
-public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
-    int red = colorSensor.red();
-    int green = colorSensor.green();
-    int blue = colorSensor.blue();
-    telemetry.addData("blue:",blue);
-    telemetry.addData("red:",red);
-    telemetry.addData("green:",green);
-    telemetry.addData("distance",colorSensor.alpha());
-    telemetry.addData("isGrabbed", isGrabbed());
-    telemetry.addData("teamColor",teamColor);
-    if (intakeState == Intake.OUTTAKING || intakeState == Intake.SHOOTING){
-        return this.intakeState;
+public boolean checkColor(String teamColor){
+    int red = colorSensor.red();  // Get the red value
+    int green = colorSensor.green();  // Get the green value
+    int blue = colorSensor.blue();  // Get the blue value
+    if (Objects.equals(teamColor, "blue")) {
+        if (red > blue && red > green) {
+            return true;
+        }
+    }else if (Objects.equals(teamColor, "red")){
+        if (blue > red && blue > green) {
+            return true;
+        }
     }
-    if ((teamColor == TeamColor.BLUE && red > blue && red > green && colorSensor.alpha() > 100) || (teamColor == TeamColor.RED && blue > red && blue > green && colorSensor.alpha() > 100)){
-        return Intake.SHOOTING;
-    }
-    if (isGrabbed()) {
-        return Intake.STOPPED;
-    }
-    return this.intakeState;
+    return false;
 }
-public boolean isGrabbed(){
-       if (colorSensor != null){
-           return colorSensor.alpha() > 400;
-       }else {
-           return false;
-       }
-
-}
-    public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
+    public Action updateAction(Telemetry telemetry, String teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -251,7 +207,7 @@ public boolean isGrabbed(){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                shoulder(Shoulder.UPWARDS);
+                shoulder(Shoulder.RESTING);
                 extendo(Extendo.RETRACTED);
                 wrist(Wrist.FORWARD);
                 intake(Intake.STOPPED);

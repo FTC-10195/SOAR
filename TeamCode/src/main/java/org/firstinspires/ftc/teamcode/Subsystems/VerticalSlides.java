@@ -11,9 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.core.Mat;
 
-import java.util.Objects;
 @Config
 public class VerticalSlides {
     public static double kP = 0.006;
@@ -32,9 +30,9 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int max = 2020;
+    public static int max = 1020;
     int down = 0;
-    public static int chamber = 800;
+    public static int chamber = 400;
     double maxPower = 1;
     double lockPower = .1;
     public static double downPower = .3;
@@ -42,9 +40,9 @@ public class VerticalSlides {
     int lockPosition;
 
     public void initiate(HardwareMap hardwareMap) {
-        rightSlide = hardwareMap.dcMotor.get("RightSlide");
+        rightSlide = hardwareMap.dcMotor.get("Right Slide");
         rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftSlide = hardwareMap.dcMotor.get("LeftSlide");
+        leftSlide = hardwareMap.dcMotor.get("Left Slide");
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -52,7 +50,7 @@ public class VerticalSlides {
         controller.setTolerance(POSITION_TOLERANCE);
     }
 
-    public void update(Telemetry telemetry) {
+    public void update() {
         controller.setP(kP);
         controller.setD(kD);
         controller.setI(kI);
@@ -71,12 +69,10 @@ public class VerticalSlides {
                 maxPower =1;
                 break;
         }
-        double power = controller.calculate(rightSlide.getCurrentPosition(),targetPos);
+        double power = controller.calculate(leftSlide.getCurrentPosition(),targetPos);
         if (Math.abs(power) > maxPower){
             power = maxPower * Math.signum(power);
         }
-        telemetry.addData("leftslidepos", leftSlide.getCurrentPosition());
-        telemetry.addData("rightslidepos", rightSlide.getCurrentPosition());
         leftSlide.setPower(power);
         rightSlide.setPower(power);
     }
@@ -132,6 +128,7 @@ public class VerticalSlides {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                update();
                 return true;
             }
         };
