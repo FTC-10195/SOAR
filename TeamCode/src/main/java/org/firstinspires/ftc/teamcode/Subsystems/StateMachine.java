@@ -15,15 +15,10 @@ public class StateMachine {
         SAMPLE_LOADED,
         //Bucket modes
         BUCKET,
-        BUCKET_DEPOSIT,
         //Chamber modes
         CHAMBER_PRE_DEPOSIT,
-        CHAMBER_HUMAN_DEPOSIT,
-        CHAMBER_PRE_INTAKE,
         CHAMBER_HUMAN_INTAKE,
         CHAMBER,
-        CHAMBER_DEPOSIT
-
     }
 
     Arm arm = new Arm();
@@ -36,16 +31,12 @@ public class StateMachine {
                 if (state == States.RESTING) {
                     newState = States.CHAMBER;
                 } else if (state == States.CHAMBER) {
-                    newState = States.CHAMBER_DEPOSIT;
-                } else if (state == States.CHAMBER_DEPOSIT) {
                     newState = States.RESTING;
                 }
             } else {
                 if (state == States.RESTING) {
                     newState = States.BUCKET;
                 } else if (state == States.BUCKET) {
-                    newState = States.BUCKET_DEPOSIT;
-                } else if (state == States.BUCKET_DEPOSIT) {
                     newState = States.RESTING;
                 }
             }
@@ -63,17 +54,15 @@ public class StateMachine {
             } else if (state == States.SCOUTING) {
                 newState = States.SAMPLE_INTAKE;
             } else if (state == States.CHAMBER_PRE_DEPOSIT) {
-                newState = States.CHAMBER_HUMAN_DEPOSIT;
-            } else if (state == States.CHAMBER_HUMAN_DEPOSIT) {
-                newState = States.SCOUTING;
+                newState = States.CHAMBER;
             }
         }
         if (LT) {
             if (mode == Mode.CHAMBER) {
                 if (state == States.RESTING) {
-                    newState = States.CHAMBER_PRE_INTAKE;
-                }else if (state == States.CHAMBER_PRE_INTAKE){
                     newState = States.CHAMBER_HUMAN_INTAKE;
+                }else if (state == States.CHAMBER_HUMAN_INTAKE){
+                    newState = States.CHAMBER;
                 }
             }
         }

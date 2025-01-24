@@ -38,6 +38,10 @@ public class Arm {
         OPEN,
         CLOSE
     }
+    public enum ClawRotation {
+        Vert,
+        Horz
+    }
     public enum TeamColor {
         RED,
         BLUE,
@@ -49,6 +53,7 @@ public class Arm {
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.CLOSE;
     Servo claw;
+    Servo clawRotationServo;
     Servo extendoServo;
     Servo wristServo;
     Servo rightShoulder; //Dominant servo
@@ -66,11 +71,14 @@ public class Arm {
     public static double shoulderDownwards = 0.5;   //Should be low enough to intake
     public static double clawClosed = .5;
     public static double clawOpen = 1;
+    public static double clawVert = .5;
+    public static double clawHorz = 1;
 
     public void initiate(HardwareMap hardwareMap) {
         extendoServo = hardwareMap.servo.get("Arm Servo");
         extendoServo.setPosition(extendoRetractedPos);
         claw = hardwareMap.servo.get("claw");
+        clawRotationServo = hardwareMap.servo.get("clawRot");
         rightShoulder = hardwareMap.servo.get("RightShoulder");
         leftShoulder = hardwareMap.servo.get("LeftShoulder");
         rightShoulder.setPosition(shoulderUpwards);
@@ -95,6 +103,28 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
+    public Intake switchClaw(Intake clawState, boolean Switch){
+        Intake newClawState = clawState;
+        if (Switch){
+            if (clawState == Intake.CLOSE){
+                newClawState = Intake.OPEN;
+            }else{
+                newClawState = Intake.CLOSE;
+            }
+        }
+        return newClawState;
+    }
+    public ClawRotation switchClawRotation(ClawRotation clawRotation, boolean Switch){
+        ClawRotation newclawRotation = clawRotation;
+        if (Switch){
+            if (clawRotation == ClawRotation.Vert){
+                newclawRotation = ClawRotation.Horz;
+            }else{
+                newclawRotation = ClawRotation.Vert;
+            }
+        }
+        return newclawRotation;
+    }
 public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         TeamColor newTeamColor = teamColor;
         if (Switch){
@@ -106,7 +136,7 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         }
         return newTeamColor;
 }
-    public void update(Telemetry telemetry, TeamColor teamColor) {
+    public void update(Telemetry telemetry, TeamColor teamColor, Intake clawState, ClawRotation clawRotation) {
         telemetry.addData("IntakeState",this.intakeState);
         switch (shoulderState) {
             case DOWNWARDS:
@@ -142,8 +172,7 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 wristServo.setPosition(wristUpwardsPos);
                 break;
         }
-        intakeState = checkColor(teamColor,telemetry);
-        switch (intakeState) {
+        switch (clawState) {
             case OPEN:
                 claw.setPosition(clawOpen);
                 break;
@@ -151,6 +180,17 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 claw.setPosition(clawClosed);
                 break;
         }
+        clawState = checkColor(teamColor,telemetry);
+        switch (clawRotation) {
+            case Vert:
+                clawRotationServo.setPosition(clawVert);
+                break;
+            case Horz:
+                clawRotationServo.setPosition(clawHorz);
+                break;
+        }
+        telemetry.addData("ClawState",clawRotation);
+        telemetry.addData("ClawRotation",clawRotation);
     }
 public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
     int red = colorSensor.red();
@@ -232,7 +272,7 @@ public boolean isGrabbed(){
                 shoulder(Shoulder.UPWARDS);
                 extendo(Extendo.RETRACTED);
                 wrist(Wrist.FORWARD);
-                intake(Intake.STOPPED);
+                intake(Intake.CLOSE);
                 return false;
             }
         };
