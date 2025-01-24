@@ -39,15 +39,93 @@ public class TeleOpChamberRed extends LinearOpMode {
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
             boolean SwitchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean SwitchColor = gamepad1.cross && !previousGamepad1.cross;
-            double rumblePower = 0;
-            int rumbleTime = 0;
+            int rumbleCount = 0;
             if (state == StateMachine.States.SAMPLE_LOADED) {
-                rumblePower = .3;
-                rumbleTime = 10;
+                rumbleCount = 10;
             }
-            gamepad1.rumble(rumblePower, rumblePower, rumbleTime);
-            stateMachine.update(state, mode, RT, LT, RB, LB, SwitchMode, telemetry);
-            arm.switchColor(teamColor, SwitchColor);
+            gamepad1.rumbleBlips(rumbleCount);
+            stateMachine.switchMode(mode,SwitchMode);
+            stateMachine.setState(state, mode, RT, LT, RB, LB, SwitchMode, telemetry);
+            switch (state) {
+                case RESTING:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.UPWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+                case SCOUTING:
+                    arm.extendo(Arm.Extendo.EXTENDED);
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.OPEN);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+                case SAMPLE_INTAKE:
+                    arm.extendo(Arm.Extendo.EXTENDED);
+                    arm.shoulder(Arm.Shoulder.DOWNWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+                case BUCKET:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
+                    break;
+                case BUCKET_DEPOSIT:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
+                    break;
+                case CHAMBER:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.wrist(Arm.Wrist.UPWARDS);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
+                    break;
+                case CHAMBER_DEPOSIT:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.wrist(Arm.Wrist.UPWARDS);
+                    arm.intake(Arm.Intake.OPEN);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
+                    break;
+                case CHAMBER_PRE_DEPOSIT:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+                case CHAMBER_HUMAN_DEPOSIT:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.OPEN);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+                case CHAMBER_PRE_INTAKE:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.OPEN);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+                case CHAMBER_HUMAN_INTAKE:
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
+                    arm.intake(Arm.Intake.CLOSE);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    break;
+            }
+            teamColor = arm.switchColor(teamColor,SwitchColor);
             arm.update(telemetry, teamColor);
             verticalSlides.update();
             telemetry.addData("CurrentState", state);

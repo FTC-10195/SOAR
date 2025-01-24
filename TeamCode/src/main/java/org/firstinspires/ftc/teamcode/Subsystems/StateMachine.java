@@ -17,8 +17,9 @@ public class StateMachine {
         BUCKET,
         BUCKET_DEPOSIT,
         //Chamber modes
-        CHAMBER_READY_TO_FIRE,
+        CHAMBER_PRE_DEPOSIT,
         CHAMBER_HUMAN_DEPOSIT,
+        CHAMBER_PRE_INTAKE,
         CHAMBER_HUMAN_INTAKE,
         CHAMBER,
         CHAMBER_DEPOSIT
@@ -28,95 +29,24 @@ public class StateMachine {
     Arm arm = new Arm();
     VerticalSlides verticalSlides = new VerticalSlides();
 
-    public void update(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, boolean Switch, Telemetry telemetry) {
-        switch (state) {
-            case RESTING:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.UPWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.STOPPED);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                break;
-            case SCOUTING:
-                arm.extendo(Arm.Extendo.EXTENDED);
-                arm.shoulder(Arm.Shoulder.FORWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.STOPPED);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                break;
-            case SAMPLE_INTAKE:
-                arm.extendo(Arm.Extendo.EXTENDED);
-                arm.shoulder(Arm.Shoulder.DOWNWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.INTAKING);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                break;
-            case BUCKET:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.BACKWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.STOPPED);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
-                break;
-            case BUCKET_DEPOSIT:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.BACKWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.OUTTAKING);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
-                break;
-            case CHAMBER:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.BACKWARDS);
-                arm.wrist(Arm.Wrist.UPWARDS);
-                arm.intake(Arm.Intake.STOPPED);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
-                break;
-            case CHAMBER_DEPOSIT:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.BACKWARDS);
-                arm.wrist(Arm.Wrist.UPWARDS);
-                arm.intake(Arm.Intake.OUTTAKING);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
-                break;
-            case CHAMBER_READY_TO_FIRE:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.BACKWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.STOPPED);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                break;
-            case CHAMBER_HUMAN_DEPOSIT:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.BACKWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.SHOOTING);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                break;
-            case CHAMBER_HUMAN_INTAKE:
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.FORWARDS);
-                arm.wrist(Arm.Wrist.FORWARD);
-                arm.intake(Arm.Intake.INTAKING);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                break;
-        }
+    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, boolean Switch, Telemetry telemetry) {
+        States newState = state;
         if (RT) {
             if (mode == Mode.CHAMBER) {
                 if (state == States.RESTING) {
-                    state = States.CHAMBER;
+                    newState = States.CHAMBER;
                 } else if (state == States.CHAMBER) {
-                    state = States.CHAMBER_DEPOSIT;
+                    newState = States.CHAMBER_DEPOSIT;
                 } else if (state == States.CHAMBER_DEPOSIT) {
-                    state = States.RESTING;
+                    newState = States.RESTING;
                 }
             } else {
                 if (state == States.RESTING) {
-                    state = States.BUCKET;
+                    newState = States.BUCKET;
                 } else if (state == States.BUCKET) {
-                    state = States.BUCKET_DEPOSIT;
+                    newState = States.BUCKET_DEPOSIT;
                 } else if (state == States.BUCKET_DEPOSIT) {
-                    state = States.RESTING;
+                    newState = States.RESTING;
                 }
             }
 
@@ -124,45 +54,52 @@ public class StateMachine {
         if (LB) {
             if (state == States.SAMPLE_LOADED) {
                 if (mode == Mode.CHAMBER) {
-                    state = States.CHAMBER_READY_TO_FIRE;
+                    newState = States.CHAMBER_PRE_DEPOSIT;
                 } else {
-                    state = States.RESTING;
+                    newState = States.RESTING;
                 }
             } else if (state == States.RESTING) {
-                state = States.SCOUTING;
+                newState = States.SCOUTING;
             } else if (state == States.SCOUTING) {
-                state = States.SAMPLE_INTAKE;
-            } else if (state == States.CHAMBER_READY_TO_FIRE) {
-                state = States.CHAMBER_HUMAN_DEPOSIT;
+                newState = States.SAMPLE_INTAKE;
+            } else if (state == States.CHAMBER_PRE_DEPOSIT) {
+                newState = States.CHAMBER_HUMAN_DEPOSIT;
             } else if (state == States.CHAMBER_HUMAN_DEPOSIT) {
-                state = States.SCOUTING;
+                newState = States.SCOUTING;
             }
         }
         if (LT) {
             if (mode == Mode.CHAMBER) {
                 if (state == States.RESTING) {
-                    state = States.CHAMBER_HUMAN_INTAKE;
+                    newState = States.CHAMBER_PRE_INTAKE;
+                }else if (state == States.CHAMBER_PRE_INTAKE){
+                    newState = States.CHAMBER_HUMAN_INTAKE;
                 }
             }
         }
         if (RB) {
-            state = States.RESTING;
+            newState = States.RESTING;
         }
         if (arm.isGrabbed()) {
             if (state == States.SAMPLE_INTAKE) {
-                state = States.SAMPLE_LOADED;
+                newState = States.SAMPLE_LOADED;
             } else if (state == States.CHAMBER_HUMAN_INTAKE) {
-                state = States.CHAMBER;
-            }
-        }
-        if (Switch) {
-            if (mode == Mode.CHAMBER) {
-                mode = Mode.BUCKET;
-            } else {
-                mode = Mode.CHAMBER;
+                newState = States.CHAMBER;
             }
         }
         telemetry.addData("Mode", mode);
         telemetry.addData("State", state);
+        return newState;
+    }
+    public Mode switchMode(Mode mode, boolean Switch){
+        Mode newMode = mode;
+        if (Switch) {
+            if (mode == Mode.CHAMBER) {
+                newMode = Mode.BUCKET;
+            } else {
+                newMode = Mode.CHAMBER;
+            }
+        }
+        return  newMode;
     }
 }

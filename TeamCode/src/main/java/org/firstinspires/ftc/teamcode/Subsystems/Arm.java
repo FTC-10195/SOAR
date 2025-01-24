@@ -35,10 +35,8 @@ public class Arm {
     }
 
     public enum Intake {
-        INTAKING,
-        OUTTAKING,
-        SHOOTING,
-        STOPPED
+        OPEN,
+        CLOSE
     }
     public enum TeamColor {
         RED,
@@ -49,9 +47,8 @@ public class Arm {
     public Shoulder shoulderState = Shoulder.UPWARDS;
     public Wrist wristState = Wrist.FORWARD;
     public Extendo extendoState = Extendo.RETRACTED;
-    public Intake intakeState = Intake.STOPPED;
-    CRServo intakeServoRight;
-    CRServo intakeServoLeft;
+    public Intake intakeState = Intake.CLOSE;
+    Servo claw;
     Servo extendoServo;
     Servo wristServo;
     Servo rightShoulder; //Dominant servo
@@ -67,14 +64,15 @@ public class Arm {
     public static double shoulderUpwards = 0.2;
     public static double shoulderForwards = 0.4;   //Should be parallel to the ground
     public static double shoulderDownwards = 0.5;   //Should be low enough to intake
+    public static double clawClosed = .5;
+    public static double clawOpen = 1;
 
     public void initiate(HardwareMap hardwareMap) {
         extendoServo = hardwareMap.servo.get("Arm Servo");
         extendoServo.setPosition(extendoRetractedPos);
-        intakeServoRight = hardwareMap.crservo.get("IntakeRight");
-        intakeServoLeft = hardwareMap.crservo.get("IntakeLeft");
-        rightShoulder = hardwareMap.servo.get("Right Servo");
-        leftShoulder = hardwareMap.servo.get("Left Servo");
+        claw = hardwareMap.servo.get("claw");
+        rightShoulder = hardwareMap.servo.get("RightShoulder");
+        leftShoulder = hardwareMap.servo.get("LeftShoulder");
         rightShoulder.setPosition(shoulderUpwards);
         leftShoulder.setPosition(1 - shoulderUpwards);
         wristServo = hardwareMap.servo.get("Wrist");
@@ -97,14 +95,16 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
-public void switchColor(TeamColor teamColor,boolean Switch){
+public TeamColor switchColor(TeamColor teamColor,boolean Switch){
+        TeamColor newTeamColor = teamColor;
         if (Switch){
             if (teamColor == TeamColor.BLUE){
-                teamColor = TeamColor.RED;
+                newTeamColor = TeamColor.RED;
             }else {
-                teamColor = TeamColor.BLUE;
+                newTeamColor = TeamColor.BLUE;
             }
         }
+        return newTeamColor;
 }
     public void update(Telemetry telemetry, TeamColor teamColor) {
         telemetry.addData("IntakeState",this.intakeState);
@@ -144,21 +144,11 @@ public void switchColor(TeamColor teamColor,boolean Switch){
         }
         intakeState = checkColor(teamColor,telemetry);
         switch (intakeState) {
-            case INTAKING:
-                intakeServoRight.setPower(-1);
-                intakeServoLeft.setPower(1);
+            case OPEN:
+                claw.setPosition(clawOpen);
                 break;
-            case SHOOTING:
-                intakeServoRight.setPower(1);
-                intakeServoLeft.setPower(-1);
-                break;
-            case OUTTAKING:
-                intakeServoRight.setPower(.3);
-                intakeServoLeft.setPower(-.3);
-                break;
-            case STOPPED:
-                intakeServoRight.setPower(0);
-                intakeServoLeft.setPower(0);
+            case CLOSE:
+                claw.setPosition(clawClosed);
                 break;
         }
     }
@@ -171,14 +161,14 @@ public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
     telemetry.addData("green:",green);
     telemetry.addData("distance",colorSensor.alpha());
     telemetry.addData("teamColor",teamColor);
-    if (intakeState == Intake.OUTTAKING){
-        return Intake.OUTTAKING;
+    if (intakeState == Intake.OPEN){
+        return Intake.OPEN;
     }
     if ((teamColor == TeamColor.BLUE && red > blue && red > green) || (teamColor == TeamColor.RED && blue > red && blue > green)){
-        return Intake.OUTTAKING;
+        return Intake.OPEN;
     }
     if (isGrabbed()) {
-        return Intake.STOPPED;
+        return Intake.CLOSE;
     }
     return this.intakeState;
 }
