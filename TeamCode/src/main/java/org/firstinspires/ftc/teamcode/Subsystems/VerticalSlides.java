@@ -11,7 +11,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.opencv.core.Mat;
 
+import java.util.Objects;
 @Config
 public class VerticalSlides {
     public static double kP = 0.006;
@@ -30,9 +32,9 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int max = 1020;
+    public static int max = 2020;
     int down = 0;
-    public static int chamber = 400;
+    public static int chamber = 800;
     double maxPower = 1;
     double lockPower = .1;
     public static double downPower = .3;

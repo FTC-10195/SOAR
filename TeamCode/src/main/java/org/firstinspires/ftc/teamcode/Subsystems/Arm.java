@@ -22,54 +22,61 @@ public class Arm {
     }
 
     public enum Shoulder {
-        STARTING,
-        RESTING,
-        DOWN
+        UPWARDS,//Upwards is what it will do during resting
+        FORWARDS, //Parallel to the ground
+        DOWNWARDS, //Used for intaking only
+        BACKWARDS,
     }
 
     public enum Wrist {
-        FORWARD,
-        SIDEWAYS
+        FORWARD, //Used for most tasks
+        DOWNWARDS, //Used for intaking/scouting
+        UPWARDS, //Used for scoring chamber
     }
 
     public enum Intake {
         INTAKING,
         OUTTAKING,
+        SHOOTING,
         STOPPED
     }
+    public enum TeamColor {
+        RED,
+        BLUE,
+        NONE
+    }
 
-    public Shoulder shoulderState = Shoulder.RESTING;
+    public Shoulder shoulderState = Shoulder.UPWARDS;
     public Wrist wristState = Wrist.FORWARD;
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.STOPPED;
-    CRServo intakeServo;
+    CRServo intakeServoRight;
+    CRServo intakeServoLeft;
     Servo extendoServo;
     Servo wristServo;
-    Servo rightServo;
-    Servo leftServo;
+    Servo rightShoulder; //Dominant servo
+    Servo leftShoulder; //Copys rightShoulder
     ColorSensor colorSensor;
-    public static double restPos = 0;
-    public static double extendoExtendedPos = .19;
-    double wristForwardPos = 0.5;
-    double wristSidewaysPos = .83;
-    public static double extendoRetractedPos = .43;
-    public static double shoulderDownOffset = .32;
-   public static double startOffset = -restPos;
-
-    //returns a sin out value (from 0 to 1)
-    public double easeOutSine(double x) {
-        return Math.sin((x * Math.PI) / 2);
-    }
-
+    public static double extendoRetractedPos = .5;
+    public static double extendoExtendedPos = .7;
+    public static  double wristForwardPos = 0.5; //Should be facing straight forwards
+    public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
+    public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
+    //Shoulder Positions:
+    public static double shoulderBackwards = 0;
+    public static double shoulderUpwards = 0.2;
+    public static double shoulderForwards = 0.4;   //Should be parallel to the ground
+    public static double shoulderDownwards = 0.5;   //Should be low enough to intake
 
     public void initiate(HardwareMap hardwareMap) {
         extendoServo = hardwareMap.servo.get("Arm Servo");
         extendoServo.setPosition(extendoRetractedPos);
-        intakeServo = hardwareMap.crservo.get("Intake");
-        rightServo = hardwareMap.servo.get("Right Servo");
-        leftServo = hardwareMap.servo.get("Left Servo");
-        rightServo.setPosition(restPos);
-        leftServo.setPosition(1 - restPos);
+        intakeServoRight = hardwareMap.crservo.get("IntakeRight");
+        intakeServoLeft = hardwareMap.crservo.get("IntakeLeft");
+        rightShoulder = hardwareMap.servo.get("Right Servo");
+        leftShoulder = hardwareMap.servo.get("Left Servo");
+        rightShoulder.setPosition(shoulderUpwards);
+        leftShoulder.setPosition(1 - shoulderUpwards);
         wristServo = hardwareMap.servo.get("Wrist");
         wristServo.setPosition(wristForwardPos);
         colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
@@ -90,20 +97,32 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
-
-    public void update(Telemetry telemetry, String teamColor) {
+public void switchColor(TeamColor teamColor,boolean Switch){
+        if (Switch){
+            if (teamColor == TeamColor.BLUE){
+                teamColor = TeamColor.RED;
+            }else {
+                teamColor = TeamColor.BLUE;
+            }
+        }
+}
+    public void update(Telemetry telemetry, TeamColor teamColor) {
+        telemetry.addData("IntakeState",this.intakeState);
         switch (shoulderState) {
-            case DOWN:
-                rightServo.setPosition(restPos + shoulderDownOffset);
+            case DOWNWARDS:
+                rightShoulder.setPosition(shoulderDownwards);
                 break;
-            case RESTING:
-                rightServo.setPosition(restPos);
+            case UPWARDS:
+                rightShoulder.setPosition(shoulderUpwards);
                 break;
-            case STARTING:
-                rightServo.setPosition(restPos + startOffset);
+            case FORWARDS:
+                rightShoulder.setPosition(shoulderForwards);
+                break;
+            case BACKWARDS:
+                rightShoulder.setPosition(shoulderBackwards);
                 break;
         }
-        leftServo.setPosition(1 - rightServo.getPosition());
+        leftShoulder.setPosition(1 - rightShoulder.getPosition());
         switch (extendoState) {
             case EXTENDED:
                 extendoServo.setPosition(extendoExtendedPos);
@@ -116,44 +135,57 @@ public class Arm {
             case FORWARD:
                 wristServo.setPosition(wristForwardPos);
                 break;
-            case SIDEWAYS:
-                wristServo.setPosition(wristSidewaysPos);
+            case DOWNWARDS:
+                wristServo.setPosition(wristDownwardsPos);
+                break;
+            case UPWARDS:
+                wristServo.setPosition(wristUpwardsPos);
                 break;
         }
+        intakeState = checkColor(teamColor,telemetry);
         switch (intakeState) {
             case INTAKING:
-                intakeServo.setPower(-1);
-                ;
+                intakeServoRight.setPower(-1);
+                intakeServoLeft.setPower(1);
+                break;
+            case SHOOTING:
+                intakeServoRight.setPower(1);
+                intakeServoLeft.setPower(-1);
                 break;
             case OUTTAKING:
-                intakeServo.setPower(1);
-                ;
+                intakeServoRight.setPower(.3);
+                intakeServoLeft.setPower(-.3);
                 break;
             case STOPPED:
-                intakeServo.setPower(0);
-                ;
+                intakeServoRight.setPower(0);
+                intakeServoLeft.setPower(0);
                 break;
         }
-        if (checkColor(teamColor)){
-            intakeServo.setPower(1);
-        }
     }
-public boolean checkColor(String teamColor){
-    int red = colorSensor.red();  // Get the red value
-    int green = colorSensor.green();  // Get the green value
-    int blue = colorSensor.blue();  // Get the blue value
-    if (Objects.equals(teamColor, "blue")) {
-        if (red > blue && red > green) {
-            return true;
-        }
-    }else if (Objects.equals(teamColor, "red")){
-        if (blue > red && blue > green) {
-            return true;
-        }
+public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
+    int red = colorSensor.red();
+    int green = colorSensor.green();
+    int blue = colorSensor.blue();
+    telemetry.addData("blue:",blue);
+    telemetry.addData("red:",red);
+    telemetry.addData("green:",green);
+    telemetry.addData("distance",colorSensor.alpha());
+    telemetry.addData("teamColor",teamColor);
+    if (intakeState == Intake.OUTTAKING){
+        return Intake.OUTTAKING;
     }
-    return false;
+    if ((teamColor == TeamColor.BLUE && red > blue && red > green) || (teamColor == TeamColor.RED && blue > red && blue > green)){
+        return Intake.OUTTAKING;
+    }
+    if (isGrabbed()) {
+        return Intake.STOPPED;
+    }
+    return this.intakeState;
 }
-    public Action updateAction(Telemetry telemetry, String teamColor) {
+public boolean isGrabbed(){
+        return colorSensor.alpha() < 400;
+}
+    public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -207,7 +239,7 @@ public boolean checkColor(String teamColor){
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                shoulder(Shoulder.RESTING);
+                shoulder(Shoulder.UPWARDS);
                 extendo(Extendo.RETRACTED);
                 wrist(Wrist.FORWARD);
                 intake(Intake.STOPPED);
