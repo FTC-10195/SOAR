@@ -19,6 +19,7 @@ public class StateMachine {
         CHAMBER_PRE_DEPOSIT,
         CHAMBER_HUMAN_INTAKE,
         CHAMBER,
+        CHAMBER_DEPOSIT
     }
 
     Arm arm = new Arm();
@@ -53,8 +54,12 @@ public class StateMachine {
                 newState = States.SCOUTING;
             } else if (state == States.SCOUTING) {
                 newState = States.SAMPLE_INTAKE;
-            } else if (state == States.CHAMBER_PRE_DEPOSIT) {
+            } else if (state == States.SAMPLE_INTAKE) {
+            newState = States.SCOUTING;
+        }else if (state == States.CHAMBER_PRE_DEPOSIT) {
                 newState = States.CHAMBER;
+            }else if (state == States.CHAMBER) {
+                newState = States.CHAMBER_DEPOSIT;
             }
         }
         if (LT) {
@@ -63,6 +68,10 @@ public class StateMachine {
                     newState = States.CHAMBER_HUMAN_INTAKE;
                 }else if (state == States.CHAMBER_HUMAN_INTAKE){
                     newState = States.CHAMBER;
+                }else if (state == States.CHAMBER) {
+                    newState = States.CHAMBER_DEPOSIT;
+                }else if (state == States.CHAMBER_DEPOSIT) {
+                    newState = States.RESTING;
                 }
             }
         }

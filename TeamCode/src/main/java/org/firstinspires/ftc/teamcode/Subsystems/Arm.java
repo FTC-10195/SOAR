@@ -18,7 +18,8 @@ import java.util.Objects;
 public class Arm {
     public enum Extendo {
         RETRACTED,
-        EXTENDED
+        EXTENDED,
+        CHAMBER
     }
 
     public enum Shoulder {
@@ -26,6 +27,7 @@ public class Arm {
         FORWARDS, //Parallel to the ground
         DOWNWARDS, //Used for intaking only
         BACKWARDS,
+        BUCKET,
     }
 
     public enum Wrist {
@@ -65,14 +67,16 @@ public class Arm {
     ColorSensor colorSensor;
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .16;
+    public static double extendoChamberPos = .3;
     public static  double wristForwardPos = 0.5; //Should be facing straight forwards
-    public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
-    public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
+    public static double wristDownwardsPos = 0.9; //Should be facing towards the ground
+    public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
     //Shoulder Positions:
-    public static double shoulderBackwards = 0;
-    public static double shoulderUpwards = 0.2;
-    public static double shoulderForwards = 0.4;   //Should be parallel to the ground
-    public static double shoulderDownwards = 0.5;   //Should be low enough to intake
+    public static double shoulderBackwards = .1;
+    public static double shoulderBucket = .15;
+    public static double shoulderUpwards = 0.4;
+    public static double shoulderForwards = 0.55;   //Should be parallel to the ground
+    public static double shoulderDownwards = 0.6;   //Should be low enough to intake
     public static double clawClosed = .39;
     public static double clawOpen = .6;
     public static double clawVert = .92;
@@ -139,6 +143,9 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
             case BACKWARDS:
                 rightShoulder.setPosition(shoulderBackwards);
                 break;
+            case BUCKET:
+                rightShoulder.setPosition(shoulderBucket);
+                break;
         }
         leftShoulder.setPosition(1 - rightShoulder.getPosition());
         switch (extendoState) {
@@ -147,6 +154,9 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 break;
             case RETRACTED:
                 extendoServo.setPosition(extendoRetractedPos);
+                break;
+            case CHAMBER:
+                extendoServo.setPosition(extendoChamberPos);
                 break;
         }
         switch (wristState) {
@@ -208,7 +218,10 @@ public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
     return intakeState;
 }
 public boolean isGrabbed(){
-        return colorSensor.alpha() < 400;
+        if (colorSensor == null){
+            return false;
+        }
+        return true;
 }
 
     public Action extendoAction(Extendo state) {

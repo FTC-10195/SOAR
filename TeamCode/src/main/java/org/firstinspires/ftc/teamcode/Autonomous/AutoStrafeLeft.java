@@ -20,7 +20,7 @@ public class AutoStrafeLeft extends LinearOpMode {
         double startTime = 0;
         if (isStopRequested()) return;
         while (opModeIsActive()) {
-                driveTrain.run(-0.3 , 0,-0, telemetry);
+                driveTrain.run(0 , .3,-0, telemetry);
         }
     }
 }

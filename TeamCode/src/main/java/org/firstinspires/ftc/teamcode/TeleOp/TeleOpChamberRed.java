@@ -52,7 +52,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                 rumbleCount = 10;
             }
             gamepad1.rumbleBlips(rumbleCount);
-            stateMachine.switchMode(mode,SwitchMode);
+            mode = stateMachine.switchMode(mode,SwitchMode);
             state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
             switch (state) {
                 case RESTING:
@@ -74,15 +74,20 @@ public class TeleOpChamberRed extends LinearOpMode {
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
                 case BUCKET:
-                    arm.extendo(Arm.Extendo.RETRACTED);
-                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.extendo(Arm.Extendo.CHAMBER);
+                    arm.shoulder(Arm.Shoulder.UPWARDS);
                     arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                     break;
                 case CHAMBER:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.BACKWARDS);
-                    arm.clawRotate(Arm.ClawRotation.Horz2);
+                    arm.wrist(Arm.Wrist.UPWARDS);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
+                    break;
+                case CHAMBER_DEPOSIT:
+                    arm.extendo(Arm.Extendo.CHAMBER);
+                    arm.shoulder(Arm.Shoulder.BACKWARDS);
                     arm.wrist(Arm.Wrist.UPWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
@@ -95,19 +100,18 @@ public class TeleOpChamberRed extends LinearOpMode {
                 case CHAMBER_HUMAN_INTAKE:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
             }
             if (gamepad2.left_trigger >=.1 && clawRotationRanLeft == false){
                 clawRotationRanLeft = true;
                 if (arm.clawRotation == Arm.ClawRotation.Vert){
-                    arm.clawRotate(Arm.ClawRotation.Diag1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
                     arm.clawRotate(Arm.ClawRotation.Diag2);
                 }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
+                    arm.clawRotate(Arm.ClawRotation.Diag1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
                     arm.clawRotate(Arm.ClawRotation.Vert);
                 }
             }else if (gamepad2.left_trigger < .1){
@@ -116,12 +120,12 @@ public class TeleOpChamberRed extends LinearOpMode {
             if (gamepad2.right_trigger >=.1 && clawRotationRanRight == false){
                 clawRotationRanRight = true;
                 if (arm.clawRotation == Arm.ClawRotation.Vert){
-                    arm.clawRotate(Arm.ClawRotation.Diag2);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
                     arm.clawRotate(Arm.ClawRotation.Diag1);
                 }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
+                    arm.clawRotate(Arm.ClawRotation.Diag2);
+                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
                     arm.clawRotate(Arm.ClawRotation.Vert);
                 }
             }else if (gamepad2.right_trigger < .1){
@@ -136,16 +140,6 @@ public class TeleOpChamberRed extends LinearOpMode {
                 }
             }else if (!gamepad2.left_bumper){
                 clawRan = false;
-            }
-            if (gamepad2.right_bumper && clawRB2 == false){
-                clawRB2 = true;
-                if (arm.clawRotation == Arm.ClawRotation.Horz1){
-                    arm.clawRotate(Arm.ClawRotation.Horz2);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz2){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }
-            }else if (!gamepad2.right_bumper){
-                clawRB2 = false;
             }
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
