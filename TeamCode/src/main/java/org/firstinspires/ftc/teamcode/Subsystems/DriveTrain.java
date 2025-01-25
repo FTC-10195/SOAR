@@ -19,7 +19,7 @@ public class DriveTrain {
         frontRightMotor = hardwareMap.dcMotor.get("motor1");
         backLeftMotor = hardwareMap.dcMotor.get("motor2");
         backRightMotor = hardwareMap.dcMotor.get("motor3");
-
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

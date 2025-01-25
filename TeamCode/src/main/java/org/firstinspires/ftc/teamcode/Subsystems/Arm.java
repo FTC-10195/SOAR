@@ -40,7 +40,10 @@ public class Arm {
     }
     public enum ClawRotation {
         Vert,
-        Horz
+        Diag1,
+        Horz1,
+        Diag2,
+        Horz2,
     }
     public enum TeamColor {
         RED,
@@ -52,6 +55,7 @@ public class Arm {
     public Wrist wristState = Wrist.FORWARD;
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.CLOSE;
+    public ClawRotation clawRotation = ClawRotation.Horz1;
     Servo claw;
     Servo clawRotationServo;
     Servo extendoServo;
@@ -59,8 +63,8 @@ public class Arm {
     Servo rightShoulder; //Dominant servo
     Servo leftShoulder; //Copys rightShoulder
     ColorSensor colorSensor;
-    public static double extendoRetractedPos = .5;
-    public static double extendoExtendedPos = .7;
+    public static double extendoRetractedPos = .49;
+    public static double extendoExtendedPos = .16;
     public static  double wristForwardPos = 0.5; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
@@ -69,13 +73,16 @@ public class Arm {
     public static double shoulderUpwards = 0.2;
     public static double shoulderForwards = 0.4;   //Should be parallel to the ground
     public static double shoulderDownwards = 0.5;   //Should be low enough to intake
-    public static double clawClosed = .5;
-    public static double clawOpen = 1;
-    public static double clawVert = .5;
-    public static double clawHorz = 1;
+    public static double clawClosed = .39;
+    public static double clawOpen = .6;
+    public static double clawVert = .92;
+    public static double clawDiag1 = .8;
+    public static double clawDiag2 = .4;
+    public static double clawHorz1 = .6;
+    public static double clawHorz2 = 0;
 
     public void initiate(HardwareMap hardwareMap) {
-        extendoServo = hardwareMap.servo.get("Arm Servo");
+        extendoServo = hardwareMap.servo.get("Extendo");
         extendoServo.setPosition(extendoRetractedPos);
         claw = hardwareMap.servo.get("claw");
         clawRotationServo = hardwareMap.servo.get("clawRot");
@@ -103,27 +110,8 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
-    public Intake switchClaw(Intake clawState, boolean Switch){
-        Intake newClawState = clawState;
-        if (Switch){
-            if (clawState == Intake.CLOSE){
-                newClawState = Intake.OPEN;
-            }else{
-                newClawState = Intake.CLOSE;
-            }
-        }
-        return newClawState;
-    }
-    public ClawRotation switchClawRotation(ClawRotation clawRotation, boolean Switch){
-        ClawRotation newclawRotation = clawRotation;
-        if (Switch){
-            if (clawRotation == ClawRotation.Vert){
-                newclawRotation = ClawRotation.Horz;
-            }else{
-                newclawRotation = ClawRotation.Vert;
-            }
-        }
-        return newclawRotation;
+    public void clawRotate(ClawRotation clawRotation) {
+        this.clawRotation = clawRotation;
     }
 public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         TeamColor newTeamColor = teamColor;
@@ -136,7 +124,7 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         }
         return newTeamColor;
 }
-    public void update(Telemetry telemetry, TeamColor teamColor, Intake clawState, ClawRotation clawRotation) {
+    public void update(Telemetry telemetry, TeamColor teamColor) {
         telemetry.addData("IntakeState",this.intakeState);
         switch (shoulderState) {
             case DOWNWARDS:
@@ -172,7 +160,7 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 wristServo.setPosition(wristUpwardsPos);
                 break;
         }
-        switch (clawState) {
+        switch (intakeState) {
             case OPEN:
                 claw.setPosition(clawOpen);
                 break;
@@ -180,16 +168,26 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 claw.setPosition(clawClosed);
                 break;
         }
-        clawState = checkColor(teamColor,telemetry);
+        intakeState = checkColor(teamColor,telemetry);
         switch (clawRotation) {
             case Vert:
                 clawRotationServo.setPosition(clawVert);
                 break;
-            case Horz:
-                clawRotationServo.setPosition(clawHorz);
+            case Diag1:
+                clawRotationServo.setPosition(clawDiag1);
+                break;
+            case Horz1:
+                clawRotationServo.setPosition(clawHorz1);
+                break;
+            case Horz2:
+                clawRotationServo.setPosition(clawHorz2);
+                break;
+            case Diag2:
+                clawRotationServo.setPosition(clawDiag2);
                 break;
         }
-        telemetry.addData("ClawState",clawRotation);
+        telemetry.addData("Wrist",wristState);
+        telemetry.addData("ClawState",intakeState);
         telemetry.addData("ClawRotation",clawRotation);
     }
 public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
@@ -207,23 +205,11 @@ public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
     if ((teamColor == TeamColor.BLUE && red > blue && red > green) || (teamColor == TeamColor.RED && blue > red && blue > green)){
         return Intake.OPEN;
     }
-    if (isGrabbed()) {
-        return Intake.CLOSE;
-    }
-    return this.intakeState;
+    return intakeState;
 }
 public boolean isGrabbed(){
         return colorSensor.alpha() < 400;
 }
-    public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
-        return new Action() {
-            @Override
-            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                update(telemetry, teamColor);
-                return true;
-            }
-        };
-    }
 
     public Action extendoAction(Extendo state) {
         return new Action() {

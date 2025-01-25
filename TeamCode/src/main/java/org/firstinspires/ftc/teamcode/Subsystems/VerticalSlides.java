@@ -42,9 +42,9 @@ public class VerticalSlides {
     int lockPosition;
 
     public void initiate(HardwareMap hardwareMap) {
-        rightSlide = hardwareMap.dcMotor.get("Right Slide");
+        rightSlide = hardwareMap.dcMotor.get("RightSlide");
         rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftSlide = hardwareMap.dcMotor.get("Left Slide");
+        leftSlide = hardwareMap.dcMotor.get("LeftSlide");
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

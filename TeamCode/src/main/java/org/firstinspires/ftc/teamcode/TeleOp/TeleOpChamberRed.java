@@ -25,10 +25,12 @@ public class TeleOpChamberRed extends LinearOpMode {
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
-        Arm.Intake clawState = Arm.Intake.CLOSE;
-        Arm.ClawRotation clawRotation = Arm.ClawRotation.Vert;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
+        boolean clawRotationRanLeft = false;
+        boolean clawRotationRanRight = false;
+        boolean clawRan = false;
+        boolean clawRB2 = false;
         waitForStart();
         if (isStopRequested()) return;
 
@@ -43,8 +45,6 @@ public class TeleOpChamberRed extends LinearOpMode {
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
-            boolean RB2 = gamepad2.right_bumper && !previousGamepad2.right_bumper;
-            boolean LB2 = gamepad2.left_bumper && !previousGamepad2.left_bumper;
             boolean SwitchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean SwitchColor = gamepad1.cross && !previousGamepad1.cross;
             int rumbleCount = 0;
@@ -53,7 +53,7 @@ public class TeleOpChamberRed extends LinearOpMode {
             }
             gamepad1.rumbleBlips(rumbleCount);
             stateMachine.switchMode(mode,SwitchMode);
-            stateMachine.setState(state, mode, RT, LT, RB, LB, SwitchMode, telemetry);
+            state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
             switch (state) {
                 case RESTING:
                     arm.extendo(Arm.Extendo.RETRACTED);
@@ -82,6 +82,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                 case CHAMBER:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.clawRotate(Arm.ClawRotation.Horz2);
                     arm.wrist(Arm.Wrist.UPWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
@@ -98,10 +99,58 @@ public class TeleOpChamberRed extends LinearOpMode {
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
             }
+            if (gamepad2.left_trigger >=.1 && clawRotationRanLeft == false){
+                clawRotationRanLeft = true;
+                if (arm.clawRotation == Arm.ClawRotation.Vert){
+                    arm.clawRotate(Arm.ClawRotation.Diag1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
+                    arm.clawRotate(Arm.ClawRotation.Diag2);
+                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
+                    arm.clawRotate(Arm.ClawRotation.Vert);
+                }
+            }else if (gamepad2.left_trigger < .1){
+                clawRotationRanLeft = false;
+            }
+            if (gamepad2.right_trigger >=.1 && clawRotationRanRight == false){
+                clawRotationRanRight = true;
+                if (arm.clawRotation == Arm.ClawRotation.Vert){
+                    arm.clawRotate(Arm.ClawRotation.Diag2);
+                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
+                    arm.clawRotate(Arm.ClawRotation.Diag1);
+                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
+                    arm.clawRotate(Arm.ClawRotation.Vert);
+                }
+            }else if (gamepad2.right_trigger < .1){
+                clawRotationRanRight = false;
+            }
+            if (gamepad2.left_bumper && clawRan == false){
+                clawRan = true;
+                if (arm.intakeState == Arm.Intake.OPEN){
+                    arm.intake(Arm.Intake.CLOSE);
+                }else if (arm.intakeState == Arm.Intake.CLOSE){
+                    arm.intake(Arm.Intake.OPEN);
+                }
+            }else if (!gamepad2.left_bumper){
+                clawRan = false;
+            }
+            if (gamepad2.right_bumper && clawRB2 == false){
+                clawRB2 = true;
+                if (arm.clawRotation == Arm.ClawRotation.Horz1){
+                    arm.clawRotate(Arm.ClawRotation.Horz2);
+                }else if (arm.clawRotation == Arm.ClawRotation.Horz2){
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                }
+            }else if (!gamepad2.right_bumper){
+                clawRB2 = false;
+            }
+            telemetry.addData("rt2current",gamepad2.right_trigger);
+            telemetry.addData("rt2prev",previousGamepad2.right_trigger);
             teamColor = arm.switchColor(teamColor,SwitchColor);
-            clawState = arm.switchClaw(clawState,LB2);
-            clawRotation = arm.switchClawRotation(clawRotation,RB2);
-            arm.update(telemetry, teamColor,clawState,clawRotation);
+            arm.update(telemetry, teamColor);
             verticalSlides.update();
             telemetry.addData("CurrentState", state);
             telemetry.update();

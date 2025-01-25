@@ -24,7 +24,7 @@ public class StateMachine {
     Arm arm = new Arm();
     VerticalSlides verticalSlides = new VerticalSlides();
 
-    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, boolean Switch, Telemetry telemetry) {
+    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
         States newState = state;
         if (RT) {
             if (mode == Mode.CHAMBER) {
