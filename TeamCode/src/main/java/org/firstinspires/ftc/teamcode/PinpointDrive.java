@@ -104,7 +104,7 @@ public class PinpointDrive extends MecanumDrive {
         This is recommended before you run your autonomous, as a bad initial calibration can cause
         an incorrect starting value for x, y, and heading.
          */
-        //pinpoint.recalibrateIMU();
+        pinpoint.recalibrateIMU();
         pinpoint.resetPosAndIMU();
         // wait for pinpoint to finish calibrating
         try {
