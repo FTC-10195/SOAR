@@ -23,6 +23,7 @@ public class Arm {
     }
 
     public enum Shoulder {
+        INIT,//Upwards is what it will do during resting
         UPWARDS,//Upwards is what it will do during resting
         FORWARDS, //Parallel to the ground
         DOWNWARDS, //Used for intaking only
@@ -53,8 +54,8 @@ public class Arm {
         NONE
     }
 
-    public Shoulder shoulderState = Shoulder.UPWARDS;
-    public Wrist wristState = Wrist.FORWARD;
+    public Shoulder shoulderState = Shoulder.INIT;
+    public Wrist wristState = Wrist.DOWNWARDS;
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.CLOSE;
     public ClawRotation clawRotation = ClawRotation.Horz1;
@@ -73,6 +74,8 @@ public class Arm {
     public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderBackwards = .1;
+    public static double shoulderInit = .55;
+
     public static double shoulderBucket = .15;
     public static double shoulderUpwards = 0.4;
     public static double shoulderForwards = 0.55;   //Should be parallel to the ground
@@ -142,6 +145,9 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 break;
             case BACKWARDS:
                 rightShoulder.setPosition(shoulderBackwards);
+                break;
+            case INIT:
+                rightShoulder.setPosition(shoulderInit);
                 break;
             case BUCKET:
                 rightShoulder.setPosition(shoulderBucket);

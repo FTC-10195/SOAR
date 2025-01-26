@@ -48,15 +48,7 @@ public class AutoChamber extends LinearOpMode {
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                 arm.clawRotate(Arm.ClawRotation.Horz1);
                 driveTrain.run(0, 0,-0, telemetry);
-            }else if (System.currentTimeMillis() - startTime > 6000 && System.currentTimeMillis() - startTime < 10000) {
-                arm.extendo(Arm.Extendo.RETRACTED);
-                arm.shoulder(Arm.Shoulder.UPWARDS);
-                arm.clawRotate(Arm.ClawRotation.Horz1);
-                arm.wrist(Arm.Wrist.FORWARD);
-                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                arm.intake(Arm.Intake.CLOSE);
-                driveTrain.run(0, 0.3,-0, telemetry);
-            }else if (System.currentTimeMillis() - startTime > 11000) {
+            }else if (System.currentTimeMillis() - startTime > 6000) {
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                 arm.extendo(Arm.Extendo.CHAMBER);
                 arm.shoulder(Arm.Shoulder.BACKWARDS);
