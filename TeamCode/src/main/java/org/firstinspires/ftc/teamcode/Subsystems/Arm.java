@@ -223,7 +223,24 @@ public boolean isGrabbed(){
         }
         return true;
 }
-
+    public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                update(telemetry,teamColor);
+                return true;
+            }
+        };
+    }
+    public Action clawRotationAction(ClawRotation state) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                clawRotate(state);
+                return false;
+            }
+        };
+    }
     public Action extendoAction(Extendo state) {
         return new Action() {
             @Override
