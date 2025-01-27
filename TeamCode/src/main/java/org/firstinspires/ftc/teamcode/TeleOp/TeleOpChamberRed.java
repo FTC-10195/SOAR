@@ -81,19 +81,19 @@ public class TeleOpChamberRed extends LinearOpMode {
                     break;
                 case CHAMBER:
                     arm.extendo(Arm.Extendo.RETRACTED);
-                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
                     arm.wrist(Arm.Wrist.UPWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_DEPOSIT:
                     arm.extendo(Arm.Extendo.CHAMBER);
-                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
                     arm.wrist(Arm.Wrist.UPWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_PRE_DEPOSIT:
                     arm.extendo(Arm.Extendo.RETRACTED);
-                    arm.shoulder(Arm.Shoulder.BACKWARDS);
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
                     arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;

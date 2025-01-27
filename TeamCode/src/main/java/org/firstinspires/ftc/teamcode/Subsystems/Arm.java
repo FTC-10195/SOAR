@@ -54,7 +54,7 @@ public class Arm {
         NONE
     }
 
-    public Shoulder shoulderState = Shoulder.INIT;
+    public Shoulder shoulderState = Shoulder.BACKWARDS;
     public Wrist wristState = Wrist.DOWNWARDS;
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.CLOSE;
@@ -69,17 +69,17 @@ public class Arm {
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .16;
     public static double extendoChamberPos = .3;
-    public static  double wristForwardPos = 0.5; //Should be facing straight forwards
-    public static double wristDownwardsPos = 0.9; //Should be facing towards the ground
-    public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
+    public static  double wristForwardPos = 0.4; //Should be facing straight forwards
+    public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
+    public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderBackwards = .1;
-    public static double shoulderInit = .55;
+    public static double shoulderInit = .45;
 
-    public static double shoulderBucket = .15;
+    public static double shoulderBucket = .2;
     public static double shoulderUpwards = 0.4;
     public static double shoulderForwards = 0.55;   //Should be parallel to the ground
-    public static double shoulderDownwards = 0.6;   //Should be low enough to intake
+    public static double shoulderDownwards = 0.62;   //Should be low enough to intake
     public static double clawClosed = .39;
     public static double clawOpen = .6;
     public static double clawVert = .92;
@@ -133,6 +133,7 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
 }
     public void update(Telemetry telemetry, TeamColor teamColor) {
         telemetry.addData("IntakeState",this.intakeState);
+        telemetry.addData("Extendo",this.extendoState);
         switch (shoulderState) {
             case DOWNWARDS:
                 rightShoulder.setPosition(shoulderDownwards);
