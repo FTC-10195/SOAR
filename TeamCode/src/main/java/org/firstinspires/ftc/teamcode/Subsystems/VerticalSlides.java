@@ -141,7 +141,7 @@ public class VerticalSlides {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 setSlidePosition(state);
-                return error() > 20;
+                return false;
             }
         };
     }

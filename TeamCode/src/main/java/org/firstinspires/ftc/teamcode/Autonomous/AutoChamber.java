@@ -11,13 +11,13 @@ import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 public class AutoChamber extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        waitForStart();
         Arm arm = new Arm();
         arm.initiate(hardwareMap);
         VerticalSlides verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
         DriveTrain driveTrain = new DriveTrain();
         driveTrain.initiate(hardwareMap);
-        waitForStart();
         double startTime = 0;
         if (isStopRequested()) return;
         while (opModeIsActive()) {

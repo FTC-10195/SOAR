@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 public class TeleOpChamberRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        waitForStart();
+        if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
         Arm arm = new Arm();
         DriveTrain driveTrain = new DriveTrain();
@@ -31,9 +33,6 @@ public class TeleOpChamberRed extends LinearOpMode {
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
         boolean clawRB2 = false;
-        waitForStart();
-        if (isStopRequested()) return;
-
         while (opModeIsActive()) {
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
