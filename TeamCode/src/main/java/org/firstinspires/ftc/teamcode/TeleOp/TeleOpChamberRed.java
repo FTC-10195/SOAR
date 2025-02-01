@@ -98,7 +98,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                     break;
                 case CHAMBER_HUMAN_INTAKE:
                     arm.extendo(Arm.Extendo.RETRACTED);
-                    arm.shoulder(Arm.Shoulder.CHAMBER);
+                    arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
             }
