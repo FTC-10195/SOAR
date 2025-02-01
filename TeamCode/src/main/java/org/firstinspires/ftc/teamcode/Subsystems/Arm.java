@@ -28,6 +28,7 @@ public class Arm {
         FORWARDS, //Parallel to the ground
         DOWNWARDS, //Used for intaking only
         BACKWARDS,
+        CHAMBER_INTAKE,
         BUCKET,
     }
 
@@ -73,10 +74,10 @@ public class Arm {
     public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
-    public static double shoulderBackwards = .1;
     public static double shoulderInit = .45;
-
+    public static double shoulderChamberIntake = 0;
     public static double shoulderBucket = .2;
+    public static double shoulderBackwards = .1;
     public static double shoulderUpwards = 0.4;
     public static double shoulderForwards = 0.55;   //Should be parallel to the ground
     public static double shoulderDownwards = 0.62;   //Should be low enough to intake
@@ -152,6 +153,9 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 break;
             case BUCKET:
                 rightShoulder.setPosition(shoulderBucket);
+                break;
+            case CHAMBER_INTAKE:
+                rightShoulder.setPosition(shoulderChamberIntake);
                 break;
         }
         leftShoulder.setPosition(1 - rightShoulder.getPosition());
