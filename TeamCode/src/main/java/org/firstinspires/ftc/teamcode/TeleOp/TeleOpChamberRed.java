@@ -38,7 +38,6 @@ public class TeleOpChamberRed extends LinearOpMode {
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
-            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
             verticalSlides.reset(gamepad1.options);
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger < 0.1;
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
@@ -81,13 +80,13 @@ public class TeleOpChamberRed extends LinearOpMode {
                 case CHAMBER:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.wrist(Arm.Wrist.UPWARDS);
+                    arm.wrist(Arm.Wrist.DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_DEPOSIT:
                     arm.extendo(Arm.Extendo.CHAMBER);
                     arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.wrist(Arm.Wrist.UPWARDS);
+                    arm.wrist(Arm.Wrist.DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_PRE_DEPOSIT:
@@ -140,11 +139,21 @@ public class TeleOpChamberRed extends LinearOpMode {
             }else if (!gamepad2.left_bumper){
                 clawRan = false;
             }
+            if (gamepad2.right_bumper && clawRB2 == false){
+                clawRB2 = true;
+                arm.clawRotate(Arm.ClawRotation.Horz1);
+            }else if (!gamepad2.right_bumper){
+                clawRB2 = false;
+            }
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
             teamColor = arm.switchColor(teamColor,SwitchColor);
             arm.update(telemetry, teamColor);
             verticalSlides.update();
+            if (!gamepad1.dpad_left && !gamepad1.dpad_right){
+                driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
+            }
+            driveTrain.strafe(gamepad1.dpad_left,gamepad1.dpad_right);
             telemetry.addData("CurrentState", state);
             telemetry.update();
         }

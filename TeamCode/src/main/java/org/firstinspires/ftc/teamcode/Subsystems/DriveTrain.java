@@ -14,10 +14,10 @@ public class DriveTrain {
     DcMotor frontRightMotor;
     DcMotor backLeftMotor;
     DcMotor backRightMotor;
-    public static double flP = 1;
+    public static double flP = 1.1675;
     public static double frP = 1;
     public static double blP = 1;
-    public static double brP = 1;
+    public static double brP = .9;
     public void initiate(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("motor0");
         frontRightMotor = hardwareMap.dcMotor.get("motor1");
@@ -42,6 +42,19 @@ public class DriveTrain {
         telemetry.addData("par0",backRightMotor.getCurrentPosition());
         telemetry.addData("par1",frontLeftMotor.getCurrentPosition());
         telemetry.addData("perp",frontRightMotor.getCurrentPosition());
-
+    }
+    public void strafe(boolean left, boolean right) {
+        if (right) {
+            frontLeftMotor.setPower(.3 * flP);
+            frontRightMotor.setPower(-.3 * frP);
+            backLeftMotor.setPower(-.3 * blP);
+            backRightMotor.setPower(.3 * brP);
+        }
+        if (left){
+            frontLeftMotor.setPower(-.3 * flP);
+            frontRightMotor.setPower(.3 * frP);
+            backLeftMotor.setPower(.3 * blP);
+            backRightMotor.setPower(-.3 * brP);
+        }
     }
 }

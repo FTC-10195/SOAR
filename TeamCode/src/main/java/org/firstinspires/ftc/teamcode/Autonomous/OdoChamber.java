@@ -39,7 +39,7 @@ public class OdoChamber extends LinearOpMode {
                     arm.shoulderAction(Arm.Shoulder.FORWARDS),
                     arm.clawRotationAction(Arm.ClawRotation.Horz1),
                     arm.intakeAction(Arm.Intake.CLOSE),
-                    arm.wristAction(Arm.Wrist.UPWARDS),
+                    arm.wristAction(Arm.Wrist.DOWNWARDS),
                     arm.extendoAction(Arm.Extendo.RETRACTED),
                     verticalSlides.slideAction(VerticalSlides.SlidePositions.CHAMBER),
                         new SleepAction(.5),

@@ -38,23 +38,24 @@ public class OdoBucket extends LinearOpMode {
     double scorePosRot = 45;
     Pose2d scorePos = new Pose2d(scoreVec,Math.toRadians(scorePosRot));
     //Sample1
-    Vector2d sample1Vec =  new Vector2d(-.5 - (ROBOT_LENGTH/2) , (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) , (TILE_SIZE - ROBOT_WIDTH));
     double sample1Rot = 90;
     Pose2d sample1Pos = new Pose2d(sample1Vec,Math.toRadians(sample1Rot));
-    Vector2d sample2Vec =  new Vector2d(-10 - (ROBOT_LENGTH/2), (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample2Vec =  new Vector2d(-1.5 - (ROBOT_LENGTH/2), (TILE_SIZE - ROBOT_WIDTH));
     double sample2Rot = 90;
     Pose2d sample2Pos = new Pose2d(sample2Vec,Math.toRadians(sample2Rot));
 
-    Vector2d sample3Vec =  new Vector2d(preScoreVec.x - (TILE_SIZE/4), preScoreVec.y + (TILE_SIZE/4));
+    Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2), preScoreVec.y + 3);
     double sample3Rot = 135;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
-    Vector2d parkVec =  new Vector2d(preScoreVec.x - (TILE_SIZE), preScoreVec.y + (TILE_SIZE/2) + TILE_SIZE);
+    Vector2d parkVec =  new Vector2d(preScoreVec.x, preScoreVec.y);
     double parkRot = 0;
-    Pose2d parkPos = new Pose2d(preScoreVec,Math.toRadians(parkRot));
+    Pose2d parkPos = new Pose2d(parkVec,Math.toRadians(parkRot));
     public Action park(Arm arm, VerticalSlides verticalSlides){
         return (
                 new SequentialAction(
                         arm.shoulderAction(Arm.Shoulder.UPWARDS),
+                        verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN),
                         arm.clawRotationAction(Arm.ClawRotation.Horz1),
                         arm.intakeAction(Arm.Intake.CLOSE),
                         arm.wristAction(Arm.Wrist.FORWARD),
@@ -65,7 +66,7 @@ public class OdoBucket extends LinearOpMode {
     public Action bucket(Arm arm, VerticalSlides verticalSlides){
         return (
                 new SequentialAction(
-                    arm.shoulderAction(Arm.Shoulder.BACKWARDS),
+                    arm.shoulderAction(Arm.Shoulder.BUCKET),
                     arm.clawRotationAction(Arm.ClawRotation.Horz1),
                     arm.intakeAction(Arm.Intake.CLOSE),
                     arm.wristAction(Arm.Wrist.FORWARD),
@@ -90,11 +91,11 @@ public class OdoBucket extends LinearOpMode {
         return (
                 new SequentialAction(
                         arm.extendoAction(Arm.Extendo.EXTENDED),
-                        new SleepAction(.5), //Gives time for the extendo to extend
+                        new SleepAction(.4), //Gives time for the extendo to extend
                         arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
-                        new SleepAction(.5),
+                        new SleepAction(.4),
                         arm.intakeAction(Arm.Intake.CLOSE),
-                        new SleepAction(.5)
+                        new SleepAction(.3)
                 )
         );
     }
@@ -113,9 +114,9 @@ public class OdoBucket extends LinearOpMode {
                         drive.actionBuilder(pos)
                                 .strafeToLinearHeading(scoreVec, Math.toRadians(scorePosRot))
                                 .build(),
-                        new SleepAction(.5),
+                        new SleepAction(.7), //Wait a little longer to minimize wobble
                         arm.intakeAction(Arm.Intake.OPEN),
-                        new SleepAction(.5)
+                        new SleepAction(.3)
 
                 );
     }
@@ -143,7 +144,7 @@ public class OdoBucket extends LinearOpMode {
         return
                 new SequentialAction(
                         scouting(arm,verticalSlides),
-                        arm.clawRotationAction(Arm.ClawRotation.Diag1),
+                        arm.clawRotationAction(Arm.ClawRotation.Diag2),
                         drive.actionBuilder(pos)
                                 .strafeToLinearHeading(sample3Vec, Math.toRadians(sample3Rot))
                                 .build(),
@@ -179,14 +180,13 @@ public class OdoBucket extends LinearOpMode {
                                     toSample1(arm,drive,verticalSlides,scorePos),
                                     toPreScore(arm,drive,verticalSlides,sample1Pos),
                                     toScore(arm,drive,verticalSlides,preScorePos),
-                                    toSample2(arm,drive,verticalSlides,scorePos) /*,
+                                    toSample2(arm,drive,verticalSlides,scorePos),
                                     toPreScore(arm,drive,verticalSlides,sample2Pos),
                                     toScore(arm,drive,verticalSlides,preScorePos),
                                     toSample3(arm,drive,verticalSlides,scorePos),
                                     toPreScore(arm,drive,verticalSlides,sample3Pos),
                                     toScore(arm,drive,verticalSlides,preScorePos),
-                                    toPark(arm,drive,verticalSlides,preScorePos)
-                                    */
+                                    toPark(arm,drive,verticalSlides,scorePos)
                             ),
                             verticalSlides.updateAction(),
                             arm.updateAction(telemetry, Arm.TeamColor.NONE)

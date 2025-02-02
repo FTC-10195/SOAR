@@ -24,10 +24,7 @@ public class StateMachine {
 
     Arm arm = new Arm();
     VerticalSlides verticalSlides = new VerticalSlides();
-float timeSnapshot = 0;
-float currentTime = 0;
     public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
-        currentTime = System.currentTimeMillis();
         States newState = state;
         if (RT) {
             if (mode == Mode.CHAMBER) {
@@ -67,7 +64,7 @@ float currentTime = 0;
                     newState = States.CHAMBER;
                     break;
                 case CHAMBER:
-                    newState = States.CHAMBER_DEPOSIT;
+                    newState = States.RESTING;
                     break;
             }
         }
@@ -81,12 +78,8 @@ float currentTime = 0;
                     break;
                 case CHAMBER_HUMAN_INTAKE:
                     newState = States.CHAMBER;
-                    timeSnapshot = currentTime;
                     break;
                 case CHAMBER:
-                    newState = States.CHAMBER_DEPOSIT;
-                    break;
-                case CHAMBER_PRE_DEPOSIT:
                     newState = States.RESTING;
                     break;
             }
@@ -100,9 +93,6 @@ float currentTime = 0;
             } else if (state == States.CHAMBER_HUMAN_INTAKE) {
                 newState = States.CHAMBER;
             }
-        }
-        if (timeSnapshot + 500 < currentTime && state == States.CHAMBER){
-            newState = States.CHAMBER_DEPOSIT;
         }
         telemetry.addData("Mode", mode);
         telemetry.addData("State", state);
