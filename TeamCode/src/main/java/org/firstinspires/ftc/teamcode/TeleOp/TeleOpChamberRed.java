@@ -150,10 +150,7 @@ public class TeleOpChamberRed extends LinearOpMode {
             teamColor = arm.switchColor(teamColor,SwitchColor);
             arm.update(telemetry, teamColor);
             verticalSlides.update();
-            if (!gamepad1.dpad_left && !gamepad1.dpad_right){
-                driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
-            }
-            driveTrain.strafe(gamepad1.dpad_left,gamepad1.dpad_right);
+            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
             telemetry.addData("CurrentState", state);
             telemetry.update();
         }

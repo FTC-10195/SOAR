@@ -6,6 +6,8 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
@@ -14,10 +16,10 @@ public class DriveTrain {
     DcMotor frontRightMotor;
     DcMotor backLeftMotor;
     DcMotor backRightMotor;
-    public static double flP = 1.1675;
+    public static double flP = 1;
     public static double frP = 1;
     public static double blP = 1;
-    public static double brP = .9;
+    public static double brP = 1;
     public void initiate(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("motor0");
         frontRightMotor = hardwareMap.dcMotor.get("motor1");
@@ -43,18 +45,36 @@ public class DriveTrain {
         telemetry.addData("par1",frontLeftMotor.getCurrentPosition());
         telemetry.addData("perp",frontRightMotor.getCurrentPosition());
     }
-    public void strafe(boolean left, boolean right) {
-        if (right) {
-            frontLeftMotor.setPower(.3 * flP);
-            frontRightMotor.setPower(-.3 * frP);
-            backLeftMotor.setPower(-.3 * blP);
-            backRightMotor.setPower(.3 * brP);
-        }
-        if (left){
-            frontLeftMotor.setPower(-.3 * flP);
-            frontRightMotor.setPower(.3 * frP);
-            backLeftMotor.setPower(.3 * blP);
-            backRightMotor.setPower(-.3 * brP);
+    public void testStrafe(double power) {
+            frontLeftMotor.setPower(power * flP);
+            frontRightMotor.setPower(-power * frP);
+            backLeftMotor.setPower(-power * blP);
+            backRightMotor.setPower(power * brP);
+    }
+    public void testDrive(double power) {
+            frontLeftMotor.setPower(power * flP);
+            frontRightMotor.setPower(power * frP);
+            backLeftMotor.setPower(power * blP);
+            backRightMotor.setPower(power * brP);
+    }
+    public int fLMPos(){
+        return frontLeftMotor.getCurrentPosition();
+    }
+    public int bLMPos(){
+        return backLeftMotor.getCurrentPosition();
+    }
+    public int fRMPos(){
+        return frontRightMotor.getCurrentPosition();
+    }
+    public int bRMPos(){
+        return backRightMotor.getCurrentPosition();
+    }
+    public void reset(boolean options){
+        if (options){
+            frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
     }
 }
