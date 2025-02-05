@@ -82,7 +82,7 @@ public class OdoBucket extends LinearOpMode {
                         arm.shoulderAction(Arm.Shoulder.FORWARDS),
                         arm.wristAction(Arm.Wrist.DOWNWARDS),
                         arm.extendoAction(Arm.Extendo.RETRACTED),
-                        arm.intakeAction(Arm.Intake.OPEN),
+                        arm.intakeAction(Arm.Intake.INTAKE),
                         verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
                 )
         );
@@ -115,7 +115,7 @@ public class OdoBucket extends LinearOpMode {
                                 .strafeToLinearHeading(scoreVec, Math.toRadians(scorePosRot))
                                 .build(),
                         new SleepAction(.7), //Wait a little longer to minimize wobble
-                        arm.intakeAction(Arm.Intake.OPEN),
+                        arm.intakeAction(Arm.Intake.DEPOSIT),
                         new SleepAction(.3)
 
                 );

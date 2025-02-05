@@ -39,7 +39,8 @@ public class Arm {
     }
 
     public enum Intake {
-        OPEN,
+        INTAKE,
+        DEPOSIT,
         CLOSE
     }
     public enum ClawRotation {
@@ -66,7 +67,6 @@ public class Arm {
     Servo wristServo;
     Servo rightShoulder; //Dominant servo
     Servo leftShoulder; //Copys rightShoulder
-    ColorSensor colorSensor;
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .16;
     public static double extendoChamberPos = .3;
@@ -100,7 +100,6 @@ public class Arm {
         leftShoulder.setPosition(1 - shoulderUpwards);
         wristServo = hardwareMap.servo.get("Wrist");
         wristServo.setPosition(wristForwardPos);
-        colorSensor = hardwareMap.get(ColorSensor.class, "colorSensor");
     }
 
     public void shoulder(Shoulder shoulderState) {
@@ -120,6 +119,14 @@ public class Arm {
     }
     public void clawRotate(ClawRotation clawRotation) {
         this.clawRotation = clawRotation;
+    }
+    public void clawRotateOveride(boolean overide, double targetRotation){
+        if (overide){
+            clawRotationServo.setPosition(targetRotation);
+        }
+    }
+    public double getClawRotation(){
+        return clawRotationServo.getPosition();
     }
 public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         TeamColor newTeamColor = teamColor;
@@ -182,7 +189,10 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 break;
         }
         switch (intakeState) {
-            case OPEN:
+            case INTAKE:
+                claw.setPosition(clawOpen);
+                break;
+            case DEPOSIT:
                 claw.setPosition(clawOpen);
                 break;
             case CLOSE:
@@ -212,26 +222,9 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
         telemetry.addData("ClawRotation",clawRotation);
     }
 public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
-    int red = colorSensor.red();
-    int green = colorSensor.green();
-    int blue = colorSensor.blue();
-    telemetry.addData("blue:",blue);
-    telemetry.addData("red:",red);
-    telemetry.addData("green:",green);
-    telemetry.addData("distance",colorSensor.alpha());
-    telemetry.addData("teamColor",teamColor);
-    if (intakeState == Intake.OPEN){
-        return Intake.OPEN;
-    }
-    if ((teamColor == TeamColor.BLUE && red > blue && red > green) || (teamColor == TeamColor.RED && blue > red && blue > green)){
-        return Intake.OPEN;
-    }
     return intakeState;
 }
 public boolean isGrabbed(){
-        if (colorSensor == null){
-            return false;
-        }
         return true;
 }
     public Action updateAction(Telemetry telemetry, TeamColor teamColor) {

@@ -53,7 +53,7 @@ public class OdoChamber extends LinearOpMode {
                         arm.shoulderAction(Arm.Shoulder.FORWARDS),
                         arm.wristAction(Arm.Wrist.DOWNWARDS),
                         arm.extendoAction(Arm.Extendo.RETRACTED),
-                        arm.intakeAction(Arm.Intake.OPEN),
+                        arm.intakeAction(Arm.Intake.INTAKE),
                         verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
                 )
         );
@@ -86,7 +86,7 @@ public class OdoChamber extends LinearOpMode {
                                 .strafeToLinearHeading(scoreVec, Math.toRadians(scoreRot))
                                 .build(),
                         new SleepAction(.5),
-                        arm.intakeAction(Arm.Intake.OPEN),
+                        arm.intakeAction(Arm.Intake.DEPOSIT),
                         new SleepAction(.5)
 
                 );

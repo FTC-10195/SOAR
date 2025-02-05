@@ -40,7 +40,7 @@ public class AutoChamber extends LinearOpMode {
                 arm.shoulder(Arm.Shoulder.FORWARDS);
                 arm.wrist(Arm.Wrist.UPWARDS);
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
-                arm.intake(Arm.Intake.OPEN);
+                arm.intake(Arm.Intake.DEPOSIT);
             }else if (System.currentTimeMillis() - startTime > 5000 && System.currentTimeMillis() - startTime < 6000) {
                 arm.extendo(Arm.Extendo.RETRACTED);
                 arm.shoulder(Arm.Shoulder.UPWARDS);

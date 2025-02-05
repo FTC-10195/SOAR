@@ -8,11 +8,14 @@ import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
 public class TeleOpChamberRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
+        Webcam webcam = new Webcam();
+        webcam.initiate(hardwareMap,telemetry);
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
@@ -34,6 +37,7 @@ public class TeleOpChamberRed extends LinearOpMode {
         boolean clawRan = false;
         boolean clawRB2 = false;
         while (opModeIsActive()) {
+            webcam.rotate(arm.getClawRotation(),telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -131,10 +135,14 @@ public class TeleOpChamberRed extends LinearOpMode {
             }
             if (gamepad2.left_bumper && clawRan == false){
                 clawRan = true;
-                if (arm.intakeState == Arm.Intake.OPEN){
+                if (arm.intakeState == Arm.Intake.INTAKE || arm.intakeState == Arm.Intake.DEPOSIT){
                     arm.intake(Arm.Intake.CLOSE);
                 }else if (arm.intakeState == Arm.Intake.CLOSE){
-                    arm.intake(Arm.Intake.OPEN);
+                    if (state == StateMachine.States.BUCKET || state == StateMachine.States.CHAMBER){
+                        arm.intake(Arm.Intake.DEPOSIT);
+                    }else{
+                        arm.intake(Arm.Intake.INTAKE);
+                    }
                 }
             }else if (!gamepad2.left_bumper){
                 clawRan = false;
@@ -149,6 +157,7 @@ public class TeleOpChamberRed extends LinearOpMode {
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
             teamColor = arm.switchColor(teamColor,SwitchColor);
             arm.update(telemetry, teamColor);
+            arm.clawRotateOveride(webcam.getOveride(), webcam.getClawRot());
             verticalSlides.update();
             driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
             telemetry.addData("CurrentState", state);

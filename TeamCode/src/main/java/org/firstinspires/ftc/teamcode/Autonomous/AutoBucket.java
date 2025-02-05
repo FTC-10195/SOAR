@@ -46,7 +46,7 @@ public class AutoBucket extends LinearOpMode {
                 arm.wrist(Arm.Wrist.FORWARD);
                 arm.clawRotate(Arm.ClawRotation.Horz1);
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
-                arm.intake(Arm.Intake.OPEN);
+                arm.intake(Arm.Intake.DEPOSIT);
             }else if (System.currentTimeMillis() - startTime > 5000 && System.currentTimeMillis() - startTime < 10000) {
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                 arm.extendo(Arm.Extendo.RETRACTED);
