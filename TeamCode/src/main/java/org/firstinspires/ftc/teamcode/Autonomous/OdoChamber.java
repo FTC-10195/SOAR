@@ -26,12 +26,18 @@ public class OdoChamber extends LinearOpMode {
     //Positions
     Pose2d beginPose = new Pose2d(0, 0 + BARRIER_OFFSET, Math.toRadians(0)); //Robot starts facing forwards towards the submersible
     //Pre-score
-    Vector2d preScoreVec = new Vector2d(0,(TILE_SIZE - ROBOT_LENGTH/2)); //In between row 1 and row 2
+    Vector2d preScoreVec = new Vector2d((TILE_SIZE - ROBOT_LENGTH/2),0); //In between row 1 and row 2
     double preScoreRot = 0;
     Pose2d preScorePos = new Pose2d(preScoreVec, Math.toRadians(preScoreRot));
-    Vector2d scoreVec = new Vector2d(0,(TILE_SIZE + TILE_SIZE - ROBOT_LENGTH/2)); //At submersible
+    Vector2d scoreVec = new Vector2d(preScoreVec.x + 11,0); //drives forward enough to score
     double scoreRot = 0;
     Pose2d scorePos = new Pose2d(scoreVec, Math.toRadians(scoreRot));
+    Vector2d prePushVec1 = new Vector2d(preScoreVec.x,-TILE_SIZE - 7); //drives left enough to avoid hitting the submersible
+    double prePushRot1 = 90;
+    Pose2d prePushPos1 = new Pose2d(prePushVec1, Math.toRadians(prePushRot1));
+    Vector2d prePushVec2 = new Vector2d(preScoreVec.x + (TILE_SIZE + (TILE_SIZE/2)), prePushVec1.y); //drives forward enough, ex 36 inches, to push the samples
+    double prePushRot2 = 90;
+    Pose2d prePushPos2 = new Pose2d(prePushVec2, Math.toRadians(prePushRot2));
     double chamberNumber = 0; //Used as an offset for each new chamber score
     public Action chamber(Arm arm, VerticalSlides verticalSlides){
         return (
@@ -41,39 +47,25 @@ public class OdoChamber extends LinearOpMode {
                     arm.intakeAction(Arm.Intake.CLOSE),
                     arm.wristAction(Arm.Wrist.DOWNWARDS),
                     arm.extendoAction(Arm.Extendo.RETRACTED),
-                    verticalSlides.slideAction(VerticalSlides.SlidePositions.CHAMBER),
-                        new SleepAction(.5),
-                        arm.extendoAction(Arm.Extendo.CHAMBER) //Wait slightly before extending because rotating rotation mech and extending extendo doesn't work well
+                    new SleepAction(.5), //Allow the mechanisms to be in the correct positions before raising slides
+                    verticalSlides.slideAction(VerticalSlides.SlidePositions.CHAMBER)
                 )
         );
     }
-    public Action scouting(Arm arm, VerticalSlides verticalSlides){
+    public Action humanIntake(Arm arm, VerticalSlides verticalSlides){
         return (
                 new SequentialAction(
-                        arm.shoulderAction(Arm.Shoulder.FORWARDS),
-                        arm.wristAction(Arm.Wrist.DOWNWARDS),
                         arm.extendoAction(Arm.Extendo.RETRACTED),
-                        arm.intakeAction(Arm.Intake.INTAKE),
+                        arm.shoulderAction(Arm.Shoulder.CHAMBER_INTAKE),
+                        arm.wristAction(Arm.Wrist.FORWARD),
+                        arm.clawRotationAction(Arm.ClawRotation.Horz1),
                         verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
-                )
-        );
-    }
-    public Action intake(Arm arm, VerticalSlides verticalSlides){
-        return (
-                new SequentialAction(
-                        arm.extendoAction(Arm.Extendo.EXTENDED),
-                        new SleepAction(.5), //Gives time for the extendo to extend
-                        arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
-                        new SleepAction(.5),
-                        arm.intakeAction(Arm.Intake.CLOSE),
-                        new SleepAction(.5)
                 )
         );
     }
     private Action toPreScore(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos){
         return
                 new SequentialAction(
-                        chamber(arm,verticalSlides),
                         drive.actionBuilder(pos)
                                 .strafeToLinearHeading(preScoreVec, Math.toRadians(preScoreRot))
                                 .build()
@@ -87,7 +79,19 @@ public class OdoChamber extends LinearOpMode {
                                 .build(),
                         new SleepAction(.5),
                         arm.intakeAction(Arm.Intake.DEPOSIT),
-                        new SleepAction(.5)
+                        new SleepAction(.2)
+
+                );
+    }
+    private Action toPrePush(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos){
+        return
+                new SequentialAction(
+                        drive.actionBuilder(pos)
+                                .strafeToLinearHeading(prePushVec1, Math.toRadians(prePushRot1))
+                                .build(),
+                        drive.actionBuilder(prePushPos1)
+                                .strafeToLinearHeading(prePushVec2, Math.toRadians(prePushRot2))
+                                .build()
 
                 );
     }
@@ -105,8 +109,14 @@ public class OdoChamber extends LinearOpMode {
                     new ParallelAction(
                             // Main Auto functions
                             new SequentialAction(
+                                    chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
                                    toPreScore(arm,drive,verticalSlides,beginPose),
-                                    toScore(arm,drive,verticalSlides,preScorePos)
+                                    new SleepAction(.8), //Wait a little to reduce wobble
+                                    toScore(arm,drive,verticalSlides,preScorePos),
+                                    toPreScore(arm,drive,verticalSlides,scorePos), //Drive backwards
+                                    humanIntake(arm,verticalSlides),
+                                    toPrePush(arm,drive,verticalSlides,preScorePos)
+
                             ),
                             verticalSlides.updateAction(),
                             arm.updateAction(telemetry, Arm.TeamColor.NONE)

@@ -26,6 +26,7 @@ import org.opencv.core.RotatedRect;
 import java.util.List;
 import java.util.List;
 @Config
+@Disabled
 public class Webcam {
     ColorBlobLocatorProcessor colorLocator = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(ColorRange.RED)         // use a predefined color match
@@ -39,44 +40,7 @@ public class Webcam {
     int CAMERA_LENGTH = 240;
     double clawTarget = 0;
     boolean clawOveride = false;
-    public double calculateServoAdjustment(double detectedAngle, double currentServoPosition,double selectedWidth, double selectedHeight) {
-        double tolerance = 10.0;  // Increased allowable error in degrees
-        double adjustmentStep = 0.02;  // Small incremental adjustment
 
-        // If the piece is horizontal (width > height), rotate towards vertical until height > width
-        if (selectedWidth > selectedHeight) {
-            // Gradually move towards vertical (0.92) until the height exceeds width
-            if (currentServoPosition < 0.92) {
-                return Math.min(currentServoPosition + adjustmentStep, 0.92);  // Move towards vertical
-            } else {
-                return currentServoPosition;  // Piece is vertical, stop incrementing
-            }
-        }
-
-        // Once height > width, adjust using the angle
-        if (Math.abs(detectedAngle - 0) <= tolerance || Math.abs(detectedAngle - 90) <= tolerance) {
-            return currentServoPosition;  // Stop adjusting when within tolerance (near 0° or 90°)
-        }
-
-        // Determine target position based on angle
-        double targetPosition;
-        if (detectedAngle < 22.5) {
-            targetPosition = 0.92;  // Vertical position
-        } else if (detectedAngle < 45) {
-            targetPosition = 0.8;   // Diagonal top right
-        } else if (detectedAngle < 67.5) {
-            targetPosition = 0.4;   // Diagonal top left
-        } else {
-            targetPosition = 0.6;   // Horizontal position
-        }
-
-        // Smoothly transition to the target position instead of jumping
-        if (currentServoPosition < targetPosition) {
-            return Math.min(currentServoPosition + adjustmentStep, targetPosition);
-        } else {
-            return Math.max(currentServoPosition - adjustmentStep, targetPosition);
-        }
-    }
   public void initiate(HardwareMap hardwareMap, Telemetry telemetry){
       portal = new VisionPortal.Builder()
               .addProcessor(colorLocator)
@@ -101,9 +65,10 @@ public class Webcam {
       double selectedHeight = 0;
       double closestDistance = 100;
       double targetAngle = 0;
-      for(ColorBlobLocatorProcessor.Blob b : blobs)
+      for(ColorBlobLocatorProcessor.Blob blob : blobs)
       {
-          RotatedRect boxFit = b.getBoxFit();
+//Lets try using blob.getContourPoints() to get the poisitiosn of the edges?
+          RotatedRect boxFit = blob.getBoxFit();
           double width = boxFit.size.width;
           double height = boxFit.size.height;
           double distanceX =  ((CAMERA_WIDTH/2) - boxFit.center.x);
@@ -115,11 +80,10 @@ public class Webcam {
               yPos = boxFit.center.y;
               selectedWidth = width;
               selectedHeight = height;
-              targetAngle = calculateServoAdjustment(boxFit.angle,servoAngle,selectedWidth,selectedHeight);
           }
           double angle = boxFit.angle;
           telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d) %5.2f %5.2f %5.2f %5.2f",
-                  b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, distanceX,distanceY,distance,angle));
+                  blob.getContourArea(), blob.getContourPoints(), blob.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y, distanceX,distanceY,distance,angle));
       }
       if (closestDistance < 100) {
           clawTarget = targetAngle;

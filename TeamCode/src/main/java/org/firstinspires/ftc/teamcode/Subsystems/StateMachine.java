@@ -12,7 +12,6 @@ public class StateMachine {
         RESTING,
         SCOUTING,
         SAMPLE_INTAKE,
-        SAMPLE_LOADED,
         //Bucket modes
         BUCKET,
         //Chamber modes
@@ -44,13 +43,6 @@ public class StateMachine {
         }
         if (LB) {
             switch (state){
-                case SAMPLE_LOADED:
-                    if (mode == Mode.CHAMBER) {
-                        newState = States.CHAMBER_PRE_DEPOSIT;
-                    } else {
-                        newState = States.RESTING;
-                    }
-                    break;
                 case RESTING:
                     newState = States.SCOUTING;
                      break;
@@ -86,13 +78,6 @@ public class StateMachine {
         }
         if (RB) {
             newState = States.RESTING;
-        }
-        if (arm.isGrabbed()) {
-            if (state == States.SAMPLE_INTAKE) {
-                newState = States.SAMPLE_LOADED;
-            } else if (state == States.CHAMBER_HUMAN_INTAKE) {
-                newState = States.CHAMBER;
-            }
         }
         telemetry.addData("Mode", mode);
         telemetry.addData("State", state);
