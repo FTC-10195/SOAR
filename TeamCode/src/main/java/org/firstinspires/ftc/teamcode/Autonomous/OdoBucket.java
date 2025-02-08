@@ -41,16 +41,19 @@ public class OdoBucket extends LinearOpMode {
     Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) , (TILE_SIZE - ROBOT_WIDTH));
     double sample1Rot = 90;
     Pose2d sample1Pos = new Pose2d(sample1Vec,Math.toRadians(sample1Rot));
-    Vector2d sample2Vec =  new Vector2d(-1.5 - (ROBOT_LENGTH/2), (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample2Vec =  new Vector2d(-2 - (ROBOT_LENGTH/2), (TILE_SIZE - ROBOT_WIDTH));
     double sample2Rot = 90;
     Pose2d sample2Pos = new Pose2d(sample2Vec,Math.toRadians(sample2Rot));
 
     Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2), preScoreVec.y + 3);
     double sample3Rot = 135;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
-    Vector2d parkVec =  new Vector2d(preScoreVec.x, preScoreVec.y);
-    double parkRot = 0;
-    Pose2d parkPos = new Pose2d(parkVec,Math.toRadians(parkRot));
+    Vector2d parkVec1 =  new Vector2d(preScoreVec.x, preScoreVec.y + 37);
+    double parkRot1 = 0;
+    Pose2d parkPos1 = new Pose2d(parkVec1,Math.toRadians(parkRot1));
+    Vector2d parkVec2 =  new Vector2d(parkVec1.x +21, parkVec1.y);
+    double parkRot2 = 0;
+    Pose2d parkPos2 = new Pose2d(parkVec2,Math.toRadians(parkRot2));
     public Action park(Arm arm, VerticalSlides verticalSlides){
         return (
                 new SequentialAction(
@@ -91,7 +94,7 @@ public class OdoBucket extends LinearOpMode {
         return (
                 new SequentialAction(
                         arm.extendoAction(Arm.Extendo.EXTENDED),
-                        new SleepAction(.4), //Gives time for the extendo to extend
+                        new SleepAction(.5), //Gives time for the extendo to extend
                         arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
                         new SleepAction(.4),
                         arm.intakeAction(Arm.Intake.CLOSE),
@@ -116,7 +119,7 @@ public class OdoBucket extends LinearOpMode {
                                 .build(),
                         new SleepAction(.7), //Wait a little longer to minimize wobble
                         arm.intakeAction(Arm.Intake.DEPOSIT),
-                        new SleepAction(.3)
+                        new SleepAction(.2)
 
                 );
     }
@@ -156,7 +159,8 @@ public class OdoBucket extends LinearOpMode {
                 new SequentialAction(
                         park(arm,verticalSlides),
                         drive.actionBuilder(pos)
-                                .strafeToLinearHeading(parkVec, Math.toRadians(parkRot))
+                                .strafeToLinearHeading(parkVec1, Math.toRadians(parkRot1))
+                                .strafeToLinearHeading(parkVec2, Math.toRadians(parkRot2))
                                 .build(),
                         arm.shoulderAction(Arm.Shoulder.FORWARDS)
                 );
@@ -178,13 +182,16 @@ public class OdoBucket extends LinearOpMode {
                                    toPreScore(arm,drive,verticalSlides,beginPose),
                                     toScore(arm,drive,verticalSlides,preScorePos),
                                     toSample1(arm,drive,verticalSlides,scorePos),
-                                    toPreScore(arm,drive,verticalSlides,sample1Pos),
-                                    toScore(arm,drive,verticalSlides,preScorePos),
+                                    bucket(arm,verticalSlides),
+                                    new SleepAction(.3),
+                                    toScore(arm,drive,verticalSlides,sample1Pos),
                                     toSample2(arm,drive,verticalSlides,scorePos),
-                                    toPreScore(arm,drive,verticalSlides,sample2Pos),
+                                    bucket(arm,verticalSlides),
+                                    new SleepAction(.3),
                                     toScore(arm,drive,verticalSlides,preScorePos),
                                     toSample3(arm,drive,verticalSlides,scorePos),
-                                    toPreScore(arm,drive,verticalSlides,sample3Pos),
+                                    bucket(arm,verticalSlides),
+                                    new SleepAction(.3),
                                     toScore(arm,drive,verticalSlides,preScorePos),
                                     toPark(arm,drive,verticalSlides,scorePos)
                             ),

@@ -30,13 +30,13 @@ public class Ascent {
     double targetPos;
     PIDFController controller = new PIDFController(kP, kI, kD, kF);
 
-    ClimbPositions climbPosition = ClimbPositions.DOWN;
+    public ClimbPositions climbPosition = ClimbPositions.DOWN;
     DcMotor rightClimb;
     DcMotor leftClimb;
     Servo rightServo;
     Servo leftServo;
     public static double BACK = 0.3;
-    public static double FORWARD = 0.6;
+    public static double FORWARD = 0.9;
     public static int MAX = 2250;
     public static int DOWN = 0;
     double maxPower = 1;

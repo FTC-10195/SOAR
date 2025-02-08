@@ -1,31 +1,80 @@
 package com.example.meepmeeptesting;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.noahbres.meepmeep.MeepMeep;
 import com.noahbres.meepmeep.roadrunner.DefaultBotBuilder;
 import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
-        MeepMeep meepMeep = new MeepMeep(800);
+        MeepMeep meepMeep = new MeepMeep(600);
+        double ROBOT_LENGTH = 17.1;
+        double ROBOT_WIDTH = 16.38;
+        double TILE_SIZE = 24;
+        double BARRIER_OFFSET = 0; //Probably not necessary
+        double EXTENDO_REACH = 2; //Used as an offset
+        Pose2d beginPose = new Pose2d((ROBOT_WIDTH/2),-72+(ROBOT_LENGTH/2) , Math.toRadians(90)); //Robot starts facing forwards towards the submersible
+        //Pre-score
+        Vector2d preScoreVec = new Vector2d(beginPose.position.x,beginPose.position.y+(TILE_SIZE - ROBOT_LENGTH/2)); //In between row 1 and row 2
+        double preScoreRot = Math.toRadians(90);
+        Pose2d preScorePos = new Pose2d(preScoreVec, Math.toRadians(preScoreRot));
+        Vector2d scoreVec = new Vector2d(preScoreVec.x, preScoreVec.y + 11); //drives forward enough to score
+        double scoreRot = preScoreRot;
+        Pose2d scorePos = new Pose2d(scoreVec, Math.toRadians(scoreRot));
+        Vector2d prePushVec1 = new Vector2d(preScoreVec.x + TILE_SIZE + 4, preScoreVec.y); //drives left enough to avoid hitting the submersible
+        double prePushRot1 = Math.toRadians(0);
+        Pose2d prePushPos1 = new Pose2d(prePushVec1, Math.toRadians(prePushRot1));
+        Vector2d prePushVec2 = new Vector2d(prePushVec1.x, prePushVec1.y+ (TILE_SIZE + (TILE_SIZE/2))); //drives forward enough, ex 36 inches, to push the samples
+        double prePushRot2 = Math.toRadians(0);
+        Pose2d prePushPos2 = new Pose2d(prePushVec2, Math.toRadians(prePushRot2));
+        Vector2d prePushVec3 = new Vector2d(prePushVec2.x + (TILE_SIZE/2) - 3, prePushVec2.y); //drives above the first sample
+        double prePushRot3 = Math.toRadians(0);
+        Pose2d prePushPos3 = new Pose2d(prePushVec3, Math.toRadians(prePushRot3));
+        Vector2d pushVec1 = new Vector2d(prePushVec3.x , prePushVec3.y - 38); //drives above the first sample
+        double pushRot1 = Math.toRadians(0);
+        Pose2d pushPos1 = new Pose2d(pushVec1, Math.toRadians(pushRot1));
 
+        Vector2d prePushVec4 = new Vector2d(prePushVec2.x + (TILE_SIZE/2) + 7, prePushVec2.y); //drives above the first sample
+        double prePushRot4 = Math.toRadians(0);
+        Pose2d prePushPos4 = new Pose2d(prePushVec4, Math.toRadians(prePushRot4));
+
+        Vector2d pushVec2 = new Vector2d(prePushVec4.x , prePushVec4.y - 38); //drives above the first sample
+        double pushRot2 = Math.toRadians(0);
+        Pose2d pushPos2 = new Pose2d(pushVec2, Math.toRadians(pushRot2));
+
+        Vector2d prePushVec5 = new Vector2d(prePushVec2.x + (TILE_SIZE/2) + 12, prePushVec4.y); //drives above the first sample
+        double prePushRot5 = Math.toRadians(0);
+        Pose2d prePushPos5 = new Pose2d(prePushVec5, Math.toRadians(prePushRot5));
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(0, 0, 0))
-                .lineToX(30)
-                .turn(Math.toRadians(90))
-                .lineToY(30)
-                .turn(Math.toRadians(90))
-                .lineToX(0)
-                .turn(Math.toRadians(90))
-                .lineToY(0)
-                .turn(Math.toRadians(90))
+        myBot.runAction(myBot.getDrive().actionBuilder(beginPose)
+                .setTangent(Math.PI/2)
+                .splineToConstantHeading(preScoreVec,preScoreRot)
+                .splineToConstantHeading(scoreVec,scoreRot)
+                .setTangent(-Math.PI/2)
+                .splineToConstantHeading(preScoreVec,preScoreRot)
+                .splineToLinearHeading(prePushPos1,prePushRot1)
+                        .setTangent(Math.PI/2)
+                .splineToConstantHeading(prePushVec2,Math.PI/2)
+                .splineToConstantHeading(prePushVec3,prePushRot3)
+                .setTangent(-Math.PI/2)
+                .splineToConstantHeading(pushVec1,-Math.PI/2)
+                .setTangent(Math.PI/2)
+                .splineToConstantHeading(prePushVec3,Math.PI/2)
+                .splineToConstantHeading(prePushVec4,prePushRot4)
+                .setTangent(-Math.PI/2)
+                .splineToConstantHeading(pushVec2,-Math.PI/2)
+                .setTangent(Math.PI/2)
+                .splineToConstantHeading(prePushVec4,Math.PI/2)
+                .splineToConstantHeading(prePushVec5,prePushRot5)
+                        .strafeToLinearHeading(new Vector2d(0,0),0)
                 .build());
 
-        meepMeep.setBackground(MeepMeep.Background.FIELD_POWERPLAY_OFFICIAL)
+        meepMeep.setBackground(MeepMeep.Background.FIELD_INTO_THE_DEEP_JUICE_DARK)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)

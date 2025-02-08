@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
+import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
@@ -36,8 +37,12 @@ public class TeleOpChamberRed extends LinearOpMode {
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
         boolean clawRB2 = false;
+        boolean ascentA = false;
+        Ascent ascent = new Ascent();
+        ascent.initiate(hardwareMap);
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
+            ascent.update();
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -148,6 +153,23 @@ public class TeleOpChamberRed extends LinearOpMode {
             }else if (!gamepad2.right_bumper){
                 clawRB2 = false;
             }
+            if (gamepad2.triangle && ascentA == false){
+                ascentA = true;
+                switch (ascent.climbPosition){
+                    case DOWN:
+                        ascent.setClimb(Ascent.ClimbPositions.PLACE);
+                        break;
+                    case PLACE:
+                        ascent.setClimb(Ascent.ClimbPositions.MAX);
+                        break;
+                    case MAX:
+                        ascent.setClimb(Ascent.ClimbPositions.PLACE);
+                        break;
+                }
+            }else if (!gamepad2.triangle){
+                ascentA = false;
+            }
+            ascent.reset(gamepad1.options);
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
             teamColor = arm.switchColor(teamColor,SwitchColor);
