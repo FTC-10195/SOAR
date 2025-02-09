@@ -26,6 +26,7 @@ public class TeleOpChamberRed extends LinearOpMode {
         driveTrain.initiate(hardwareMap);
         verticalSlides.initiate(hardwareMap);
         arm.initiate(hardwareMap);
+        arm.shoulder(Arm.Shoulder.FORWARDS);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
@@ -42,7 +43,7 @@ public class TeleOpChamberRed extends LinearOpMode {
         ascent.initiate(hardwareMap);
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
-            ascent.update();
+            ascent.update(telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -153,7 +154,7 @@ public class TeleOpChamberRed extends LinearOpMode {
             }else if (!gamepad2.right_bumper){
                 clawRB2 = false;
             }
-            if (gamepad2.triangle && ascentA == false){
+            if (gamepad1.triangle && ascentA == false){
                 ascentA = true;
                 switch (ascent.climbPosition){
                     case DOWN:
@@ -166,7 +167,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                         ascent.setClimb(Ascent.ClimbPositions.PLACE);
                         break;
                 }
-            }else if (!gamepad2.triangle){
+            }else if (!gamepad1.triangle){
                 ascentA = false;
             }
             ascent.reset(gamepad1.options);

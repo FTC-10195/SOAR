@@ -56,7 +56,7 @@ public class Arm {
         NONE
     }
 
-    public Shoulder shoulderState = Shoulder.BACKWARDS;
+    public Shoulder shoulderState = Shoulder.UPWARDS;
     public Wrist wristState = Wrist.DOWNWARDS;
     public Extendo extendoState = Extendo.RETRACTED;
     public Intake intakeState = Intake.CLOSE;
@@ -74,7 +74,7 @@ public class Arm {
     public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
-    public static double shoulderInit = .45;
+    public static double shoulderInit = .15;
     public static double shoulderChamberIntake = 0.025;
     public static double shoulderBucket = .2;
     public static double shoulderBackwards = .1;
@@ -94,12 +94,13 @@ public class Arm {
         extendoServo.setPosition(extendoRetractedPos);
         claw = hardwareMap.servo.get("claw");
         clawRotationServo = hardwareMap.servo.get("clawRot");
+        clawRotationServo.setPosition(clawVert);
         rightShoulder = hardwareMap.servo.get("RightShoulder");
         leftShoulder = hardwareMap.servo.get("LeftShoulder");
-        rightShoulder.setPosition(shoulderUpwards);
-        leftShoulder.setPosition(1 - shoulderUpwards);
+        rightShoulder.setPosition(shoulderInit);
+        leftShoulder.setPosition(1 - shoulderInit);
         wristServo = hardwareMap.servo.get("Wrist");
-        wristServo.setPosition(wristForwardPos);
+        wristServo.setPosition(wristUpwardsPos);
     }
 
     public void shoulder(Shoulder shoulderState) {

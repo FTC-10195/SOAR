@@ -27,10 +27,11 @@ public class OdoBucket extends LinearOpMode {
     double TILE_SIZE = 24;
     double BARRIER_OFFSET = 0; //Probably not necessary
     double EXTENDO_REACH = 2; //Used as an offset
+    double OFFSET = -2.5;
     //Positions
     Pose2d beginPose = new Pose2d(0, 0 + BARRIER_OFFSET, Math.toRadians(0));
     //Pre-score
-    Vector2d preScoreVec = new Vector2d(-(ROBOT_LENGTH/2) , (TILE_SIZE - (ROBOT_WIDTH/2)));
+    Vector2d preScoreVec = new Vector2d(-(ROBOT_LENGTH/2) + OFFSET , (TILE_SIZE - (ROBOT_WIDTH/2)));
     double preScoreRot = 45;
     Pose2d preScorePos = new Pose2d(preScoreVec, Math.toRadians(preScoreRot));
     //Score pos, will be used a lot
@@ -38,14 +39,14 @@ public class OdoBucket extends LinearOpMode {
     double scorePosRot = 45;
     Pose2d scorePos = new Pose2d(scoreVec,Math.toRadians(scorePosRot));
     //Sample1
-    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) , (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) + OFFSET , (TILE_SIZE - ROBOT_WIDTH));
     double sample1Rot = 90;
     Pose2d sample1Pos = new Pose2d(sample1Vec,Math.toRadians(sample1Rot));
-    Vector2d sample2Vec =  new Vector2d(-2 - (ROBOT_LENGTH/2), (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample2Vec =  new Vector2d(-1.5 - (ROBOT_LENGTH/2) + OFFSET, (TILE_SIZE - ROBOT_WIDTH));
     double sample2Rot = 90;
     Pose2d sample2Pos = new Pose2d(sample2Vec,Math.toRadians(sample2Rot));
 
-    Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2), preScoreVec.y + 3);
+    Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2) +OFFSET, preScoreVec.y + 3);
     double sample3Rot = 135;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
     Vector2d parkVec1 =  new Vector2d(preScoreVec.x, preScoreVec.y + 37);

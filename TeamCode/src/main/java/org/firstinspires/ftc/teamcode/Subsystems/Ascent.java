@@ -41,7 +41,7 @@ public class Ascent {
     public static int DOWN = 0;
     double maxPower = 1;
     double lockPower = .8;
-    public static double downPower = .3;
+    public static double downPower = 0;
     boolean lock = false;
     int lockPosition;
 
@@ -58,7 +58,9 @@ public class Ascent {
         controller.setTolerance(POSITION_TOLERANCE);
     }
 
-    public void update() {
+    public void update(Telemetry telemetry) {
+        telemetry.addData("leftClimb",leftClimb.getCurrentPosition());
+        telemetry.addData("rightClimb",rightClimb.getCurrentPosition());
         controller.setP(kP);
         controller.setD(kD);
         controller.setI(kI);
@@ -76,6 +78,7 @@ public class Ascent {
                 break;
             case MAX:
                 targetPos = MAX;
+                rightServo.setPosition(BACK);
                 maxPower = 1;
                 break;
         }
