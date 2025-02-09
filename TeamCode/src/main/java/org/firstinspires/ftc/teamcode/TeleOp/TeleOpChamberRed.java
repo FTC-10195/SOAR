@@ -43,7 +43,7 @@ public class TeleOpChamberRed extends LinearOpMode {
         ascent.initiate(hardwareMap);
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
-            ascent.update(telemetry);
+            ascent.update(gamepad1.square, telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
