@@ -61,9 +61,6 @@ public class StateMachine {
             }
         }
         if (LT) {
-            if (mode != Mode.CHAMBER){
-                return null;
-            }
             switch (state){
                 case RESTING:
                     newState = States.CHAMBER_HUMAN_INTAKE;

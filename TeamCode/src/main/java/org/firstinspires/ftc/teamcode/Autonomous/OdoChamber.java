@@ -38,6 +38,7 @@ public class OdoChamber extends LinearOpMode {
     double scoreRot = preScoreRot;
     Pose2d scorePos = new Pose2d(scoreVec, Math.toRadians(scoreRot));
     Pose2d scorePos2 = new Pose2d(new Vector2d(preScoreVec.x+ 13, preScoreVec.y + 4), Math.toRadians(scoreRot));
+    Pose2d scorePos3 = new Pose2d(new Vector2d(preScoreVec.x+ 13, preScoreVec.y + 8), Math.toRadians(scoreRot));
     Vector2d prePushVec1 = new Vector2d(preScoreVec.x, preScoreVec.y - TILE_SIZE + 3); //drives left enough to avoid hitting the submersible
     double prePushRot1 = -90;
     Pose2d prePushPos1 = new Pose2d(prePushVec1, Math.toRadians(prePushRot1));
@@ -175,6 +176,20 @@ public class OdoChamber extends LinearOpMode {
 
                 );
     }
+    private Action toPark(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos){
+        return
+                new SequentialAction(
+                        arm.intakeAction(Arm.Intake.INTAKE),
+                        arm.shoulderAction(Arm.Shoulder.INIT),
+                        verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN),
+                        drive.actionBuilder(pos)
+                                .setTangent(180)
+                                .splineToConstantHeading(preScoreVec, Math.toRadians(180))
+                                .setTangent(-90)
+                                .splineToConstantHeading(intakeVec2, Math.toRadians(-90))
+                                .build()
+                );
+    }
     @Override
     public void runOpMode() throws InterruptedException {
         Arm arm = new Arm();
@@ -201,7 +216,8 @@ public class OdoChamber extends LinearOpMode {
                                     humanIntake(arm,verticalSlides),
                                     toIntake2(arm,drive,verticalSlides,scorePos2),
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
-                                    toScore(arm,drive,verticalSlides,intakePos2,8)
+                                    toScore(arm,drive,verticalSlides,intakePos2,8),
+                                    toPark(arm,drive,verticalSlides,scorePos3)
                             ),
                             verticalSlides.updateAction(),
                             arm.updateAction(telemetry, Arm.TeamColor.NONE)

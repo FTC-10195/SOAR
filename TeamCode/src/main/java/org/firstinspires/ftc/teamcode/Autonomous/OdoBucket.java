@@ -35,14 +35,14 @@ public class OdoBucket extends LinearOpMode {
     double preScoreRot = 45;
     Pose2d preScorePos = new Pose2d(preScoreVec, Math.toRadians(preScoreRot));
     //Score pos, will be used a lot
-    Vector2d scoreVec = new Vector2d(-13, 2);
+    Vector2d scoreVec = new Vector2d(-17, -3);
     double scorePosRot = 45;
     Pose2d scorePos = new Pose2d(scoreVec,Math.toRadians(scorePosRot));
     //Sample1
-    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) + OFFSET , (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) + OFFSET +1 , (TILE_SIZE - ROBOT_WIDTH));
     double sample1Rot = 90;
     Pose2d sample1Pos = new Pose2d(sample1Vec,Math.toRadians(sample1Rot));
-    Vector2d sample2Vec =  new Vector2d(-1.5 - (ROBOT_LENGTH/2) + OFFSET, (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample2Vec =  new Vector2d(-1 - (ROBOT_LENGTH/2) + OFFSET, (TILE_SIZE - ROBOT_WIDTH));
     double sample2Rot = 90;
     Pose2d sample2Pos = new Pose2d(sample2Vec,Math.toRadians(sample2Rot));
 
