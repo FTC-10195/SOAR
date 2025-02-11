@@ -69,8 +69,31 @@ public class Webcam {
     Point bottomRight = null;
     Point topLeft = null;
     Point topRight = null;
-    public double getAngle(double x1, double y1, double x2, double y2) {
-        return Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+    private static double distance(double x1, double y1, double x2, double y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    }
+    public static double getRectangleAngle(double x1, double y1, double x2, double y2,
+                                           double x3, double y3, double x4, double y4) {
+        // Store all edges with their distances
+        double[][] edges = {
+                {x1, y1, x2, y2, distance(x1, y1, x2, y2)},
+                {x2, y2, x3, y3, distance(x2, y2, x3, y3)},
+                {x3, y3, x4, y4, distance(x3, y3, x4, y4)},
+                {x4, y4, x1, y1, distance(x4, y4, x1, y1)}
+        };
+
+        // Find the longest edge
+        double[] longestEdge = edges[0];
+        for (double[] edge : edges) {
+            if (edge[4] > longestEdge[4]) {
+                longestEdge = edge;
+            }
+        }
+        double lx1 = longestEdge[0], ly1 = longestEdge[1];
+        double lx2 = longestEdge[2], ly2 = longestEdge[3];
+
+        // Compute angle using atan2
+        return Math.toDegrees(Math.atan2(ly2 - ly1, lx2 - lx1));
     }
 
     Point targetPos = clawCenter;
@@ -152,7 +175,13 @@ public class Webcam {
                         }
                     }
                 }
-                angle = getAngle(bottomRight.x,bottomRight.y,topRight.x,topRight.y);
+                double x1 = 100, y1 = 200;
+                double x2 = 300, y2 = 250;
+                double x3 = 280, y3 = 400;
+                double x4 = 80, y4 = 350;
+
+                // Find the angle of the longest side
+                double angle = getRectangleAngle(topLeft.x, topLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
             }
         }
     }
