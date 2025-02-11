@@ -175,13 +175,9 @@ public class Webcam {
                         }
                     }
                 }
-                double x1 = 100, y1 = 200;
-                double x2 = 300, y2 = 250;
-                double x3 = 280, y3 = 400;
-                double x4 = 80, y4 = 350;
 
                 // Find the angle of the longest side
-                double angle = getRectangleAngle(topLeft.x, topLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
+                angle = getRectangleAngle(topLeft.x, topLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
             }
         }
     }
