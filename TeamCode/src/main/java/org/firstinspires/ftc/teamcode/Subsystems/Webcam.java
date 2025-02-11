@@ -62,6 +62,7 @@ public class Webcam {
     Point clawCenter = new Point(CAMERA_WIDTH_PX,CAMERA_LENGTH_PX + LATERAL_OFFSET_PX);
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
+    public double angle = 0; //Angle of the target sample
 
     //Points for extremedies
     Point bottomLeft =null;
@@ -70,6 +71,19 @@ public class Webcam {
     Point topRight = null;
 
     Point targetPos = clawCenter;
+    public static double getRectangleAngle(Point p1, Point p2) {
+        double deltaY = p2.y - p1.y;
+        double deltaX = p2.x - p1.x;
+
+        // Compute angle in radians
+        double angleRadians = Math.atan2(deltaY, deltaX);
+
+        // Convert to degrees
+        double angleDegrees = Math.toDegrees(angleRadians);
+
+        // Ensure angle is between 0 and 180 degrees
+        return (angleDegrees + 360) % 180;
+    }
     public void initiate(HardwareMap hardwareMap, Telemetry telemetry) {
         portal = new VisionPortal.Builder()
                 .addProcessor(colorLocator)
@@ -151,6 +165,8 @@ public class Webcam {
         }
     }
     public void loop(Telemetry telemetry){
+        angle = getRectangleAngle(topLeft,topRight);
+        telemetry.addData("angle",angle);
         telemetry.addData("bottomLeft:",bottomLeft);
         telemetry.addData("bottomRight:",bottomRight);
         telemetry.addData("topLeft:",topLeft);
