@@ -69,35 +69,12 @@ public class Webcam {
     Point bottomRight = null;
     Point topLeft = null;
     Point topRight = null;
+    public double getAngle(double x1, double y1, double x2, double y2) {
+        return Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+    }
 
     Point targetPos = clawCenter;
-    public static double getDistance(Point p1, Point p2) {
-        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-    }
 
-    public static double getRectangleAngle(Point p1, Point p2, Point p3, Point p4) {
-        // Compute distances between all adjacent points to find the longest edge
-        double d1 = getDistance(p1,p2); // Top edge
-        double d2 = getDistance(p2,p3); // Right edge
-        double d3 = getDistance(p3,p4); // Bottom edge
-        double d4 = getDistance(p4,p1); // Left edge
-
-        // Assume longest edge is the best representation of the rectangle's orientation
-        Point ref1, ref2;
-        if (d1 >= d3) {
-            ref1 = p1;
-            ref2 = p2;  // Use the top edge
-        } else {
-            ref1 = p3;
-            ref2 = p4;  // Use the bottom edge
-        }
-
-        double deltaY = ref2.y - ref1.y;
-        double deltaX = ref2.x - ref1.x;
-
-        // Compute angle in degrees
-        return Math.toDegrees(Math.atan2(deltaY, deltaX));
-    }
     public void initiate(HardwareMap hardwareMap, Telemetry telemetry) {
         portal = new VisionPortal.Builder()
                 .addProcessor(colorLocator)
@@ -175,7 +152,7 @@ public class Webcam {
                         }
                     }
                 }
-                angle = getRectangleAngle(topLeft,topRight,bottomLeft,bottomRight);
+                angle = getAngle(bottomRight.x,bottomRight.y,topRight.x,topRight.y);
             }
         }
     }
