@@ -69,6 +69,7 @@ public class Webcam {
     Point bottomRight = null;
     Point topLeft = null;
     Point topRight = null;
+    public Arm.ClawRotation sampleRotation = Arm.ClawRotation.Horz1;
     private static double distance(double x1, double y1, double x2, double y2) {
         return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     }
@@ -120,12 +121,7 @@ public class Webcam {
         // Read the current list
         List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();
         ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, blobs);  // filter out very small blobs.
-        telemetry.addLine(" Area Density Aspect  Center");
-        // Display the size (area) and center location for each Blob.
 
-        //Create variables for the TARGET SAMPLE
-        double targetWidth = 0;
-        double targetHeight = 0;
         Point[] myContourPoints;// A list of the many points within the blob
         for (ColorBlobLocatorProcessor.Blob blob : blobs) {
             RotatedRect boxFit = blob.getBoxFit();
@@ -178,10 +174,23 @@ public class Webcam {
 
                 // Find the angle of the longest side
                 angle = getRectangleAngle(topLeft.x, topLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
+                //Translate to sample rotation
+                double error = 30;
+                if ((angle < (0 + (error/2)) && angle > (0 - (error/2))) || (angle < (180 + (error/2)) && angle > (180-error/2)) || (angle < (-180 + (error/2)) && angle > (-180 - (error/2)))){
+                    //Piece is horizontal, claw should be vertical
+                    sampleRotation = Arm.ClawRotation.Vert;
+                }else if ((angle < (90 + (error/2)) && angle > (90 - (error/2))) || (angle < (270 + (error/2)) && angle > (270 - (error/2))) || (angle < (-90 + (error/2)) && angle > (-90 - (error/2))) || (angle < (-270 + (error/2)) && error > (-270 - (error/2)))){
+                    sampleRotation = Arm.ClawRotation.Horz1;
+                }else if ((angle < (45 - (error/2)) && angle > (45 + (error))) || (angle < (-315 + (error)) && angle > (-315 - (error))) || (angle < (225 + (error)) && angle > (225 - (error))) || (angle < (-135 + (error)) && angle > (-135 - (error)))){
+                    sampleRotation = Arm.ClawRotation.Diag1;
+                }else if ((angle < (135 - (error/2)) && angle > (135 + (error))) || (angle < (-225 + (error)) && angle > (-225 - (error))) || (angle < (315 + (error)) && angle > (315 - (error))) || (angle < (-45 + (error)) && angle > (-45 - (error)))){
+                    sampleRotation = Arm.ClawRotation.Diag2;
+                }
             }
         }
     }
     public void loop(Telemetry telemetry){
+        telemetry.addData("Rotation",sampleRotation);
         telemetry.addData("angle",angle);
         telemetry.addData("bottomLeft:",bottomLeft);
         telemetry.addData("bottomRight:",bottomRight);

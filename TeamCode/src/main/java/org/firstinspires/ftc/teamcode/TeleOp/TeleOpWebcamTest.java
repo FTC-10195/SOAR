@@ -30,11 +30,16 @@ public class TeleOpWebcamTest extends LinearOpMode {
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
+        Arm arm = new Arm();
+        arm.initiate(hardwareMap);
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
         boolean snapshotPressed = false;
         while (opModeIsActive()) {
+            arm.shoulder(Arm.Shoulder.FORWARDS);
+            arm.extendo(Arm.Extendo.EXTENDED);
+            arm.wrist(Arm.Wrist.DOWNWARDS);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -45,6 +50,8 @@ public class TeleOpWebcamTest extends LinearOpMode {
             }else if (!gamepad1.left_bumper){
                 snapshotPressed = false;
             }
+            arm.clawRotate(webcam.sampleRotation);
+            arm.update(telemetry,teamColor);
             webcam.loop(telemetry);
             telemetry.update();
         }
