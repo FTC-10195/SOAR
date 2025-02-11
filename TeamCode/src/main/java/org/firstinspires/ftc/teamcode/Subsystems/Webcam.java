@@ -46,7 +46,7 @@ public class Webcam {
     public static double CAMERA_WIDTH_IN = 0;
     public static double CAMERA_LENGTH_IN = 0;
     public static double LATERAL_OFFSET_IN = 0;
-    public static int MIN_SAMPLE_AREA_PX = 5000; //Filter out small blobs
+    public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
 
     public static double convertInchesToPx(double inches) {
@@ -71,18 +71,32 @@ public class Webcam {
     Point topRight = null;
 
     Point targetPos = clawCenter;
-    public static double getRectangleAngle(Point p1, Point p2) {
-        double deltaY = p2.y - p1.y;
-        double deltaX = p2.x - p1.x;
+    public static double getDistance(Point p1, Point p2) {
+        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
 
-        // Compute angle in radians
-        double angleRadians = Math.atan2(deltaY, deltaX);
+    public static double getRectangleAngle(Point p1, Point p2, Point p3, Point p4) {
+        // Compute distances between all adjacent points to find the longest edge
+        double d1 = getDistance(p1,p2); // Top edge
+        double d2 = getDistance(p2,p3); // Right edge
+        double d3 = getDistance(p3,p4); // Bottom edge
+        double d4 = getDistance(p4,p1); // Left edge
 
-        // Convert to degrees
-        double angleDegrees = Math.toDegrees(angleRadians);
+        // Assume longest edge is the best representation of the rectangle's orientation
+        Point ref1, ref2;
+        if (d1 >= d3) {
+            ref1 = p1;
+            ref2 = p2;  // Use the top edge
+        } else {
+            ref1 = p3;
+            ref2 = p4;  // Use the bottom edge
+        }
 
-        // Ensure angle is between 0 and 180 degrees
-        return (angleDegrees + 360) % 180;
+        double deltaY = ref2.y - ref1.y;
+        double deltaX = ref2.x - ref1.x;
+
+        // Compute angle in degrees
+        return Math.toDegrees(Math.atan2(deltaY, deltaX));
     }
     public void initiate(HardwareMap hardwareMap, Telemetry telemetry) {
         portal = new VisionPortal.Builder()
@@ -161,11 +175,11 @@ public class Webcam {
                         }
                     }
                 }
+                angle = getRectangleAngle(topLeft,topRight,bottomLeft,bottomRight);
             }
         }
     }
     public void loop(Telemetry telemetry){
-        angle = getRectangleAngle(topLeft,topRight);
         telemetry.addData("angle",angle);
         telemetry.addData("bottomLeft:",bottomLeft);
         telemetry.addData("bottomRight:",bottomRight);
