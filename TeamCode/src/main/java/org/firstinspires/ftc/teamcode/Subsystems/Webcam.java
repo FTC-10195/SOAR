@@ -64,10 +64,10 @@ public class Webcam {
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
 
     //Points for extremedies
-    Point bottomLeft = new Point(Integer.MAX_VALUE, Integer.MIN_VALUE);
-    Point bottomRight = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
-    Point topLeft = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
-    Point topRight = new Point(Integer.MIN_VALUE, Integer.MAX_VALUE);
+    Point bottomLeft =null;
+    Point bottomRight = null;
+    Point topLeft = null;
+    Point topRight = null;
 
     Point targetPos = clawCenter;
     public void initiate(HardwareMap hardwareMap, Telemetry telemetry) {
@@ -84,10 +84,10 @@ public class Webcam {
         //Reset the variables everytime a snapshot is taken
         targetDistancePX = CAMERA_WIDTH_PX / 2;
         targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
-        bottomLeft = new Point(Integer.MAX_VALUE, Integer.MIN_VALUE);
-        bottomRight = new Point(Integer.MIN_VALUE, Integer.MIN_VALUE);
-        topLeft = new Point(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        topRight = new Point(Integer.MIN_VALUE, Integer.MAX_VALUE);
+        bottomLeft = null;
+        bottomRight = null;
+        topLeft = null;
+        topRight = null;
 
         // Read the current list
         List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();
@@ -119,42 +119,32 @@ public class Webcam {
                     sumY += p.y;
                 }
 
-                Point centroid = new Point((int) (sumX / count), (int) (sumY / count));
-
-// Initialize extreme points with very large/small values
-                double minXPlusY = Integer.MAX_VALUE, maxXPlusY = Integer.MIN_VALUE;
-                double minXMinusY = Integer.MAX_VALUE, maxXMinusY = Integer.MIN_VALUE;
+                Point centroid = new Point((double) (sumX / count), (double) (sumY / count));
 
                 for (Point p : myContourPoints) {
 
                     double x = p.x, y = p.y;
 
                     // Compute helper values relative to the centroid
-                    double xPlusY = x + y;
-                    double xMinusY = x - y;
-
-                    // Identify top-left (smallest x + y)
-                    if (xPlusY < minXPlusY) {
-                        minXPlusY = xPlusY;
-                        topLeft = p;
+                    if (x <= centroid.x && y <= centroid.y) {  // Top-left quadrant
+                        if (topLeft == null || (x + y < topLeft.x + topLeft.y)) {
+                            topLeft = p;
+                        }
                     }
-
-                    // Identify bottom-right (largest x + y)
-                    if (xPlusY > maxXPlusY) {
-                        maxXPlusY = xPlusY;
-                        bottomRight = p;
+                    else if (x >= centroid.x && y <= centroid.y) {  // Top-right quadrant
+                        if (topRight == null || (x - y > topRight.x - topRight.y)) {
+                            topRight = p;
+                        }
                     }
-
-                    // Identify bottom-left (smallest x - y)
-                    if (xMinusY < minXMinusY) {
-                        minXMinusY = xMinusY;
-                        bottomLeft = p;
+                    else if (x <= centroid.x && y >= centroid.y) {  // Bottom-left quadrant
+                        if (bottomLeft == null || (x - y < bottomLeft.x - bottomLeft.y)) {
+                            bottomLeft = p;
+                        }
                     }
-
-                    // Identify top-right (largest x - y)
-                    if (xMinusY > maxXMinusY) {
-                        maxXMinusY = xMinusY;
-                        topRight = p;
+                    else if (x >= centroid.x && y >= centroid.y) {  // Bottom-right quadrant
+                        if (bottomRight == null || (x + y > bottomRight.x + bottomRight.y)) {
+                            bottomRight = p;
+                        }
                     }
                 }
             }
