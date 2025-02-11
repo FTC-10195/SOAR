@@ -110,30 +110,51 @@ public class Webcam {
                 targetDistancePX = distancePx;
                 targetPos = boxFit.center;
                 myContourPoints = blob.getContourPoints();
-                int j = 0;
-                for (Point thisContourPoint : myContourPoints) {
-                    j += 1;
-                    double x = thisContourPoint.x;
-                    double y = thisContourPoint.y;
 
-                    // Update bottom-left (smallest x, largest y)
-                    if (x < bottomLeft.x || (x == bottomLeft.x && y > bottomLeft.y)) {
-                        bottomLeft = thisContourPoint;
+                double sumX = 0, sumY = 0;
+                double count = myContourPoints.length;
+
+                for (Point p : myContourPoints) {
+                    sumX += p.x;
+                    sumY += p.y;
+                }
+
+                Point centroid = new Point((int) (sumX / count), (int) (sumY / count));
+
+// Initialize extreme points with very large/small values
+                double minXPlusY = Integer.MAX_VALUE, maxXPlusY = Integer.MIN_VALUE;
+                double minXMinusY = Integer.MAX_VALUE, maxXMinusY = Integer.MIN_VALUE;
+
+                for (Point p : myContourPoints) {
+
+                    double x = p.x, y = p.y;
+
+                    // Compute helper values relative to the centroid
+                    double xPlusY = x + y;
+                    double xMinusY = x - y;
+
+                    // Identify top-left (smallest x + y)
+                    if (xPlusY < minXPlusY) {
+                        minXPlusY = xPlusY;
+                        topLeft = p;
                     }
 
-                    // Update bottom-right (largest x, largest y)
-                    if (x > bottomRight.x || (x == bottomRight.x && y > bottomRight.y)) {
-                        bottomRight = thisContourPoint;
+                    // Identify bottom-right (largest x + y)
+                    if (xPlusY > maxXPlusY) {
+                        maxXPlusY = xPlusY;
+                        bottomRight = p;
                     }
 
-                    // Update top-left (smallest x, smallest y)
-                    if (x < topLeft.x || (x == topLeft.x && y < topLeft.y)) {
-                        topLeft = thisContourPoint;
+                    // Identify bottom-left (smallest x - y)
+                    if (xMinusY < minXMinusY) {
+                        minXMinusY = xMinusY;
+                        bottomLeft = p;
                     }
 
-                    // Update top-right (largest x, smallest y)
-                    if (x > topRight.x || (x == topRight.x && y < topRight.y)) {
-                        topRight = thisContourPoint;
+                    // Identify top-right (largest x - y)
+                    if (xMinusY > maxXMinusY) {
+                        maxXMinusY = xMinusY;
+                        topRight = p;
                     }
                 }
             }
