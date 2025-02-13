@@ -63,14 +63,15 @@ public class OdoWebcamTest extends LinearOpMode {
                 new SequentialAction(
                        scouting(arm,verticalSlides),
                         drive.actionBuilder(pos)
-                                .splineToConstantHeading(sampleVec, Math.toRadians(sampleRot)) // Where intaking starts
+                                .splineToConstantHeading(sampleVec, Math.toRadians(0)) // Where intaking starts
                                 .build(),
-                        webcam.snapshotAction(telemetry, Arm.TeamColor.NONE),
-                        drive.actionBuilder(pos)
-                                .splineToConstantHeading(new Vector2d(sampleVec.x + webcam.getTargetVectorDistance().y,sampleVec.x + webcam.getTargetVectorDistance().y), Math.toRadians(sampleRot)) // Where intaking starts
-                                .build(),
-                        arm.clawRotationAction(webcam.sampleRotation),
-                        intake(arm,verticalSlides)
+                        new SleepAction(10),
+                        webcam.snapshotAction(Arm.TeamColor.NONE),
+                        new SleepAction(1),
+                        arm.clawRotationAction(webcam.sampleRotation)
+                      //  drive.actionBuilder(samplePos)
+                      //          .splineToConstantHeading(new Vector2d(sampleVec.x + webcam.targetVectorInches.y,sampleVec.y + webcam.targetVectorInches.x), Math.toRadians(0)) // Where intaking starts
+                       //         .build(),
                 );
     }
     @Override
@@ -92,8 +93,8 @@ public class OdoWebcamTest extends LinearOpMode {
                                    toSample1(arm,drive,verticalSlides,beginPose,webcam)
                             ),
                             verticalSlides.updateAction(),
-                            arm.updateAction(telemetry, Arm.TeamColor.NONE),
-                            webcam.updateAction(telemetry,Arm.TeamColor.NONE)
+                            webcam.updateAction(telemetry,Arm.TeamColor.NONE),
+                            arm.updateAction(telemetry, Arm.TeamColor.NONE)
                     )
             );
         }

@@ -51,7 +51,7 @@ public class TeleOpWebcamTest extends LinearOpMode {
             currentGamepad2.copy(gamepad2);
             if (gamepad1.left_bumper && snapshotPressed == false){
                 snapshotPressed = true;
-                webcam.snapshot(telemetry);
+                webcam.snapshot();
             }else if (!gamepad1.left_bumper){
                 snapshotPressed = false;
             }

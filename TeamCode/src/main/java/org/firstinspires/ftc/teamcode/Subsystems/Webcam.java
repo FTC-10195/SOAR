@@ -66,7 +66,7 @@ public class Webcam {
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
     Vector2d targetVectorPx = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in PIXELS
-    Vector2d targetVectorInches = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in INCHES
+    public  Vector2d targetVectorInches = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in INCHES
     public double angle = 0; //Angle of the target sample
 
     //Points for extremedies
@@ -114,7 +114,7 @@ public class Webcam {
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
     }
 
-    public void snapshot(Telemetry telemetry) {
+    public void snapshot() {
         //Reset the variables everytime a snapshot is taken
         targetDistancePX = CAMERA_WIDTH_PX / 2;
         targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
@@ -212,27 +212,21 @@ public class Webcam {
     public void setClawRotation(Arm.ClawRotation rot){
         sampleRotation = rot;
     }
-    public Vector2d getTargetVectorDistance(){
-        //Translate it to what roadrunner uses
-        //Flip x and y axis
-        //Left = +y, Right =-y
-        //Forward = +x, Backwards = -x
-        return new Vector2d(targetVectorInches.y,targetVectorInches.x);
-    }
     public Action updateAction(Telemetry telemetry, Arm.TeamColor teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 loop(telemetry);
+                telemetry.update();
                 return true;
             }
         };
     }
-    public Action snapshotAction(Telemetry telemetry, Arm.TeamColor teamColor) {
+    public Action snapshotAction(Arm.TeamColor teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                snapshot(telemetry);
+                snapshot();
                 return false;
             }
         };
