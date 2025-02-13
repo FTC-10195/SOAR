@@ -35,11 +35,16 @@ public class TeleOpWebcamTest extends LinearOpMode {
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
+        arm.shoulder(Arm.Shoulder.FORWARDS);
+        arm.extendo(Arm.Extendo.EXTENDED);
+        arm.wrist(Arm.Wrist.FULL_DOWNWARDS);
+        arm.extendo(Arm.Extendo.EXTENDED);
         boolean snapshotPressed = false;
+        boolean resetClaw = false;
+        boolean rotationDown = false;
+
         while (opModeIsActive()) {
-            arm.shoulder(Arm.Shoulder.FORWARDS);
-            arm.extendo(Arm.Extendo.EXTENDED);
-            arm.wrist(Arm.Wrist.DOWNWARDS);
+
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
@@ -49,6 +54,24 @@ public class TeleOpWebcamTest extends LinearOpMode {
                 webcam.snapshot(telemetry);
             }else if (!gamepad1.left_bumper){
                 snapshotPressed = false;
+            }
+            if (gamepad1.right_bumper && resetClaw == false){
+                resetClaw = true;
+                webcam.setClawRotation(Arm.ClawRotation.Horz1);
+            }else if (!gamepad1.right_bumper){
+                resetClaw = false;
+            }
+            if (gamepad1.left_trigger > 0.1 && rotationDown == false){
+                rotationDown = true;
+                if (arm.shoulderState == Arm.Shoulder.FORWARDS){
+                    arm.shoulder(Arm.Shoulder.DOWNWARDS);
+                    arm.wrist(Arm.Wrist.DOWNWARDS);
+                }else {
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    arm.wrist(Arm.Wrist.FULL_DOWNWARDS);
+                }
+            }else if (gamepad1.left_trigger <= 0.1){
+                rotationDown = false;
             }
             arm.clawRotate(webcam.sampleRotation);
             arm.update(telemetry,teamColor);

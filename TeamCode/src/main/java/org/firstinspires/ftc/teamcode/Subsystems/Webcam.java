@@ -46,10 +46,10 @@ public class Webcam {
     VisionPortal portal;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = 0;
-    public static double CAMERA_WIDTH_IN = 0;
-    public static double CAMERA_LENGTH_IN = 0;
-    public static double LATERAL_OFFSET_IN = 0;
+    public static double LATERAL_OFFSET_PX = 46; //Positive number because inversed camera
+    public static double CAMERA_WIDTH_IN = 8.5;
+    public static double CAMERA_LENGTH_IN = 6.5;
+    public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
 
@@ -62,7 +62,7 @@ public class Webcam {
         return inches;
     }
 
-    Point clawCenter = new Point(CAMERA_WIDTH_PX,CAMERA_LENGTH_PX + LATERAL_OFFSET_PX);
+    Point clawCenter = new Point(CAMERA_WIDTH_PX/2,(CAMERA_LENGTH_PX/2) + LATERAL_OFFSET_PX);
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
     Vector2d targetVectorPx = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in PIXELS
@@ -131,14 +131,14 @@ public class Webcam {
         for (ColorBlobLocatorProcessor.Blob blob : blobs) {
             RotatedRect boxFit = blob.getBoxFit();
             //Variables FOR THIS BLOB
-            double distanceXPx = ((CAMERA_WIDTH_PX / 2) - boxFit.center.x);
-            double distanceYPx = ((CAMERA_LENGTH_PX / 2) - boxFit.center.y);
+            double distanceXPx = (clawCenter.x - boxFit.center.x);
+            double distanceYPx = (clawCenter.y - boxFit.center.y);
             double distancePx = Math.sqrt(Math.pow(distanceXPx, 2) + Math.pow(distanceYPx, 2));
             if (distancePx < targetDistancePX) {
                 //Sets variables depending on what the target is
                 targetDistancePX = distancePx;
                 targetVectorPx = new Vector2d(distanceXPx,distanceYPx);
-                targetVectorInches = new Vector2d(convertHorizontalPxToInches(distanceXPx),convertVerticalPxToInches(distanceYPx));
+                targetVectorInches = new Vector2d(-convertHorizontalPxToInches(distanceXPx),convertVerticalPxToInches(distanceYPx));
                 targetPos = boxFit.center;
                 myContourPoints = blob.getContourPoints();
 
@@ -197,6 +197,8 @@ public class Webcam {
         }
     }
     public void loop(Telemetry telemetry){
+        telemetry.addData("PX Distance Vec", targetVectorPx);
+        telemetry.addData("Inches Distance Vec", targetVectorInches);
         telemetry.addData("Rotation",sampleRotation);
         telemetry.addData("angle",angle);
         telemetry.addData("bottomLeft:",bottomLeft);
@@ -206,6 +208,9 @@ public class Webcam {
         telemetry.addData("Distance from crosshair (px):",targetDistancePX);
         telemetry.addData("targetPos",targetPos);
         telemetry.addData("clawCenter",clawCenter);
+    }
+    public void setClawRotation(Arm.ClawRotation rot){
+        sampleRotation = rot;
     }
     public Vector2d getTargetVectorDistance(){
         //Translate it to what roadrunner uses

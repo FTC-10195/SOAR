@@ -34,7 +34,8 @@ public class Arm {
 
     public enum Wrist {
         FORWARD, //Used for most tasks
-        DOWNWARDS, //Used for intaking/scouting
+        DOWNWARDS, //Used for intaking
+        FULL_DOWNWARDS, //USED FOR SCOUTING ONLY
         UPWARDS, //Used for scoring chamber
     }
 
@@ -72,6 +73,7 @@ public class Arm {
     public static double extendoChamberPos = .3;
     public static  double wristForwardPos = 0.4; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
+    public static double wristFullDownwardsPos = 0; //Should be facing towards the ground
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderInit = .15;
@@ -184,6 +186,9 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 break;
             case DOWNWARDS:
                 wristServo.setPosition(wristDownwardsPos);
+                break;
+            case FULL_DOWNWARDS:
+                wristServo.setPosition(wristFullDownwardsPos);
                 break;
             case UPWARDS:
                 wristServo.setPosition(wristUpwardsPos);

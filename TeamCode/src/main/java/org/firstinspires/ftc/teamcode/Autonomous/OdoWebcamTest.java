@@ -38,7 +38,7 @@ public class OdoWebcamTest extends LinearOpMode {
         return (
                 new SequentialAction(
                         arm.shoulderAction(Arm.Shoulder.FORWARDS),
-                        arm.wristAction(Arm.Wrist.DOWNWARDS),
+                        arm.wristAction(Arm.Wrist.FULL_DOWNWARDS),
                         arm.extendoAction(Arm.Extendo.RETRACTED),
                         arm.intakeAction(Arm.Intake.INTAKE),
                         verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
