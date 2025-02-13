@@ -85,7 +85,7 @@ public class Arm {
     public static double shoulderDownwards = 0.625;   //Should be low enough to intake
     public static double clawClosed = .39;
     public static double clawOpen = .6;
-    public static double clawVert = .92;
+    public static double clawVert = 1;
     public static double clawDiag1 = .8;
     public static double clawDiag2 = .4;
     public static double clawHorz1 = .6;

@@ -182,15 +182,15 @@ public class Webcam {
                 // Find the angle of the longest side
                 angle = getRectangleAngle(topLeft.x, topLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
                 //Translate to sample rotation
-                double error = 30;
-                if ((angle < (0 + (error/2)) && angle > (0 - (error/2))) || (angle < (180 + (error/2)) && angle > (180-error/2)) || (angle < (-180 + (error/2)) && angle > (-180 - (error/2)))){
+                double error = 22.5;
+                if ((angle < (0 + (error)) && angle > (0 - (error))) || (angle < (180 + (error)) && angle > (180-error)) || (angle < (-180 + (error)) && angle > (-180 - (error)))){
                     //Piece is horizontal, claw should be vertical
                     sampleRotation = Arm.ClawRotation.Vert;
-                }else if ((angle < (90 + (error/2)) && angle > (90 - (error/2))) || (angle < (270 + (error/2)) && angle > (270 - (error/2))) || (angle < (-90 + (error/2)) && angle > (-90 - (error/2))) || (angle < (-270 + (error/2)) && error > (-270 - (error/2)))){
+                }else if ((angle < (90 + (error)) && angle > (90 - (error))) || (angle < (270 + (error)) && angle > (270 - (error))) || (angle < (-90 + (error)) && angle > (-90 - (error))) || (angle < (-270 + (error)) && angle > (-270 - (error)))){
                     sampleRotation = Arm.ClawRotation.Horz1;
-                }else if ((angle < (45 - (error/2)) && angle > (45 + (error))) || (angle < (-315 + (error)) && angle > (-315 - (error))) || (angle < (225 + (error)) && angle > (225 - (error))) || (angle < (-135 + (error)) && angle > (-135 - (error)))){
+                }else if ((angle > (45 - (error)) && angle < (45 + (error))) || (angle < (-315 + (error)) && angle > (-315 - (error))) || (angle < (225 + (error)) && angle > (225 - (error))) || (angle < (-135 + (error)) && angle > (-135 - (error)))){
                     sampleRotation = Arm.ClawRotation.Diag1;
-                }else if ((angle < (135 - (error/2)) && angle > (135 + (error))) || (angle < (-225 + (error)) && angle > (-225 - (error))) || (angle < (315 + (error)) && angle > (315 - (error))) || (angle < (-45 + (error)) && angle > (-45 - (error)))){
+                }else if ((angle > (135 - (error)) && angle < (135 + (error))) || (angle < (-225 + (error)) && angle > (-225 - (error))) || (angle < (315 + (error)) && angle > (315 - (error))) || (angle < (-45 + (error)) && angle > (-45 - (error)))){
                     sampleRotation = Arm.ClawRotation.Diag2;
                 }
             }
