@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +12,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import android.util.Size;
 
+
+import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -49,19 +53,20 @@ public class Webcam {
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
 
-    public static double convertInchesToPx(double inches) {
-        double px = inches;
-        return px;
+    public static double convertHorizontalPxToInches(double px) {
+        double inches = px * (CAMERA_WIDTH_IN/CAMERA_WIDTH_PX);
+        return inches;
     }
-
-    public static double convertPxToInches(double px) {
-        double inches = px;
+    public static double convertVerticalPxToInches(double px) {
+        double inches = px * (CAMERA_LENGTH_IN/CAMERA_LENGTH_PX);
         return inches;
     }
 
     Point clawCenter = new Point(CAMERA_WIDTH_PX,CAMERA_LENGTH_PX + LATERAL_OFFSET_PX);
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
+    Vector2d targetVectorPx = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in PIXELS
+    Vector2d targetVectorInches = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in INCHES
     public double angle = 0; //Angle of the target sample
 
     //Points for extremedies
@@ -132,6 +137,8 @@ public class Webcam {
             if (distancePx < targetDistancePX) {
                 //Sets variables depending on what the target is
                 targetDistancePX = distancePx;
+                targetVectorPx = new Vector2d(distanceXPx,distanceYPx);
+                targetVectorInches = new Vector2d(convertHorizontalPxToInches(distanceXPx),convertVerticalPxToInches(distanceYPx));
                 targetPos = boxFit.center;
                 myContourPoints = blob.getContourPoints();
 
@@ -199,5 +206,30 @@ public class Webcam {
         telemetry.addData("Distance from crosshair (px):",targetDistancePX);
         telemetry.addData("targetPos",targetPos);
         telemetry.addData("clawCenter",clawCenter);
+    }
+    public Vector2d getTargetVectorDistance(){
+        //Translate it to what roadrunner uses
+        //Flip x and y axis
+        //Left = +y, Right =-y
+        //Forward = +x, Backwards = -x
+        return new Vector2d(targetVectorInches.y,targetVectorInches.x);
+    }
+    public Action updateAction(Telemetry telemetry, Arm.TeamColor teamColor) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                loop(telemetry);
+                return true;
+            }
+        };
+    }
+    public Action snapshotAction(Telemetry telemetry, Arm.TeamColor teamColor) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                snapshot(telemetry);
+                return false;
+            }
+        };
     }
 }
