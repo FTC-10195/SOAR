@@ -215,10 +215,11 @@ public class Webcam {
     public void setClawRotation(Arm.ClawRotation rot){
         sampleRotation = rot;
     }
-    public Action updateAction(Telemetry telemetry, Arm.TeamColor teamColor) {
+    public Action updateAction(Telemetry telemetry, Arm arm) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                arm.clawRotate(sampleRotation);
                 loop(telemetry);
                 return true;
             }
