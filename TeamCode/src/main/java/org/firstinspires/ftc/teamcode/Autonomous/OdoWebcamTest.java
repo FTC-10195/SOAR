@@ -70,7 +70,7 @@ public class OdoWebcamTest extends LinearOpMode {
                         new SleepAction(10),
                         webcam.snapshotAction(Arm.TeamColor.NONE),
                         new SleepAction(1),
-                        arm.clawRotationAction(webcam.sampleRotation)
+                        arm.clawRotationAction(webcam.getSampleRotation())
                       //  drive.actionBuilder(samplePos)
                       //          .splineToConstantHeading(new Vector2d(sampleVec.x + webcam.targetVectorInches.y,sampleVec.y + webcam.targetVectorInches.x), Math.toRadians(0)) // Where intaking starts
                        //         .build(),
@@ -103,6 +103,7 @@ public class OdoWebcamTest extends LinearOpMode {
                             verticalSlides.updateAction(),
                             webcam.updateAction(telemetry,Arm.TeamColor.NONE),
                             arm.updateAction(telemetry, Arm.TeamColor.NONE),
+                            actionTelemtry.telemetryAddAction(telemetry,webcam.getSampleRotation()),
                             actionTelemtry.telemetryAction(telemetry)
                     )
             );

@@ -17,4 +17,13 @@ public class ActionTelemtry {
             }
         };
     }
+    public Action telemetryAddAction(Telemetry telemetry,Arm.ClawRotation webcamClawRot) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                telemetry.addData("Webcamclawrottrue",webcamClawRot);
+                return true;
+            }
+        };
+    }
 }
