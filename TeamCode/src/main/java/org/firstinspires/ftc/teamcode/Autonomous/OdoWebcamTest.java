@@ -36,7 +36,7 @@ public class OdoWebcamTest extends LinearOpMode {
     Pose2d samplePos = new Pose2d(sampleVec,Math.toRadians(sampleRot));
     //Sample1
 
-    public Action scouting(Arm arm, VerticalSlides verticalSlides){
+    public Action scouting(){
         return (
                 new SequentialAction(
                         arm.shoulderAction(Arm.Shoulder.FORWARDS),
@@ -47,7 +47,7 @@ public class OdoWebcamTest extends LinearOpMode {
                 )
         );
     }
-    public Action intake(Arm arm, VerticalSlides verticalSlides){
+    public Action intake(){
         return (
                 new SequentialAction(
                         arm.extendoAction(Arm.Extendo.EXTENDED),
@@ -59,11 +59,11 @@ public class OdoWebcamTest extends LinearOpMode {
                 )
         );
     }
-    private Action toSample1(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos,Webcam webcam){
+    private Action toSample1(Pose2d pos){
 
         return
                 new SequentialAction(
-                       scouting(arm,verticalSlides),
+                       scouting(),
                         drive.actionBuilder(pos)
                                 .splineToConstantHeading(sampleVec, Math.toRadians(0)) // Where intaking starts
                                 .build(),
@@ -76,24 +76,29 @@ public class OdoWebcamTest extends LinearOpMode {
                        //         .build(),
                 );
     }
+    PinpointDrive drive;
+    Arm arm;
+    Webcam webcam;
+    VerticalSlides verticalSlides;
+    ActionTelemtry actionTelemtry;
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
-        PinpointDrive drive = new PinpointDrive(hardwareMap, beginPose);
-        Arm arm = new Arm();
-        Webcam webcam = new Webcam();
+        actionTelemtry = new ActionTelemtry();
+        drive = new PinpointDrive(hardwareMap, beginPose);
+        webcam = new Webcam();
         webcam.initiate(hardwareMap,telemetry);
-        VerticalSlides verticalSlides = new VerticalSlides();
+        verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
+        arm = new Arm();
         arm.initiate(hardwareMap);
-        ActionTelemtry actionTelemtry = new ActionTelemtry();
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             Actions.runBlocking(
                     new ParallelAction(
                             // Main Auto functions
                             new SequentialAction(
-                                   toSample1(arm,drive,verticalSlides,beginPose,webcam)
+                                   toSample1(beginPose)
                             ),
                             verticalSlides.updateAction(),
                             webcam.updateAction(telemetry,Arm.TeamColor.NONE),
