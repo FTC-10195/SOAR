@@ -217,7 +217,6 @@ public class Webcam {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 loop(telemetry);
-                telemetry.update();
                 return true;
             }
         };

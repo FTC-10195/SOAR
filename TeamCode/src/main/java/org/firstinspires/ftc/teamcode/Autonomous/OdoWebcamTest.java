@@ -11,7 +11,9 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
+import org.firstinspires.ftc.teamcode.Subsystems.ActionTelemtry;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
@@ -84,6 +86,7 @@ public class OdoWebcamTest extends LinearOpMode {
         VerticalSlides verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
         arm.initiate(hardwareMap);
+        ActionTelemtry actionTelemtry = new ActionTelemtry();
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             Actions.runBlocking(
@@ -94,7 +97,8 @@ public class OdoWebcamTest extends LinearOpMode {
                             ),
                             verticalSlides.updateAction(),
                             webcam.updateAction(telemetry,Arm.TeamColor.NONE),
-                            arm.updateAction(telemetry, Arm.TeamColor.NONE)
+                            arm.updateAction(telemetry, Arm.TeamColor.NONE),
+                            actionTelemtry.telemetryAction(telemetry)
                     )
             );
         }
