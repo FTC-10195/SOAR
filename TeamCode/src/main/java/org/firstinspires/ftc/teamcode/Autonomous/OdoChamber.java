@@ -52,19 +52,19 @@ public class OdoChamber extends LinearOpMode {
     double pushRot1 = -90;
     Pose2d pushPos1 = new Pose2d(pushVec1, Math.toRadians(pushRot1));
 
-    Vector2d prePushVec4 = new Vector2d(prePushVec3.x, prePushVec3.y-10); //drives above the second sample
+    Vector2d prePushVec4 = new Vector2d(prePushVec3.x, prePushVec3.y-12); //drives above the second sample
     double prePushRot4 = -90;
     Pose2d prePushPos4 = new Pose2d(prePushVec4, Math.toRadians(prePushRot4));
 
     Vector2d pushVec2 = new Vector2d(prePushVec4.x- 32 , prePushVec4.y); //Pushes second sample
     double pushRot2 = -90;
     Pose2d pushPos2 = new Pose2d(pushVec2, Math.toRadians(pushRot2));
-    Vector2d intakeVec1 = new Vector2d(pushVec2.x , pushVec2.y -6.5); //drives to intake
+    Vector2d intakeVec1 = new Vector2d(pushVec2.x - 14 , pushVec2.y); //drives to intake
     double intakeRot1 = 0;
-    Pose2d intakePos1 = new Pose2d(intakeVec1, Math.toRadians(intakeRot1));
-    Vector2d intakeVec2 = new Vector2d(intakeVec1.x - 14 , intakeVec1.y); //picks it up
+    Pose2d intakePos1 = new Pose2d(new Vector2d(intakeVec1.x-5,intakeVec1.y), Math.toRadians(intakeRot1));
+Vector2d intakeVec2 = new Vector2d(3 , -TILE_SIZE - 5); //picks it up
     double intakeRot2 = 0;
-    Pose2d intakePos2 = new Pose2d(new Vector2d(intakeVec2.x-3,intakeVec2.y), Math.toRadians(0));
+    Pose2d intakePos2 = new Pose2d(new Vector2d(intakeVec2.x-5,intakeVec2.y), Math.toRadians(0));
     double chamberNumber = -4; //Used as an offset for each new chamber score
     public Action chamber(Arm arm, VerticalSlides verticalSlides){
         return (
@@ -83,7 +83,6 @@ public class OdoChamber extends LinearOpMode {
         return (
                 new SequentialAction(
                         verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN),
-                        new SleepAction(.2),
                         arm.extendoAction(Arm.Extendo.RETRACTED),
                         arm.shoulderAction(Arm.Shoulder.CHAMBER_INTAKE),
                         arm.wristAction(Arm.Wrist.FORWARD),
@@ -135,11 +134,11 @@ public class OdoChamber extends LinearOpMode {
                         drive.actionBuilder(pos)
                                 .turnTo(0)
                                 .setTangent(180)
-                                .splineToConstantHeading(intakeVec2, Math.toRadians(180))
+                                .splineToConstantHeading(intakeVec1, Math.toRadians(180))
                                         .build(),
                         //Gives human player some time to correct
-                        drive.actionBuilder(intakePos2)
-                                .splineToConstantHeading(new Vector2d(intakeVec2.x - 5, intakeVec2.y), Math.toRadians(180),
+                        drive.actionBuilder(intakePos1)
+                                .splineToConstantHeading(new Vector2d(intakeVec1.x - 5, intakeVec1.y), Math.toRadians(180),
                                         ((pose2dDual, posePath, v) ->  30),
                                         ((pose2dDual, posePath, v) -> new MinMax(-30,30)))
                                 .build(),
