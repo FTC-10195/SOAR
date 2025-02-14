@@ -20,17 +20,15 @@ public class StateMachine {
         CHAMBER,
         CHAMBER_DEPOSIT
     }
-
-    Arm arm = new Arm();
-    VerticalSlides verticalSlides = new VerticalSlides();
-    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
+    public double timeSnapshot = System.currentTimeMillis();
+    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Webcam webcam, Telemetry telemetry) {
         States newState = state;
         if (RT) {
             if (mode == Mode.CHAMBER) {
-                if (state == States.RESTING) {
-                    newState = States.CHAMBER;
-                } else if (state == States.CHAMBER) {
+                if (state == States.CHAMBER) {
                     newState = States.RESTING;
+                }else{
+                    newState = States.CHAMBER;
                 }
             } else {
                 if (state == States.RESTING) {
@@ -48,6 +46,8 @@ public class StateMachine {
                      break;
                 case SCOUTING:
                     newState = States.SAMPLE_INTAKE;
+                    webcam.snapshot();
+                    timeSnapshot = System.currentTimeMillis();
                     break;
                 case SAMPLE_INTAKE:
                     newState = States.SCOUTING;
@@ -75,6 +75,12 @@ public class StateMachine {
         }
         if (RB) {
             newState = States.RESTING;
+        }
+        if (state == States.SAMPLE_INTAKE){
+            if (System.currentTimeMillis() - timeSnapshot > 600){
+                state = States.SCOUTING;
+                webcam.setClawRotation(Arm.ClawRotation.Horz1);
+            }
         }
         telemetry.addData("Mode", mode);
         telemetry.addData("State", state);

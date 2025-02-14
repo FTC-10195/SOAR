@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
@@ -34,6 +35,8 @@ public class TeleOpChamberRed extends LinearOpMode {
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
+        Webcam webcam = new Webcam();
+        webcam.initiate(hardwareMap,teamColor,telemetry);
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
@@ -57,7 +60,7 @@ public class TeleOpChamberRed extends LinearOpMode {
             boolean SwitchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean SwitchColor = gamepad1.cross && !previousGamepad1.cross;
             mode = stateMachine.switchMode(mode,SwitchMode);
-            state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
+            state = stateMachine.setState(state,mode, RT, LT, RB, LB, webcam, telemetry);
             switch (state) {
                 case RESTING:
                     arm.extendo(Arm.Extendo.RETRACTED);
@@ -107,6 +110,12 @@ public class TeleOpChamberRed extends LinearOpMode {
                     arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
+            }
+            if (System.currentTimeMillis() -  stateMachine.timeSnapshot > 300 && System.currentTimeMillis() -  stateMachine.timeSnapshot < 600){
+                arm.intake(Arm.Intake.CLOSE);
+            }
+            if (arm.clawRotation == Arm.ClawRotation.Horz1 && state == StateMachine.States.SAMPLE_INTAKE){
+                arm.clawRotate(webcam.sampleRotation);
             }
             if (gamepad2.left_trigger >=.1 && clawRotationRanLeft == false){
                 clawRotationRanLeft = true;

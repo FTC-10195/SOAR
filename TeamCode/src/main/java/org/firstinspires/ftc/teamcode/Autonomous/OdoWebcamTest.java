@@ -95,8 +95,7 @@ public class OdoWebcamTest extends LinearOpMode {
         actionTelemtry = new ActionTelemtry();
         drive = new PinpointDrive(hardwareMap, beginPose);
         webcam = new Webcam();
-        webcam.initiate(hardwareMap,telemetry);
-        webcam.setAuto(this);
+        webcam.initiate(hardwareMap, Arm.TeamColor.RED,telemetry);
         verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
         arm = new Arm();

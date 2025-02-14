@@ -39,14 +39,14 @@ import java.util.List;
 @Config
 @Disabled
 public class Webcam {
-    ColorBlobLocatorProcessor colorLocator = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(ColorRange.RED)         // use a predefined color match
+    ColorBlobLocatorProcessor colorLocatorTeam;
+    ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
             .setDrawContours(true)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
-    private OdoWebcamTest auto;
     VisionPortal portal;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
@@ -64,9 +64,6 @@ public class Webcam {
     public static double convertVerticalPxToInches(double px) {
         double inches = px * (CAMERA_LENGTH_IN/CAMERA_LENGTH_PX);
         return inches;
-    }
-    public void setAuto(OdoWebcamTest odoWebcamTest){
-        this.auto = odoWebcamTest;
     }
 
     Point clawCenter = new Point(CAMERA_WIDTH_PX/2,(CAMERA_LENGTH_PX/2) + LATERAL_OFFSET_PX);
@@ -115,27 +112,31 @@ public class Webcam {
 
     Point targetPos = clawCenter;
 
-    public void initiate(HardwareMap hardwareMap, Telemetry telemetry) {
+    public void initiate(HardwareMap hardwareMap, Arm.TeamColor teamColor, Telemetry telemetry) {
+        ColorRange translatedColor;
+        if (teamColor == Arm.TeamColor.RED){
+            translatedColor = ColorRange.RED;
+        }else if (teamColor == Arm.TeamColor.BLUE){
+            translatedColor = ColorRange.BLUE;
+        }else {
+            translatedColor = ColorRange.YELLOW; //No team color, just only do yellow
+        }
+        colorLocatorTeam = new ColorBlobLocatorProcessor.Builder()
+                .setTargetColorRange(translatedColor)         // use a predefined color match
+                .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+                .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
+                .setDrawContours(true)                        // Show contours on the Stream Preview
+                .setBlurSize(5)                               // Smooth the transitions between different colors in image
+                .build();
         portal = new VisionPortal.Builder()
-                .addProcessor(colorLocator)
+                .addProcessors(colorLocatorYellow,colorLocatorTeam)
                 .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .build();
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
     }
-
-    public void snapshot() {
-        //Reset the variables everytime a snapshot is taken
-        targetDistancePX = CAMERA_WIDTH_PX / 2;
-        targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
-        bottomLeft = null;
-        bottomRight = null;
-        topLeft = null;
-        topRight = null;
-
-        // Read the current list
-        List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();
+    public void lookForBlobs(List<ColorBlobLocatorProcessor.Blob> blobs){
         ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, blobs);  // filter out very small blobs.
 
         Point[] myContourPoints;// A list of the many points within the blob
@@ -206,6 +207,23 @@ public class Webcam {
                 }
             }
         }
+    }
+
+    public void snapshot() {
+        //Reset the variables everytime a snapshot is taken
+        targetDistancePX = CAMERA_WIDTH_PX / 2;
+        targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
+        bottomLeft = null;
+        bottomRight = null;
+        topLeft = null;
+        topRight = null;
+
+        // Read the current list, look for yellow ones first
+        List<ColorBlobLocatorProcessor.Blob> blobsYellow = colorLocatorYellow.getBlobs();
+        lookForBlobs(blobsYellow);
+        List<ColorBlobLocatorProcessor.Blob> blobsTeam = colorLocatorTeam.getBlobs();
+        lookForBlobs(blobsTeam);
+
     }
     public void loop(Telemetry telemetry){
         telemetry.addData("PX Distance Vec", targetVectorPx);
