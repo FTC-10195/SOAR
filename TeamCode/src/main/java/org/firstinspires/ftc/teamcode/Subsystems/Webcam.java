@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +23,8 @@ import com.qualcomm.robotcore.util.SortOrder;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.Autonomous.OdoWebcamTest;
+import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
@@ -43,6 +46,7 @@ public class Webcam {
             .setDrawContours(true)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
+    private OdoWebcamTest auto;
     VisionPortal portal;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
@@ -61,12 +65,15 @@ public class Webcam {
         double inches = px * (CAMERA_LENGTH_IN/CAMERA_LENGTH_PX);
         return inches;
     }
+    public void setAuto(OdoWebcamTest odoWebcamTest){
+        this.auto = odoWebcamTest;
+    }
 
     Point clawCenter = new Point(CAMERA_WIDTH_PX/2,(CAMERA_LENGTH_PX/2) + LATERAL_OFFSET_PX);
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
     Vector2d targetVectorPx = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in PIXELS
-    public  Vector2d targetVectorInches = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in INCHES
+    public static Vector2d targetVectorInches = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in INCHES
     public double angle = 0; //Angle of the target sample
 
     //Points for extremedies
@@ -75,6 +82,7 @@ public class Webcam {
     Point topLeft = null;
     Point topRight = null;
     public Arm.ClawRotation sampleRotation = Arm.ClawRotation.Horz1;
+    Vector2d targetVec = new Vector2d(0,0);
     public Arm.ClawRotation getSampleRotation(){
         return sampleRotation;
     }
@@ -215,13 +223,34 @@ public class Webcam {
     public void setClawRotation(Arm.ClawRotation rot){
         sampleRotation = rot;
     }
-    public Action updateAction(Telemetry telemetry, Arm arm) {
+    public Action updateAction(Telemetry telemetry) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                arm.clawRotate(sampleRotation);
                 loop(telemetry);
                 return true;
+            }
+        };
+    }
+    public Action setArm(Arm arm, boolean rotate) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                if (rotate) {
+                    arm.clawRotate(sampleRotation);
+                }
+                return false;
+            }
+        };
+    }
+    public Action setDrive(PinpointDrive drive, Pose2d pos) {
+        targetVec =new Vector2d(pos.position.x +targetVectorInches.x,pos.position.y +targetVectorInches.y);
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                drive.actionBuilder(pos)
+                        .build();
+                return false;
             }
         };
     }

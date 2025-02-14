@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -34,6 +37,10 @@ public class OdoWebcamTest extends LinearOpMode {
     Vector2d sampleVec = new Vector2d(1, 0);
     double sampleRot = 0;
     Pose2d samplePos = new Pose2d(sampleVec,Math.toRadians(sampleRot));
+    Vector2d cameraVec = new Vector2d(sampleVec.x,sampleVec.y);
+    double cameraRot = 0;
+    Pose2d cameraPos = new Pose2d(sampleVec,Math.toRadians(sampleRot));
+
     //Sample1
 
     public Action scouting(){
@@ -41,7 +48,7 @@ public class OdoWebcamTest extends LinearOpMode {
                 new SequentialAction(
                         arm.shoulderAction(Arm.Shoulder.FORWARDS),
                         arm.wristAction(Arm.Wrist.FULL_DOWNWARDS),
-                        arm.extendoAction(Arm.Extendo.RETRACTED),
+                        arm.extendoAction(Arm.Extendo.EXTENDED),
                         arm.intakeAction(Arm.Intake.INTAKE),
                         verticalSlides.slideAction(VerticalSlides.SlidePositions.DOWN)
                 )
@@ -60,19 +67,25 @@ public class OdoWebcamTest extends LinearOpMode {
         );
     }
     private Action toSample1(Pose2d pos){
-
         return
                 new SequentialAction(
                        scouting(),
-                        drive.actionBuilder(pos)
-                                .splineToConstantHeading(sampleVec, Math.toRadians(0)) // Where intaking starts
-                                .build(),
-                        new SleepAction(10),
+                        new SleepAction(6),
                         webcam.snapshotAction(Arm.TeamColor.NONE),
-                        new SleepAction(1)
-                      //  drive.actionBuilder(samplePos)
-                      //          .splineToConstantHeading(new Vector2d(sampleVec.x + webcam.targetVectorInches.y,sampleVec.y + webcam.targetVectorInches.x), Math.toRadians(0)) // Where intaking starts
-                       //         .build(),
+                        new SleepAction(3),
+                        webcam.setDrive(drive,pos),
+                        new SleepAction(3),
+                        drive.actionBuilder(pos)
+                                .splineToConstantHeading(cameraVec, Math.toRadians(0)) // Where intaking starts
+                                .build(),
+                    //    new SleepAction(1),
+                     //   webcam.snapshotAction(Arm.TeamColor.NONE),
+                     //   webcam.updateAction(telemetry,arm),
+                        new SleepAction(1),
+                        webcam.snapshotAction(Arm.TeamColor.NONE),
+                        new SleepAction(1),
+                        webcam.setArm(arm,true),
+                        intake()
                 );
     }
     PinpointDrive drive;
@@ -87,6 +100,7 @@ public class OdoWebcamTest extends LinearOpMode {
         drive = new PinpointDrive(hardwareMap, beginPose);
         webcam = new Webcam();
         webcam.initiate(hardwareMap,telemetry);
+        webcam.setAuto(this);
         verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
         arm = new Arm();
@@ -100,9 +114,10 @@ public class OdoWebcamTest extends LinearOpMode {
                                    toSample1(beginPose)
                             ),
                             verticalSlides.updateAction(),
-                            webcam.updateAction(telemetry,arm),
                             arm.updateAction(telemetry, Arm.TeamColor.NONE),
+                            webcam.updateAction(telemetry),
                             actionTelemtry.telemetryAddAction(telemetry,webcam.getSampleRotation()),
+                            actionTelemtry.telemetryAddCameraVec(telemetry,cameraVec),
                             actionTelemtry.telemetryAction(telemetry)
                     )
             );

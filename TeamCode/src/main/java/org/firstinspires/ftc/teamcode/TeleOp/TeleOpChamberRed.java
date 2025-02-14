@@ -80,7 +80,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                 case BUCKET:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.BUCKET);
-                    arm.wrist(Arm.Wrist.UPWARDS);
+                    arm.wrist(Arm.Wrist.FORWARD);
                     arm.clawRotate(Arm.ClawRotation.Horz1);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                     break;

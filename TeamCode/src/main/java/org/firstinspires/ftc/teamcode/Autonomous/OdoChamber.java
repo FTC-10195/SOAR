@@ -91,20 +91,12 @@ public class OdoChamber extends LinearOpMode {
                 )
         );
     }
-    private Action toPreScore(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos, double tangent, double num){
-        chamberNumber = chamberNumber + 4;
+    private Action toScore(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos, double num,double tangent){
         return
                 new SequentialAction(
                         drive.actionBuilder(pos)
                                 .setTangent(Math.toRadians(tangent))
-                                .splineToConstantHeading(new Vector2d(preScoreVec.x,preScoreVec.y + num),Math.toRadians(tangent))
-                                .build()
-                );
-    }
-    private Action toScore(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos, double num){
-        return
-                new SequentialAction(
-                        drive.actionBuilder(pos)
+                                .splineToConstantHeading(new Vector2d(preScoreVec.x,preScoreVec.y + num),Math.toRadians(0))
                                 .setTangent(Math.toRadians(scoreRot))
                                 .splineToConstantHeading(new Vector2d(scoreVec.x,scoreVec.y + num), Math.toRadians(scoreRot),
                                         ((pose2dDual, posePath, v) ->  30),
@@ -206,17 +198,17 @@ public class OdoChamber extends LinearOpMode {
                             // Main Auto functions
                             new SequentialAction(
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
-                                   toPreScore(arm,drive,verticalSlides,beginPose,preScoreRot,0),
-                                    toScore(arm,drive,verticalSlides,preScorePos,0),
+                                    new SleepAction(.3),
+                                    toScore(arm,drive,verticalSlides,beginPose,0,0),
                                     humanIntake(arm,verticalSlides),
                                     toPushBot(arm,drive,verticalSlides,scorePos,0),
                                     toIntake(arm,drive,verticalSlides,pushPos2),
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
-                                    toScore(arm,drive,verticalSlides,intakePos2,4),
+                                    toScore(arm,drive,verticalSlides,intakePos2,4,90),
                                     humanIntake(arm,verticalSlides),
                                     toIntake2(arm,drive,verticalSlides,scorePos2),
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
-                                    toScore(arm,drive,verticalSlides,intakePos2,8),
+                                    toScore(arm,drive,verticalSlides,intakePos2,8,90),
                                     toPark(arm,drive,verticalSlides,scorePos3)
                             ),
                             verticalSlides.updateAction(),

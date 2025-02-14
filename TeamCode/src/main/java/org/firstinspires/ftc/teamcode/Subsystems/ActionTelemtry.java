@@ -4,8 +4,10 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Vector2d;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Autonomous.OdoWebcamTest;
 
 public class ActionTelemtry {
     public Action telemetryAction(Telemetry telemetry) {
@@ -22,6 +24,15 @@ public class ActionTelemtry {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 telemetry.addData("Webcamclawrottrue",webcamClawRot);
+                return true;
+            }
+        };
+    }
+    public Action telemetryAddCameraVec(Telemetry telemetry, Vector2d cameraVec) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                telemetry.addData("cameravec",cameraVec);
                 return true;
             }
         };

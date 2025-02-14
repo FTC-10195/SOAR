@@ -42,12 +42,12 @@ public class OdoBucket extends LinearOpMode {
     Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) + OFFSET +1 , (TILE_SIZE - ROBOT_WIDTH));
     double sample1Rot = 90;
     Pose2d sample1Pos = new Pose2d(sample1Vec,Math.toRadians(sample1Rot));
-    Vector2d sample2Vec =  new Vector2d(-1 - (ROBOT_LENGTH/2) + OFFSET, (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample2Vec =  new Vector2d(-.5 - (ROBOT_LENGTH/2) + OFFSET, (TILE_SIZE - ROBOT_WIDTH));
     double sample2Rot = 90;
     Pose2d sample2Pos = new Pose2d(sample2Vec,Math.toRadians(sample2Rot));
 
     Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2) +OFFSET, preScoreVec.y + 3);
-    double sample3Rot = 135;
+    double sample3Rot = 130;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
     Vector2d parkVec1 =  new Vector2d(preScoreVec.x, preScoreVec.y + 37);
     double parkRot1 = 0;
@@ -95,11 +95,11 @@ public class OdoBucket extends LinearOpMode {
         return (
                 new SequentialAction(
                         arm.extendoAction(Arm.Extendo.EXTENDED),
-                        new SleepAction(.5), //Gives time for the extendo to extend
+                        new SleepAction(.3), //Gives time for the extendo to extend
                         arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
-                        new SleepAction(.4),
+                        new SleepAction(.5),
                         arm.intakeAction(Arm.Intake.CLOSE),
-                        new SleepAction(.3)
+                        new SleepAction(.2)
                 )
         );
     }
@@ -118,7 +118,7 @@ public class OdoBucket extends LinearOpMode {
                         drive.actionBuilder(pos)
                                 .strafeToLinearHeading(scoreVec, Math.toRadians(scorePosRot))
                                 .build(),
-                        new SleepAction(.7), //Wait a little longer to minimize wobble
+                        new SleepAction(.6), //Wait a little longer to minimize wobble
                         arm.intakeAction(Arm.Intake.DEPOSIT),
                         new SleepAction(.2)
 
@@ -160,8 +160,10 @@ public class OdoBucket extends LinearOpMode {
                 new SequentialAction(
                         park(arm,verticalSlides),
                         drive.actionBuilder(pos)
-                                .strafeToLinearHeading(parkVec1, Math.toRadians(parkRot1))
-                                .strafeToLinearHeading(parkVec2, Math.toRadians(parkRot2))
+                                .setTangent(90)
+                                .splineToLinearHeading(parkPos1,Math.toRadians(180))
+                                .setTangent(180)
+                                .splineToConstantHeading(parkVec2, Math.toRadians(180))
                                 .build(),
                         arm.shoulderAction(Arm.Shoulder.FORWARDS)
                 );

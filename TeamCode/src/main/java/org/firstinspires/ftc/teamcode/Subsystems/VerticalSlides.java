@@ -34,7 +34,7 @@ public class VerticalSlides {
     DcMotor leftSlide;
     public static int MAX = 2250;
     int down = 0;
-    public static int CHAMBER = 1750;
+    public static int CHAMBER = 1650;
     double maxPower = 1;
     double lockPower = .1;
     public static double downPower = .3;
