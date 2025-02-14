@@ -249,6 +249,7 @@ public class Webcam {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
                 drive.actionBuilder(pos)
+                        .strafeToConstantHeading(targetVec)
                         .build();
                 return false;
             }
