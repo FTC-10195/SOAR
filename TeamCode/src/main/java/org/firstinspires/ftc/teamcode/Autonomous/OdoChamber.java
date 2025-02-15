@@ -38,7 +38,7 @@ public class OdoChamber extends LinearOpMode {
     Pose2d preScorePos2 = new Pose2d(new Vector2d(preScoreVec.x, preScoreVec.y + 2), Math.toRadians(preScoreRot));
     Pose2d preScorePos3 = new Pose2d(new Vector2d(preScoreVec.x, preScoreVec.y + 4), Math.toRadians(preScoreRot));
     Pose2d preScorePos4 = new Pose2d(new Vector2d(preScoreVec.x, preScoreVec.y + 6), Math.toRadians(preScoreRot));
-    Vector2d scoreVec = new Vector2d(preScoreVec.x+ 5, preScoreVec.y); //drives forward enough to score
+    Vector2d scoreVec = new Vector2d(preScoreVec.x+ 10.5, preScoreVec.y); //drives forward enough to score
     double scoreRot = 0;
     Pose2d scorePos1 = new Pose2d(scoreVec, Math.toRadians(scoreRot));
     Pose2d scorePos2 = new Pose2d(new Vector2d(scoreVec.x, preScorePos2.position.y), Math.toRadians(scoreRot));
@@ -51,7 +51,7 @@ public class OdoChamber extends LinearOpMode {
     Vector2d midPushVec = new Vector2d((prePushVec2.x/2) + 3,prePushVec2.y);
     double prePushRot2 = -90;
     Pose2d prePushPos2 = new Pose2d(prePushVec2, Math.toRadians(prePushRot2));
-    Vector2d prePushVec3 = new Vector2d(prePushVec2.x, prePushVec2.y - 7); //drives above the first sample
+    Vector2d prePushVec3 = new Vector2d(prePushVec2.x, prePushVec2.y - 6); //drives above the first sample
     double prePushRot3 = -90;
     Pose2d prePushPos3 = new Pose2d(prePushVec3, Math.toRadians(prePushRot3));
     Vector2d pushVec1 = new Vector2d(prePushVec3.x- 36 , prePushVec3.y); //pushes first sample
@@ -69,7 +69,7 @@ public class OdoChamber extends LinearOpMode {
     Pose2d intakePosVec = new Pose2d(new Vector2d(intakeVec1.x,intakeVec1.y), Math.toRadians(0));
     double intakeRot1 = 0;
     Pose2d intakePos1 = new Pose2d(new Vector2d(intakeVec1.x-5,intakeVec1.y), Math.toRadians(intakeRot1));
-Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
+Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 6.5); //picks it up
     Pose2d intakePosVec2 = new Pose2d(new Vector2d(intakeVec2.x,intakeVec2.y), Math.toRadians(0));
     double intakeRot2 = 0;
     Pose2d intakePos2 = new Pose2d(new Vector2d(intakeVec2.x-5,intakeVec2.y), Math.toRadians(0));
@@ -102,22 +102,20 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
                 new SequentialAction(
                         drive.actionBuilder(pos)
                                 .setTangent(Math.toRadians(tangent))
-                                .splineToConstantHeading(new Vector2d(preScoreVec.x,preScoreVec.y + num),Math.toRadians(0),
-                                        ((pose2dDual, posePath, v) ->  30),
-                                        ((pose2dDual, posePath, v) -> new MinMax(-30,30)))
+                                .splineToConstantHeading(preScorePos1.position,Math.toRadians(0))
                                 .setTangent(Math.toRadians(0))
-                                .splineToConstantHeading(new Vector2d(scoreVec.x,scoreVec.y + num), Math.toRadians(180),
+                                .splineToConstantHeading(scorePos1.position, Math.toRadians(180),
                                         ((pose2dDual, posePath, v) ->  30),
                                         ((pose2dDual, posePath, v) -> new MinMax(-30,30)))
-                                        .build(),
-                        arm.intakeAction(Arm.Intake.DEPOSIT),
+                                .build(),
                         new ParallelAction(
+                                arm.intakeAction(Arm.Intake.DEPOSIT),
                                 drive.actionBuilder(scorePos1)
                                         .setTangent(Math.toRadians(180))
-                                        .splineToConstantHeading(new Vector2d(preScoreVec.x,preScoreVec.y + num),Math.toRadians(-90))
+                                        .splineToConstantHeading(preScorePos1.position,Math.toRadians(-90))
                                         .build(),
                                 new SequentialAction(
-                                        new SleepAction(.2),
+                                        new SleepAction(.1),
                                         humanIntake(arm, verticalSlides)
                                 )
                         )
@@ -141,7 +139,7 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
                                         .splineToConstantHeading(preScorePos2.position,Math.toRadians(-90))
                                         .build(),
                                 new SequentialAction(
-                                        new SleepAction(.2),
+                                        new SleepAction(.1),
                                         humanIntake(arm, verticalSlides)
                                 )
                         )
@@ -165,7 +163,31 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
                                         .splineToConstantHeading(preScorePos3.position,Math.toRadians(-90))
                                         .build(),
                                 new SequentialAction(
-                                        new SleepAction(.2),
+                                        new SleepAction(.1),
+                                        humanIntake(arm, verticalSlides)
+                                )
+                        )
+                );
+    }
+    private Action toScore4(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos, double num,double tangent){
+        return
+                new SequentialAction(
+                        drive.actionBuilder(pos)
+                                .setTangent(Math.toRadians(tangent))
+                                .splineToConstantHeading(preScorePos4.position,Math.toRadians(0))
+                                .setTangent(Math.toRadians(0))
+                                .splineToConstantHeading(scorePos4.position, Math.toRadians(180),
+                                        ((pose2dDual, posePath, v) ->  30),
+                                        ((pose2dDual, posePath, v) -> new MinMax(-30,30)))
+                                .build(),
+                        new ParallelAction(
+                                arm.intakeAction(Arm.Intake.DEPOSIT),
+                                drive.actionBuilder(scorePos4)
+                                        .setTangent(Math.toRadians(180))
+                                        .splineToConstantHeading(preScorePos4.position,Math.toRadians(-90))
+                                        .build(),
+                                new SequentialAction(
+                                        new SleepAction(.1),
                                         humanIntake(arm, verticalSlides)
                                 )
                         )
@@ -190,7 +212,7 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
                                    .setTangent(Math.toRadians(-90))
                                    .splineToConstantHeading(prePushVec4,Math.toRadians(180))
                                    .setTangent(Math.toRadians(180))
-                                   .splineToConstantHeading(pushVec2,Math.toRadians(0))
+                                   .splineToConstantHeading(pushVec2,Math.toRadians(90))
                                 .build()
 
                 );
@@ -199,7 +221,7 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
         return
                 new SequentialAction(
                         drive.actionBuilder(pos)
-                                .setTangent(180)
+                                .setTangent(90)
                                 .splineToLinearHeading(intakePosVec, Math.toRadians(180))
                                 .build(),
                         new ParallelAction(
@@ -257,6 +279,7 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
         arm.initiate(hardwareMap);
         PinpointDrive drive = new PinpointDrive(hardwareMap, beginPose);
         waitForStart();
+        drive.pinpoint.resetPosAndIMU();
         arm.shoulder(Arm.Shoulder.FORWARDS);
         VerticalSlides verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
@@ -267,7 +290,7 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
                             // Main Auto functions
                             new SequentialAction(
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
-                                    new SleepAction(.6),
+                                    new SleepAction(.3),
                                     toScore1(arm,drive,verticalSlides,beginPose,0,0),
                                     humanIntake(arm,verticalSlides),
                                     toPushBot(arm,drive,verticalSlides,preScorePos1,0),
@@ -278,7 +301,9 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 7); //picks it up
                                     toIntake2(arm,drive,verticalSlides,preScorePos2),
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
                                     toScore3(arm,drive,verticalSlides,intakePos2,8,0),
-                                    toIntake2(arm,drive,verticalSlides,preScorePos3)
+                                    toIntake2(arm,drive,verticalSlides,preScorePos3),
+                                    chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
+                                    toScore4(arm,drive,verticalSlides,intakePos2,8,0)
                             ),
                             verticalSlides.updateAction(),
                             arm.updateAction(telemetry, Arm.TeamColor.NONE)
