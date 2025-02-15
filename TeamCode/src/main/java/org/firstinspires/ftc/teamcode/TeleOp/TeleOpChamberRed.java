@@ -107,6 +107,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
             }
             if (gamepad2.left_trigger >=.1 && clawRotationRanLeft == false){

@@ -50,7 +50,7 @@ public class OdoBucket extends LinearOpMode {
     Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2) +OFFSET, preScoreVec.y + 3);
     double sample3Rot = 130;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
-    Vector2d parkVec1 =  new Vector2d(preScoreVec.x, preScoreVec.y + 37);
+    Vector2d parkVec1 =  new Vector2d(preScoreVec.x - 2, preScoreVec.y + 37);
     double parkRot1 = 0;
     Pose2d parkPos1 = new Pose2d(parkVec1,Math.toRadians(parkRot1));
     Vector2d parkVec2 =  new Vector2d(parkVec1.x +21, parkVec1.y);
