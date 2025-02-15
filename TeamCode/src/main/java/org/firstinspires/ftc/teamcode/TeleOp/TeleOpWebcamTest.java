@@ -25,7 +25,7 @@ public class TeleOpWebcamTest extends LinearOpMode {
         DriveTrain driveTrain = new DriveTrain();
         driveTrain.initiate(hardwareMap);
         Webcam webcam = new Webcam();
-        webcam.initiate(hardwareMap,telemetry);
+        webcam.initiate(hardwareMap, Arm.TeamColor.RED,telemetry);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();

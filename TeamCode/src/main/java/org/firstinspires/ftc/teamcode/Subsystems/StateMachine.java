@@ -21,7 +21,7 @@ public class StateMachine {
         CHAMBER_DEPOSIT
     }
     public double timeSnapshot = System.currentTimeMillis();
-    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Webcam webcam, Telemetry telemetry) {
+    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
         States newState = state;
         if (RT) {
             if (mode == Mode.CHAMBER) {
@@ -46,7 +46,6 @@ public class StateMachine {
                      break;
                 case SCOUTING:
                     newState = States.SAMPLE_INTAKE;
-                    webcam.snapshot();
                     timeSnapshot = System.currentTimeMillis();
                     break;
                 case SAMPLE_INTAKE:
@@ -75,12 +74,6 @@ public class StateMachine {
         }
         if (RB) {
             newState = States.RESTING;
-        }
-        if (state == States.SAMPLE_INTAKE){
-            if (System.currentTimeMillis() - timeSnapshot > 600){
-                state = States.SCOUTING;
-                webcam.setClawRotation(Arm.ClawRotation.Horz1);
-            }
         }
         telemetry.addData("Mode", mode);
         telemetry.addData("State", state);

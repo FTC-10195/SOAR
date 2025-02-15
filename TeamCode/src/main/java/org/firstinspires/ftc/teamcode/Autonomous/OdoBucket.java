@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.MinMax;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -160,10 +161,12 @@ public class OdoBucket extends LinearOpMode {
                 new SequentialAction(
                         park(arm,verticalSlides),
                         drive.actionBuilder(pos)
-                                .setTangent(90)
-                                .splineToLinearHeading(parkPos1,Math.toRadians(180))
-                                .setTangent(180)
-                                .splineToConstantHeading(parkVec2, Math.toRadians(180))
+                                .setTangent(Math.toRadians(90))
+                                .splineToLinearHeading(parkPos1,Math.toRadians(0))
+                                .setTangent(Math.toRadians(0))
+                                .splineToConstantHeading(parkVec2, Math.toRadians(0),
+                                        ((pose2dDual, posePath, v) ->  30),
+                                        ((pose2dDual, posePath, v) -> new MinMax(-30,30)))
                                 .build(),
                         arm.shoulderAction(Arm.Shoulder.FORWARDS)
                 );
