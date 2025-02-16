@@ -48,7 +48,7 @@ public class OdoBucket extends LinearOpMode {
     Pose2d sample2Pos = new Pose2d(sample2Vec,Math.toRadians(sample2Rot));
 
     Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2) +OFFSET, preScoreVec.y + 3);
-    double sample3Rot = 130;
+    double sample3Rot = 133;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
     Vector2d parkVec1 =  new Vector2d(preScoreVec.x - 2, preScoreVec.y + 37);
     double parkRot1 = 0;
@@ -130,9 +130,15 @@ public class OdoBucket extends LinearOpMode {
                 new SequentialAction(
                        scouting(arm,verticalSlides),
                         drive.actionBuilder(pos)
-                                .strafeToLinearHeading(sample1Vec, Math.toRadians(sample1Rot))
+                                .strafeToConstantHeading(sample1Vec)
+                                .turnTo(Math.toRadians(sample1Rot))
                                 .build(),
-                        intake(arm,verticalSlides)
+                        arm.extendoAction(Arm.Extendo.EXTENDED),
+                        new SleepAction(.3), //Gives time for the extendo to extend
+                        arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
+                        new SleepAction(1),
+                        arm.intakeAction(Arm.Intake.CLOSE),
+                        new SleepAction(.2)
                 );
     }
     private Action toSample2(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos){
@@ -153,7 +159,12 @@ public class OdoBucket extends LinearOpMode {
                         drive.actionBuilder(pos)
                                 .strafeToLinearHeading(sample3Vec, Math.toRadians(sample3Rot))
                                 .build(),
-                        intake(arm,verticalSlides)
+                        arm.extendoAction(Arm.Extendo.EXTENDED),
+                        new SleepAction(.3), //Gives time for the extendo to extend
+                        arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
+                        new SleepAction(1),
+                        arm.intakeAction(Arm.Intake.CLOSE),
+                        new SleepAction(.2)
                 );
     }
     private Action toPark(Arm arm, PinpointDrive drive, VerticalSlides verticalSlides,Pose2d pos){
@@ -161,9 +172,8 @@ public class OdoBucket extends LinearOpMode {
                 new SequentialAction(
                         park(arm,verticalSlides),
                         drive.actionBuilder(pos)
+                                .strafeToLinearHeading(parkPos2.position,Math.toRadians(0))
                                 .setTangent(Math.toRadians(90))
-                                .splineToLinearHeading(parkPos1,Math.toRadians(0))
-                                .setTangent(Math.toRadians(0))
                                 .splineToConstantHeading(parkVec2, Math.toRadians(0),
                                         ((pose2dDual, posePath, v) ->  30),
                                         ((pose2dDual, posePath, v) -> new MinMax(-30,30)))
