@@ -272,7 +272,7 @@ Vector2d intakeVec2 = new Vector2d(intakeVec1.x, -TILE_SIZE - 6.5); //picks it u
                             // Main Auto functions
                             new SequentialAction(
                                     chamber(arm,verticalSlides), //Sets the arm to be ready to chamber
-                                    new SleepAction(.5),
+                                    new SleepAction(.7),
                                     toScore1(arm,drive,verticalSlides,beginPose,0,0),
                                     humanIntake(arm,verticalSlides),
                                     toPushBot(arm,drive,verticalSlides,preScorePos1,0),

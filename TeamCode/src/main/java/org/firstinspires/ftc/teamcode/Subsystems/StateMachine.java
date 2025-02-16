@@ -44,6 +44,9 @@ public class StateMachine {
                 case RESTING:
                     newState = States.SCOUTING;
                      break;
+                case CHAMBER_HUMAN_INTAKE:
+                    newState = States.SCOUTING;
+                    break;
                 case SCOUTING:
                     newState = States.SAMPLE_INTAKE;
                     timeSnapshot = System.currentTimeMillis();
@@ -60,17 +63,7 @@ public class StateMachine {
             }
         }
         if (LT) {
-            switch (state){
-                case RESTING:
-                    newState = States.CHAMBER_HUMAN_INTAKE;
-                    break;
-                case CHAMBER_HUMAN_INTAKE:
-                    newState = States.CHAMBER;
-                    break;
-                case CHAMBER:
-                    newState = States.RESTING;
-                    break;
-            }
+            newState = States.CHAMBER_HUMAN_INTAKE;
         }
         if (RB) {
             newState = States.RESTING;
