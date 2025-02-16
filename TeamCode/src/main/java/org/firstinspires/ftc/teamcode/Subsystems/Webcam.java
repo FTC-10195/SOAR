@@ -129,7 +129,7 @@ public class Webcam {
                 .setBlurSize(5)                               // Smooth the transitions between different colors in image
                 .build();
         portal = new VisionPortal.Builder()
-                .addProcessors(colorLocatorYellow,colorLocatorTeam)
+                .addProcessors(colorLocatorTeam)
                 .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .build();
