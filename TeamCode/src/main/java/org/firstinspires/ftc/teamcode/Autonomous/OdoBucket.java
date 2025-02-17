@@ -40,7 +40,7 @@ public class OdoBucket extends LinearOpMode {
     double scorePosRot = 45;
     Pose2d scorePos = new Pose2d(scoreVec,Math.toRadians(scorePosRot));
     //Sample1
-    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) + OFFSET +1 , (TILE_SIZE - ROBOT_WIDTH));
+    Vector2d sample1Vec =  new Vector2d(10 - (ROBOT_LENGTH/2) + OFFSET , (TILE_SIZE - ROBOT_WIDTH));
     double sample1Rot = 90;
     Pose2d sample1Pos = new Pose2d(sample1Vec,Math.toRadians(sample1Rot));
     Vector2d sample2Vec =  new Vector2d(-.5 - (ROBOT_LENGTH/2) + OFFSET, (TILE_SIZE - ROBOT_WIDTH));
@@ -50,10 +50,10 @@ public class OdoBucket extends LinearOpMode {
     Vector2d sample3Vec =  new Vector2d(preScoreVec.x + (TILE_SIZE/2) +OFFSET, preScoreVec.y + 3);
     double sample3Rot = 133;
     Pose2d sample3Pos = new Pose2d(sample3Vec,Math.toRadians(sample3Rot));
-    Vector2d parkVec1 =  new Vector2d(preScoreVec.x - 2, preScoreVec.y + 37);
+    Vector2d parkVec1 =  new Vector2d(preScoreVec.x - 2, preScoreVec.y + 40);
     double parkRot1 = 0;
     Pose2d parkPos1 = new Pose2d(parkVec1,Math.toRadians(parkRot1));
-    Vector2d parkVec2 =  new Vector2d(parkVec1.x +21, parkVec1.y);
+    Vector2d parkVec2 =  new Vector2d(parkVec1.x +22, parkVec1.y);
     double parkRot2 = 0;
     Pose2d parkPos2 = new Pose2d(parkVec2,Math.toRadians(parkRot2));
     public Action park(Arm arm, VerticalSlides verticalSlides){
@@ -98,7 +98,7 @@ public class OdoBucket extends LinearOpMode {
                         arm.extendoAction(Arm.Extendo.EXTENDED),
                         new SleepAction(.3), //Gives time for the extendo to extend
                         arm.shoulderAction(Arm.Shoulder.DOWNWARDS),
-                        new SleepAction(.5),
+                        new SleepAction(.7),
                         arm.intakeAction(Arm.Intake.CLOSE),
                         new SleepAction(.2)
                 )
@@ -183,12 +183,12 @@ public class OdoBucket extends LinearOpMode {
     }
     @Override
     public void runOpMode() throws InterruptedException {
+        Arm arm = new Arm();
+        arm.initiate(hardwareMap);
         waitForStart();
         PinpointDrive drive = new PinpointDrive(hardwareMap, beginPose);
-        Arm arm = new Arm();
         VerticalSlides verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
-        arm.initiate(hardwareMap);
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             Actions.runBlocking(

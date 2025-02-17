@@ -62,7 +62,7 @@ public class OdoChamber extends LinearOpMode {
     double prePushRot4 = -90;
     Pose2d prePushPos4 = new Pose2d(prePushVec4, Math.toRadians(prePushRot4));
 
-    Vector2d pushVec2 = new Vector2d(prePushVec4.x- 34 , prePushVec4.y); //Pushes second sample
+    Vector2d pushVec2 = new Vector2d(prePushVec4.x- 36 , prePushVec4.y); //Pushes second sample
     double pushRot2 = -90;
     Pose2d pushPos2 = new Pose2d(pushVec2, Math.toRadians(pushRot2));
     Vector2d intakeVec1 = new Vector2d(8.5 , pushVec2.y); //drives to intake
