@@ -177,6 +177,7 @@ public class TeleOpChamberRed extends LinearOpMode {
             if (gamepad1.square){
                 ascentSquare = true;
             }
+            arm.shoulderLerpStartTime = stateMachine.timeSnapshot;
             ascent.reset(gamepad1.options);
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);

@@ -20,7 +20,7 @@ public class StateMachine {
         CHAMBER,
         CHAMBER_DEPOSIT
     }
-    public double timeSnapshot = System.currentTimeMillis();
+    public long timeSnapshot = System.currentTimeMillis();
     public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
         States newState = state;
         if (RT) {

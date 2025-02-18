@@ -44,6 +44,7 @@ public class Arm {
         DEPOSIT,
         CLOSE
     }
+
     public enum ClawRotation {
         Vert,
         Diag1,
@@ -51,6 +52,7 @@ public class Arm {
         Diag2,
         Horz2,
     }
+
     public enum TeamColor {
         RED,
         BLUE,
@@ -71,7 +73,7 @@ public class Arm {
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .24;
     public static double extendoChamberPos = .3;
-    public static  double wristForwardPos = 0.4; //Should be facing straight forwards
+    public static double wristForwardPos = 0.4; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
     public static double wristFullDownwardsPos = 0; //Should be facing towards the ground
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
@@ -90,6 +92,21 @@ public class Arm {
     public static double clawDiag2 = .2;
     public static double clawHorz1 = .4;
     public static double clawHorz2 = 0;
+
+    public long shoulderLerpStartTime = System.currentTimeMillis();
+    public static long SHOULDER_LERP_TIME_IN_MILLIS = 500;
+
+    public double lerp(double startPos, double endPos){
+        long timePassed = System.currentTimeMillis() - shoulderLerpStartTime;
+        double difference = endPos - startPos;
+        double percentComplete = timePassed/SHOULDER_LERP_TIME_IN_MILLIS;
+        if (percentComplete > 1){
+            percentComplete = 1;
+        }
+        //Lerp it!
+        double currentPos = difference * percentComplete + startPos;
+        return currentPos;
+    }
 
     public void initiate(HardwareMap hardwareMap) {
         extendoServo = hardwareMap.servo.get("Extendo");
@@ -120,34 +137,39 @@ public class Arm {
     public void intake(Intake intakeState) {
         this.intakeState = intakeState;
     }
+
     public void clawRotate(ClawRotation clawRotation) {
         this.clawRotation = clawRotation;
     }
-    public void clawRotateOveride(boolean overide, double targetRotation){
-        if (overide){
+
+    public void clawRotateOveride(boolean overide, double targetRotation) {
+        if (overide) {
             clawRotationServo.setPosition(targetRotation);
         }
     }
-    public double getClawRotation(){
+
+    public double getClawRotation() {
         return clawRotationServo.getPosition();
     }
-public TeamColor switchColor(TeamColor teamColor,boolean Switch){
+
+    public TeamColor switchColor(TeamColor teamColor, boolean Switch) {
         TeamColor newTeamColor = teamColor;
-        if (Switch){
-            if (teamColor == TeamColor.BLUE){
+        if (Switch) {
+            if (teamColor == TeamColor.BLUE) {
                 newTeamColor = TeamColor.RED;
-            }else {
+            } else {
                 newTeamColor = TeamColor.BLUE;
             }
         }
         return newTeamColor;
-}
+    }
+
     public void update(Telemetry telemetry, TeamColor teamColor) {
-        telemetry.addData("IntakeState",this.intakeState);
-        telemetry.addData("Extendo",this.extendoState);
+        telemetry.addData("IntakeState", this.intakeState);
+        telemetry.addData("Extendo", this.extendoState);
         switch (shoulderState) {
             case DOWNWARDS:
-                rightShoulder.setPosition(shoulderDownwards);
+                rightShoulder.setPosition(lerp(shoulderForwards,shoulderDownwards));
                 break;
             case UPWARDS:
                 rightShoulder.setPosition(shoulderUpwards);
@@ -205,7 +227,7 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 claw.setPosition(clawClosed);
                 break;
         }
-        intakeState = checkColor(teamColor,telemetry);
+        intakeState = checkColor(teamColor, telemetry);
         switch (clawRotation) {
             case Vert:
                 clawRotationServo.setPosition(clawVert);
@@ -223,25 +245,29 @@ public TeamColor switchColor(TeamColor teamColor,boolean Switch){
                 clawRotationServo.setPosition(clawDiag2);
                 break;
         }
-        telemetry.addData("Wrist",wristState);
-        telemetry.addData("ClawState",intakeState);
-        telemetry.addData("ClawRotation",clawRotation);
+        telemetry.addData("Wrist", wristState);
+        telemetry.addData("ClawState", intakeState);
+        telemetry.addData("ClawRotation", clawRotation);
     }
-public Intake checkColor(TeamColor teamColor, Telemetry telemetry){
-    return intakeState;
-}
-public boolean isGrabbed(){
+
+    public Intake checkColor(TeamColor teamColor, Telemetry telemetry) {
+        return intakeState;
+    }
+
+    public boolean isGrabbed() {
         return true;
-}
+    }
+
     public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                update(telemetry,teamColor);
+                update(telemetry, teamColor);
                 return true;
             }
         };
     }
+
     public Action clawRotationAction(ClawRotation state) {
         return new Action() {
             @Override
@@ -251,6 +277,7 @@ public boolean isGrabbed(){
             }
         };
     }
+
     public Action extendoAction(Extendo state) {
         return new Action() {
             @Override
