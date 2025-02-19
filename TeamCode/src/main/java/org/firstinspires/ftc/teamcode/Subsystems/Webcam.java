@@ -4,7 +4,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -37,8 +40,12 @@ import java.util.List;
 import java.util.List;
 
 @Config
-@Disabled
 public class Webcam {
+    public enum DRIVE_STAGE {
+        MOVE_TO_TARGET,
+        ADJUST,
+        DONE
+    }
     ColorBlobLocatorProcessor colorLocatorTeam;
     ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
@@ -48,9 +55,10 @@ public class Webcam {
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
     VisionPortal portal;
+    public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = 46; //Positive number because inversed camera
+    public static double LATERAL_OFFSET_PX = -30; //Positive number because inversed camera
     public static double CAMERA_WIDTH_IN = 8.5;
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
@@ -79,10 +87,47 @@ public class Webcam {
     Point topLeft = null;
     Point topRight = null;
     public Arm.ClawRotation sampleRotation = Arm.ClawRotation.Horz1;
-    Vector2d targetVec = new Vector2d(0,0);
-    public Arm.ClawRotation getSampleRotation(){
-        return sampleRotation;
+    public Pose2d driveStartPos = new Pose2d(0,0,0);
+    public void updateDriveStartPos(Pose2d pos){
+        driveStartPos = pos;
     }
+    public void updateCurrentDriveStage(DRIVE_STAGE stage){
+        currentDriveStage = stage;
+    }
+    public void webcamDrive(PinpointDrive drive, Arm arm, Arm.TeamColor teamColor, Telemetry telemetry){
+        if (currentDriveStage == DRIVE_STAGE.MOVE_TO_TARGET){
+            targetVec =new Vector2d(driveStartPos.position.x + targetVectorInches.y,driveStartPos.position.y - targetVectorInches.x);
+            Actions.runBlocking(
+                    new SequentialAction(
+                            arm.intakeAction(Arm.Intake.INTAKE),
+                            drive.actionBuilder(driveStartPos)
+                                    .strafeToConstantHeading(targetVec)
+                                    .build(),
+                            new SleepAction(.2),
+                            snapshotAction(teamColor)
+                    )
+            );
+            currentDriveStage = DRIVE_STAGE.ADJUST;
+        }else if (currentDriveStage == DRIVE_STAGE.ADJUST){
+            targetVec =new Vector2d(driveStartPos.position.x + targetVectorInches.y,driveStartPos.position.y - targetVectorInches.x);
+            Actions.runBlocking(
+                    new SequentialAction(
+                            drive.actionBuilder(new Pose2d(targetVec,0))
+                                    .strafeToConstantHeading(targetVec)
+                                    .build(),
+                            snapshotAction(teamColor),
+                            setClawRotation(arm,true),
+                            arm.intakeAction(Arm.Intake.INTAKE),
+                            arm.setTimeSnapshot(System.currentTimeMillis()),
+                            arm.shoulderAction(Arm.Shoulder.DOWNWARDS)
+                    )
+            );
+            currentDriveStage = DRIVE_STAGE.DONE;
+        }
+
+    telemetry.addData("CurrentDriveStage",currentDriveStage);
+    }
+    Vector2d targetVec = new Vector2d(0,0);
     private static double distance(double x1, double y1, double x2, double y2) {
         return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
     }
@@ -146,7 +191,7 @@ public class Webcam {
             double distanceXPx = (clawCenter.x - boxFit.center.x);
             double distanceYPx = (clawCenter.y - boxFit.center.y);
             double distancePx = Math.sqrt(Math.pow(distanceXPx, 2) + Math.pow(distanceYPx, 2));
-            if (distancePx < targetDistancePX) {
+            if (distancePx < targetDistancePX && distanceXPx != 160 && distanceYPx != 120) {
                 //Sets variables depending on what the target is
                 targetDistancePX = distancePx;
                 targetVectorPx = new Vector2d(distanceXPx,distanceYPx);
@@ -190,6 +235,12 @@ public class Webcam {
                         }
                     }
                 }
+                //This shouldn't happen but if it does, just have the claw rotate horizontally
+                if (bottomRight == null || bottomLeft == null || topRight == null || topLeft == null){
+                    sampleRotation = Arm.ClawRotation.Horz1;
+                    return;
+                }
+
 
                 // Find the angle of the longest side
                 angle = getRectangleAngle(topLeft.x, topLeft.y, topRight.x, topRight.y, bottomRight.x, bottomRight.y, bottomLeft.x, bottomLeft.y);
@@ -212,6 +263,7 @@ public class Webcam {
     public void snapshot() {
         //Reset the variables everytime a snapshot is taken
         targetDistancePX = CAMERA_WIDTH_PX / 2;
+        targetVectorInches = new Vector2d(0,0);
         targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
         bottomLeft = null;
         bottomRight = null;
@@ -250,7 +302,7 @@ public class Webcam {
             }
         };
     }
-    public Action setArm(Arm arm, boolean rotate) {
+    public Action setClawRotation(Arm arm, boolean rotate) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {

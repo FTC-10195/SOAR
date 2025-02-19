@@ -148,16 +148,6 @@ public class Arm {
         this.clawRotation = clawRotation;
     }
 
-    public void clawRotateOveride(boolean overide, double targetRotation) {
-        if (overide) {
-            clawRotationServo.setPosition(targetRotation);
-        }
-    }
-
-    public double getClawRotation() {
-        return clawRotationServo.getPosition();
-    }
-
     public TeamColor switchColor(TeamColor teamColor, boolean Switch) {
         TeamColor newTeamColor = teamColor;
         if (Switch) {
@@ -323,6 +313,18 @@ public class Arm {
                 return false;
             }
         };
+    }
+    public Action setTimeSnapshot(long time) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                setShoulderLerpStartTime(time);
+                return false;
+            }
+        };
+    }
+    public boolean isLerpComplete() {
+        return System.currentTimeMillis() - shoulderLerpStartTime > SHOULDER_LERP_TIME_IN_MILLIS;
     }
 
     public Action bucketAction() {
