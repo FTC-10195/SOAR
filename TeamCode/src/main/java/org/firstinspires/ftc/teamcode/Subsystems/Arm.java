@@ -95,16 +95,22 @@ public class Arm {
 
     public long shoulderLerpStartTime = System.currentTimeMillis();
     public static long SHOULDER_LERP_TIME_IN_MILLIS = 500;
+    public void setShoulderLerpStartTime(long time){
+        shoulderLerpStartTime = time;
+    }
 
     public double lerp(double startPos, double endPos){
         long timePassed = System.currentTimeMillis() - shoulderLerpStartTime;
         double difference = endPos - startPos;
-        double percentComplete = timePassed/SHOULDER_LERP_TIME_IN_MILLIS;
+
+        //Must convert to doubles because it is a decimal while longs are not
+        double percentComplete = (double) timePassed/ (double) SHOULDER_LERP_TIME_IN_MILLIS;
+
         if (percentComplete > 1){
             percentComplete = 1;
         }
         //Lerp it!
-        double currentPos = difference * percentComplete + startPos;
+        double currentPos = (difference * percentComplete) + startPos;
         return currentPos;
     }
 
@@ -167,6 +173,7 @@ public class Arm {
     public void update(Telemetry telemetry, TeamColor teamColor) {
         telemetry.addData("IntakeState", this.intakeState);
         telemetry.addData("Extendo", this.extendoState);
+        telemetry.addData("shoulderLerpStartTime", shoulderLerpStartTime);
         switch (shoulderState) {
             case DOWNWARDS:
                 rightShoulder.setPosition(lerp(shoulderForwards,shoulderDownwards));
