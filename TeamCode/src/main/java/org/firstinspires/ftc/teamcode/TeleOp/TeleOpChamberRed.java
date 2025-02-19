@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
@@ -18,6 +20,7 @@ public class TeleOpChamberRed extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
       //  Webcam webcam = new Webcam();
       //  webcam.initiate(hardwareMap,telemetry);
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
@@ -35,6 +38,8 @@ public class TeleOpChamberRed extends LinearOpMode {
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
+        Webcam webcam = new Webcam();
+        webcam.initiate(hardwareMap,teamColor,telemetry);
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
@@ -45,6 +50,7 @@ public class TeleOpChamberRed extends LinearOpMode {
         ascent.initiate(hardwareMap);
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
+            drive.updatePoseEstimate();
             ascent.update(ascentSquare, telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
@@ -59,6 +65,14 @@ public class TeleOpChamberRed extends LinearOpMode {
             boolean SwitchColor = gamepad1.cross && !previousGamepad1.cross;
             mode = stateMachine.switchMode(mode,SwitchMode);
             state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
+            if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()){
+                webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.DONE);
+            }else if (LB && state == StateMachine.States.SAMPLE_INTAKE){
+                webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.MOVE_TO_TARGET);
+                webcam.updateDriveStartPos(drive.pinpoint.getPositionRR());
+                webcam.snapshot();
+                arm.intake(Arm.Intake.INTAKE);
+            }
             switch (state) {
                 case RESTING:
                     arm.extendo(Arm.Extendo.RETRACTED);
@@ -73,10 +87,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     break;
                 case SAMPLE_INTAKE:
-                        arm.extendo(Arm.Extendo.EXTENDED);
-                        arm.shoulder(Arm.Shoulder.DOWNWARDS);
-                        arm.wrist(Arm.Wrist.DOWNWARDS);
-                        verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+
                     break;
                 case BUCKET:
                     arm.extendo(Arm.Extendo.RETRACTED);
@@ -110,54 +121,7 @@ public class TeleOpChamberRed extends LinearOpMode {
                     arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
             }
-            if (gamepad2.left_trigger >=.1 && clawRotationRanLeft == false){
-                clawRotationRanLeft = true;
-                if (arm.clawRotation == Arm.ClawRotation.Vert){
-                    arm.clawRotate(Arm.ClawRotation.Diag2);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
-                    arm.clawRotate(Arm.ClawRotation.Diag1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
-                    arm.clawRotate(Arm.ClawRotation.Vert);
-                }
-            }else if (gamepad2.left_trigger < .1){
-                clawRotationRanLeft = false;
-            }
-            if (gamepad2.right_trigger >=.1 && clawRotationRanRight == false){
-                clawRotationRanRight = true;
-                if (arm.clawRotation == Arm.ClawRotation.Vert){
-                    arm.clawRotate(Arm.ClawRotation.Diag1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
-                    arm.clawRotate(Arm.ClawRotation.Diag2);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
-                    arm.clawRotate(Arm.ClawRotation.Vert);
-                }
-            }else if (gamepad2.right_trigger < .1){
-                clawRotationRanRight = false;
-            }
-            if (gamepad2.left_bumper && clawRan == false){
-                clawRan = true;
-                if (arm.intakeState == Arm.Intake.INTAKE || arm.intakeState == Arm.Intake.DEPOSIT){
-                    arm.intake(Arm.Intake.CLOSE);
-                }else if (arm.intakeState == Arm.Intake.CLOSE){
-                    if (state == StateMachine.States.BUCKET || state == StateMachine.States.CHAMBER){
-                        arm.intake(Arm.Intake.DEPOSIT);
-                    }else{
-                        arm.intake(Arm.Intake.INTAKE);
-                    }
-                }
-            }else if (!gamepad2.left_bumper){
-                clawRan = false;
-            }
-            if (gamepad2.right_bumper && clawRB2 == false){
-                clawRB2 = true;
-                arm.clawRotate(Arm.ClawRotation.Horz1);
-            }else if (!gamepad2.right_bumper){
-                clawRB2 = false;
-            }
+         arm.intake(stateMachine.clawState);
             if (gamepad1.triangle && ascentA == false){
                 ascentA = true;
                 switch (ascent.climbPosition){
@@ -177,14 +141,20 @@ public class TeleOpChamberRed extends LinearOpMode {
             if (gamepad1.square){
                 ascentSquare = true;
             }
-            arm.setShoulderLerpStartTime(stateMachine.timeSnapshot);
             ascent.reset(gamepad1.options);
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
             teamColor = arm.switchColor(teamColor,SwitchColor);
             arm.update(telemetry, teamColor);
             verticalSlides.update();
-            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
+            webcam.webcamDrive(drive,arm,teamColor,telemetry);
+            if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
+                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x,telemetry);
+                if (arm.isLerpComplete()){
+                    arm.intake(Arm.Intake.CLOSE);
+                }
+            }
+            webcam.loop(telemetry);
             telemetry.addData("CurrentState", state);
             telemetry.update();
         }
