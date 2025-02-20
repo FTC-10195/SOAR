@@ -28,7 +28,7 @@ public class StateMachine {
     public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
         States newState = state;
         if (RT) {
-            if (state == States.SAMPLE_INTAKE){
+            if (state == States.SAMPLE_INTAKE || state == States.SCOUTING){
                 if (clawState == Arm.Intake.CLOSE){
                     clawState = Arm.Intake.INTAKE;
                 }else{
