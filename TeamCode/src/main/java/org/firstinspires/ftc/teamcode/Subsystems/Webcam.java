@@ -58,7 +58,7 @@ public class Webcam {
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = -30; //Positive number because inversed camera
+    public static double LATERAL_OFFSET_PX = -15;
     public static double CAMERA_WIDTH_IN = 8.5;
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera

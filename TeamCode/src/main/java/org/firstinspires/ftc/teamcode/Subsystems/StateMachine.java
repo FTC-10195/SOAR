@@ -36,7 +36,10 @@ public class StateMachine {
                 }
             }
             if (mode == Mode.CHAMBER) {
-                if (state == States.CHAMBER && clawState == Arm.Intake.CLOSE) {
+                if (state == States.CHAMBER_HUMAN_INTAKE) {
+                    clawState = Arm.Intake.CLOSE;
+                    newState = States.CHAMBER;
+                }else if (state == States.CHAMBER && clawState == Arm.Intake.CLOSE) {
                     clawState = Arm.Intake.INTAKE;
                 }else if (state == States.CHAMBER && clawState != Arm.Intake.CLOSE){
                     newState = States.RESTING;
@@ -57,7 +60,6 @@ public class StateMachine {
         if (LB) {
             switch (state){
                 case RESTING:
-                    clawState = Arm.Intake.INTAKE;
                     newState = States.SCOUTING;
                      break;
                 case CHAMBER_HUMAN_INTAKE:
@@ -65,8 +67,8 @@ public class StateMachine {
                     newState = States.SCOUTING;
                     break;
                 case SCOUTING:
-                    newState = States.SAMPLE_INTAKE;
                     clawState = Arm.Intake.INTAKE;
+                    newState = States.SAMPLE_INTAKE;
                     timeSnapshot = System.currentTimeMillis();
                     break;
                 case SAMPLE_INTAKE:
