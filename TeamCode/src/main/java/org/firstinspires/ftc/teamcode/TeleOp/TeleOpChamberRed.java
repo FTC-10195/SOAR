@@ -79,12 +79,14 @@ public class TeleOpChamberRed extends LinearOpMode {
                     arm.shoulder(Arm.Shoulder.UPWARDS);
                     arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
                 case SCOUTING:
                     arm.extendo(Arm.Extendo.EXTENDED);
                     arm.shoulder(Arm.Shoulder.FORWARDS);
                     arm.wrist(Arm.Wrist.DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
                 case SAMPLE_INTAKE:
 
@@ -150,8 +152,8 @@ public class TeleOpChamberRed extends LinearOpMode {
             webcam.webcamDrive(drive,arm,teamColor,telemetry);
             if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
                 driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x,telemetry);
-                if (arm.isLerpComplete()){
-                    arm.intake(Arm.Intake.CLOSE);
+                if (arm.isLerpComplete() && state == StateMachine.States.SAMPLE_INTAKE && System.currentTimeMillis() - arm.shoulderLerpStartTime < 1000){
+                    stateMachine.setClawState(Arm.Intake.CLOSE);
                 }
             }
             webcam.loop(telemetry);

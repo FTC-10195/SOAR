@@ -40,14 +40,16 @@ public class StateMachine {
                     clawState = Arm.Intake.INTAKE;
                 }else if (state == States.CHAMBER && clawState != Arm.Intake.CLOSE){
                     newState = States.RESTING;
-                }else{
+                }else if (state == States.RESTING){
                     newState = States.CHAMBER;
                 }
             } else {
-                if (state == States.RESTING) {
-                    newState = States.BUCKET;
-                } else if (state == States.BUCKET) {
+                if (state == States.BUCKET && clawState == Arm.Intake.CLOSE) {
+                    clawState = Arm.Intake.INTAKE;
+                }else if (state == States.BUCKET && clawState != Arm.Intake.CLOSE){
                     newState = States.RESTING;
+                }else if (state == States.RESTING){
+                    newState = States.BUCKET;
                 }
             }
 

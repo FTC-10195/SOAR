@@ -96,7 +96,9 @@ public class Webcam {
     }
     public void webcamDrive(PinpointDrive drive, Arm arm, Arm.TeamColor teamColor, Telemetry telemetry){
         if (currentDriveStage == DRIVE_STAGE.MOVE_TO_TARGET){
-            targetVec =new Vector2d(driveStartPos.position.x + targetVectorInches.y,driveStartPos.position.y - targetVectorInches.x);
+            double targetX = (targetVectorInches.y * Math.cos(driveStartPos.heading.toDouble())) + (targetVectorInches.x * Math.sin(driveStartPos.heading.toDouble()));
+            double targetY = (-targetVectorInches.y * Math.sin(driveStartPos.heading.toDouble())) + (targetVectorInches.x * Math.cos(driveStartPos.heading.toDouble()));
+            targetVec =new Vector2d(driveStartPos.position.x + targetX,driveStartPos.position.y - targetY);
             Actions.runBlocking(
                     new SequentialAction(
                             arm.intakeAction(Arm.Intake.INTAKE),
