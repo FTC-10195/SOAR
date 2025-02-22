@@ -159,7 +159,7 @@ public class Webcam {
 
     Point targetPos = clawCenter;
 
-    public void initiate(HardwareMap hardwareMap, Arm.TeamColor teamColor, Telemetry telemetry) {
+    public void initiate(HardwareMap hardwareMap, Arm.TeamColor teamColor, StateMachine.Mode mode, Telemetry telemetry) {
         ColorRange translatedColor;
         if (teamColor == Arm.TeamColor.RED){
             translatedColor = ColorRange.RED;
@@ -175,11 +175,19 @@ public class Webcam {
                 .setDrawContours(true)                        // Show contours on the Stream Preview
                 .setBlurSize(5)                               // Smooth the transitions between different colors in image
                 .build();
-        portal = new VisionPortal.Builder()
-                .addProcessors(colorLocatorTeam)
-                .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .build();
+        if (mode == StateMachine.Mode.BUCKET){
+            portal = new VisionPortal.Builder()
+                    .addProcessors(colorLocatorTeam,colorLocatorYellow)
+                    .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .build();
+        }else{
+            portal = new VisionPortal.Builder()
+                    .addProcessors(colorLocatorTeam)
+                    .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
+                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .build();
+        }
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
     }

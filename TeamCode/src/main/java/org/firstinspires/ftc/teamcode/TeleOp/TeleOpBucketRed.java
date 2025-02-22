@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
-public class TeleOpChamberRed extends LinearOpMode {
+public class TeleOpBucketRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
       //  Webcam webcam = new Webcam();
@@ -36,7 +36,7 @@ public class TeleOpChamberRed extends LinearOpMode {
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
-        StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
+        StateMachine.Mode mode = StateMachine.Mode.BUCKET;
         StateMachine.States state = StateMachine.States.RESTING;
         Webcam webcam = new Webcam();
         webcam.initiate(hardwareMap,teamColor,mode,telemetry);
