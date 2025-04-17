@@ -16,10 +16,6 @@ public class DriveTrain {
     DcMotor frontRightMotor;
     DcMotor backLeftMotor;
     DcMotor backRightMotor;
-    public static double flP = 1;
-    public static double frP = 1;
-    public static double blP = 1;
-    public static double brP = 1;
     public void initiate(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("motor0");
         frontRightMotor = hardwareMap.dcMotor.get("motor1");
@@ -35,27 +31,24 @@ public class DriveTrain {
     }
 
     public void run(double x, double y, double rx, Telemetry telemetry) {
-        rx = -rx;
+        rx=-rx;
         double denominator = (Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1));
-        frontLeftMotor.setPower(((y + x + rx) / denominator)*flP);
-        backLeftMotor.setPower(((y - x + rx) / denominator)*blP);
-        frontRightMotor.setPower(((y - x - rx) / denominator)*frP);
-        backRightMotor.setPower(((y + x - rx) / denominator)*brP);
-        telemetry.addData("par0",backRightMotor.getCurrentPosition());
-        telemetry.addData("par1",frontLeftMotor.getCurrentPosition());
-        telemetry.addData("perp",frontRightMotor.getCurrentPosition());
+        frontLeftMotor.setPower(((y + x + rx) / denominator));
+        backLeftMotor.setPower(((y - x + rx) / denominator));
+        frontRightMotor.setPower(((y - x - rx) / denominator));
+        backRightMotor.setPower(((y + x - rx) / denominator));
     }
     public void testStrafe(double power) {
-            frontLeftMotor.setPower(power * flP);
-            frontRightMotor.setPower(-power * frP);
-            backLeftMotor.setPower(-power * blP);
-            backRightMotor.setPower(power * brP);
+            frontLeftMotor.setPower(power);
+            frontRightMotor.setPower(-power);
+            backLeftMotor.setPower(-power);
+            backRightMotor.setPower(power);
     }
     public void testDrive(double power) {
-            frontLeftMotor.setPower(power * flP);
-            frontRightMotor.setPower(power * frP);
-            backLeftMotor.setPower(power * blP);
-            backRightMotor.setPower(power * brP);
+            frontLeftMotor.setPower(power);
+            frontRightMotor.setPower(power);
+            backLeftMotor.setPower(power);
+            backRightMotor.setPower(power);
     }
     public int fLMPos(){
         return frontLeftMotor.getCurrentPosition();

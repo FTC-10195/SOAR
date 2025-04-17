@@ -31,10 +31,12 @@ import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
+import org.firstinspires.ftc.vision.opencv.ColorSpace;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
 
 import java.util.List;
 import java.util.List;
@@ -46,19 +48,33 @@ public class Webcam {
         ADJUST,
         DONE
     }
-    ColorBlobLocatorProcessor colorLocatorTeam;
-    ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(ColorRange.YELLOW)         // use a predefined color match
+    ColorBlobLocatorProcessor colorLocatorRed = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(ColorRange.RED)         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
-            .setDrawContours(true)                        // Show contours on the Stream Preview
+            .setDrawContours(false)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
+    ColorBlobLocatorProcessor colorLocatorBlue = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
+            .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+            .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
+            .setDrawContours(false)                        // Show contours on the Stream Preview
+            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .build();
+    ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(120,137,0), new Scalar(255,255,130)))         // use a predefined color match
+            .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+            .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
+            .setDrawContours(false)                        // Show contours on the Stream Preview
+            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .build();
+    ColorBlobLocatorProcessor colorLocatorTeam;
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = -15;
+    public static double LATERAL_OFFSET_PX = -30;
     public static double CAMERA_WIDTH_IN = 8.5;
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
@@ -88,13 +104,20 @@ public class Webcam {
     Point topRight = null;
     public Arm.ClawRotation sampleRotation = Arm.ClawRotation.Horz1;
     public Pose2d driveStartPos = new Pose2d(0,0,0);
+    public void setLiveView(boolean On){
+        if (On){
+            portal.resumeLiveView();
+        }else{
+            portal.stopLiveView();
+        }
+    }
     public void updateDriveStartPos(Pose2d pos){
         driveStartPos = pos;
     }
     public void updateCurrentDriveStage(DRIVE_STAGE stage){
         currentDriveStage = stage;
     }
-    public void webcamDrive(PinpointDrive drive, Arm arm, Arm.TeamColor teamColor, Telemetry telemetry){
+    public void webcamDrive(PinpointDrive drive, Arm arm, Telemetry telemetry){
         if (currentDriveStage == DRIVE_STAGE.MOVE_TO_TARGET){
             double targetX = (targetVectorInches.y * Math.cos(driveStartPos.heading.toDouble())) + (targetVectorInches.x * Math.sin(driveStartPos.heading.toDouble()));
             double targetY = (-targetVectorInches.y * Math.sin(driveStartPos.heading.toDouble())) + (targetVectorInches.x * Math.cos(driveStartPos.heading.toDouble()));
@@ -106,7 +129,7 @@ public class Webcam {
                                     .strafeToConstantHeading(targetVec)
                                     .build(),
                             new SleepAction(.2),
-                            snapshotAction(teamColor)
+                            snapshotAction()
                     )
             );
             currentDriveStage = DRIVE_STAGE.ADJUST;
@@ -117,7 +140,7 @@ public class Webcam {
                             drive.actionBuilder(new Pose2d(targetVec,0))
                                     .strafeToConstantHeading(targetVec)
                                     .build(),
-                            snapshotAction(teamColor),
+                            snapshotAction(),
                             setClawRotation(arm,true),
                             arm.intakeAction(Arm.Intake.INTAKE),
                             arm.setTimeSnapshot(System.currentTimeMillis()),
@@ -158,36 +181,32 @@ public class Webcam {
     }
 
     Point targetPos = clawCenter;
-
-    public void initiate(HardwareMap hardwareMap, Arm.TeamColor teamColor, StateMachine.Mode mode, Telemetry telemetry) {
-        ColorRange translatedColor;
+    public void setColorLocatorTeam(Arm.TeamColor teamColor, boolean override){
         if (teamColor == Arm.TeamColor.RED){
-            translatedColor = ColorRange.RED;
+            colorLocatorTeam = colorLocatorRed;
         }else if (teamColor == Arm.TeamColor.BLUE){
-            translatedColor = ColorRange.BLUE;
+            colorLocatorTeam = colorLocatorBlue;
         }else {
-            translatedColor = ColorRange.YELLOW; //No team color, just only do yellow
+            colorLocatorTeam = colorLocatorYellow;
         }
-        colorLocatorTeam = new ColorBlobLocatorProcessor.Builder()
-                .setTargetColorRange(translatedColor)         // use a predefined color match
-                .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
-                .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
-                .setDrawContours(true)                        // Show contours on the Stream Preview
-                .setBlurSize(5)                               // Smooth the transitions between different colors in image
-                .build();
-        if (mode == StateMachine.Mode.BUCKET){
+
+    }
+    boolean canSeeYellow = false;
+    public void setColorLocatorMode(StateMachine.Mode mode, boolean override){
+       if (mode == StateMachine.Mode.BUCKET){
+           canSeeYellow = true;
+       }else{
+           canSeeYellow = false;
+       }
+    }
+    public void initiate(HardwareMap hardwareMap, Arm.TeamColor teamColor, StateMachine.Mode mode, Telemetry telemetry) {
             portal = new VisionPortal.Builder()
-                    .addProcessors(colorLocatorTeam,colorLocatorYellow)
+                    .addProcessors(colorLocatorRed,colorLocatorBlue,colorLocatorYellow)
                     .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                     .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                     .build();
-        }else{
-            portal = new VisionPortal.Builder()
-                    .addProcessors(colorLocatorTeam)
-                    .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                    .build();
-        }
+        setColorLocatorTeam(teamColor,true);
+        setColorLocatorMode(mode,true);
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
     }
@@ -281,8 +300,10 @@ public class Webcam {
         topRight = null;
 
         // Read the current list, look for yellow ones first
-        List<ColorBlobLocatorProcessor.Blob> blobsYellow = colorLocatorYellow.getBlobs();
-        lookForBlobs(blobsYellow);
+        if (canSeeYellow) {
+            List<ColorBlobLocatorProcessor.Blob> blobsYellow = colorLocatorYellow.getBlobs();
+            lookForBlobs(blobsYellow);
+        }
         List<ColorBlobLocatorProcessor.Blob> blobsTeam = colorLocatorTeam.getBlobs();
         lookForBlobs(blobsTeam);
 
@@ -335,7 +356,7 @@ public class Webcam {
             }
         };
     }
-    public Action snapshotAction(Arm.TeamColor teamColor) {
+    public Action snapshotAction() {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {

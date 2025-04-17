@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
-public class TeleOpWebcamDrive extends LinearOpMode {
+public class WebcamDemo extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
       //  Webcam webcam = new Webcam();
@@ -66,7 +66,7 @@ public class TeleOpWebcamDrive extends LinearOpMode {
             }else if (!gamepad1.right_bumper){
                 resetArm = false;
             }
-            webcam.webcamDrive(drive,arm,teamColor,telemetry);
+            webcam.webcamDrive(drive,arm,telemetry);
             if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
                 driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x,telemetry);
                 if (arm.isLerpComplete()){

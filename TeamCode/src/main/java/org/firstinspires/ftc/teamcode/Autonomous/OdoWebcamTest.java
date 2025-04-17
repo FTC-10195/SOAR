@@ -72,14 +72,14 @@ public class OdoWebcamTest extends LinearOpMode {
                 new SequentialAction(
                        scouting(),
                         new SleepAction(6),
-                        webcam.snapshotAction(Arm.TeamColor.NONE),
+                        webcam.snapshotAction(),
                         new SleepAction(3),
                         webcam.setDrive(drive,pos),
                     //    new SleepAction(1),
                      //   webcam.snapshotAction(Arm.TeamColor.NONE),
                      //   webcam.updateAction(telemetry,arm),
                         new SleepAction(1),
-                        webcam.snapshotAction(Arm.TeamColor.NONE),
+                        webcam.snapshotAction(),
                         new SleepAction(1),
                         webcam.setClawRotation(arm,true),
                         intake()

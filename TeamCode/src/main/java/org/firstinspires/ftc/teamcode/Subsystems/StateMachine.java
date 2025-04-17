@@ -62,10 +62,6 @@ public class StateMachine {
                 case RESTING:
                     newState = States.SCOUTING;
                      break;
-                case CHAMBER_HUMAN_INTAKE:
-                    clawState = Arm.Intake.INTAKE;
-                    newState = States.SCOUTING;
-                    break;
                 case SCOUTING:
                     clawState = Arm.Intake.INTAKE;
                     newState = States.SAMPLE_INTAKE;
@@ -83,14 +79,15 @@ public class StateMachine {
             }
         }
         if (LT) {
-            if (state == States.CHAMBER_HUMAN_INTAKE){
+            if (state == States.CHAMBER_HUMAN_INTAKE || state == States.SCOUTING || state == States.SAMPLE_INTAKE){
                 if (clawState == Arm.Intake.CLOSE){
                     clawState = Arm.Intake.INTAKE;
                 }else{
                     clawState = Arm.Intake.CLOSE;
                 }
+            }else {
+                newState = States.CHAMBER_HUMAN_INTAKE;
             }
-            newState = States.CHAMBER_HUMAN_INTAKE;
         }
         if (RB) {
             newState = States.RESTING;

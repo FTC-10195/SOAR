@@ -73,9 +73,9 @@ public class Arm {
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .24;
     public static double extendoChamberPos = .3;
-    public static double wristForwardPos = 0.4; //Should be facing straight forwards
+    public static double wristForwardPos = 0.42; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
-    public static double wristFullDownwardsPos = 0; //Should be facing towards the ground
+    public static double wristFullDownwardsPos = 0.1; //Should be facing towards the ground
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderInit = .15;
@@ -94,7 +94,7 @@ public class Arm {
     public static double clawHorz2 = 0;
 
     public long shoulderLerpStartTime = System.currentTimeMillis();
-    public static long SHOULDER_LERP_TIME_IN_MILLIS = 500;
+    public static long SHOULDER_LERP_TIME_IN_MILLIS = 400;
     public void setShoulderLerpStartTime(long time){
         shoulderLerpStartTime = time;
     }

@@ -1,22 +1,28 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
+
+import java.nio.file.attribute.FileAttribute;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
-public class Outreach extends LinearOpMode {
+public class ChamberRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
       //  Webcam webcam = new Webcam();
       //  webcam.initiate(hardwareMap,telemetry);
+        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
@@ -34,6 +40,8 @@ public class Outreach extends LinearOpMode {
         Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
+        Webcam webcam = new Webcam();
+        webcam.initiate(hardwareMap,teamColor,mode,telemetry);
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
@@ -44,6 +52,7 @@ public class Outreach extends LinearOpMode {
         ascent.initiate(hardwareMap);
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
+            drive.updatePoseEstimate();
             ascent.update(ascentSquare, telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
@@ -54,28 +63,48 @@ public class Outreach extends LinearOpMode {
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
-            boolean SwitchMode = gamepad1.circle && !previousGamepad1.circle;
-            boolean SwitchColor = gamepad1.cross && !previousGamepad1.cross;
-            mode = stateMachine.switchMode(mode,SwitchMode);
+            boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
+            boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
+            mode = stateMachine.switchMode(mode,switchMode);
             state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
+            if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()){
+                webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.DONE);
+            }else if (LB && state == StateMachine.States.SAMPLE_INTAKE){
+                webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.MOVE_TO_TARGET);
+                webcam.updateDriveStartPos(drive.pinpoint.getPositionRR());
+                webcam.snapshot();
+                arm.intake(Arm.Intake.INTAKE);
+            }
+            if (switchMode){
+                webcam.setColorLocatorMode(mode,false);
+            }
+            if (switchColor){
+                webcam.setColorLocatorTeam(teamColor,false);
+            }
+            //Save processing power idk
+            if (state == StateMachine.States.SCOUTING || state == StateMachine.States.SAMPLE_INTAKE){
+                webcam.setLiveView(true);
+            }else{
+                webcam.setLiveView(false);
+            }
             switch (state) {
                 case RESTING:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.UPWARDS);
                     arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
                 case SCOUTING:
                     arm.extendo(Arm.Extendo.EXTENDED);
                     arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.wrist(Arm.Wrist.DOWNWARDS);
+                    arm.wrist(Arm.Wrist.FULL_DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                    webcam.setClawRotation(Arm.ClawRotation.Horz1);
                     break;
                 case SAMPLE_INTAKE:
-                        arm.extendo(Arm.Extendo.EXTENDED);
-                        arm.shoulder(Arm.Shoulder.DOWNWARDS);
-                        arm.wrist(Arm.Wrist.DOWNWARDS);
-                        verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                    arm.wrist(Arm.Wrist.DOWNWARDS);
                     break;
                 case BUCKET:
                     arm.extendo(Arm.Extendo.RETRACTED);
@@ -105,58 +134,12 @@ public class Outreach extends LinearOpMode {
                 case CHAMBER_HUMAN_INTAKE:
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
+                    arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
             }
-            if (gamepad2.left_trigger >=.1 && clawRotationRanLeft == false){
-                clawRotationRanLeft = true;
-                if (arm.clawRotation == Arm.ClawRotation.Vert){
-                    arm.clawRotate(Arm.ClawRotation.Diag2);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
-                    arm.clawRotate(Arm.ClawRotation.Diag1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
-                    arm.clawRotate(Arm.ClawRotation.Vert);
-                }
-            }else if (gamepad2.left_trigger < .1){
-                clawRotationRanLeft = false;
-            }
-            if (gamepad2.right_trigger >=.1 && clawRotationRanRight == false){
-                clawRotationRanRight = true;
-                if (arm.clawRotation == Arm.ClawRotation.Vert){
-                    arm.clawRotate(Arm.ClawRotation.Diag1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag1){
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
-                }else if (arm.clawRotation == Arm.ClawRotation.Horz1){
-                    arm.clawRotate(Arm.ClawRotation.Diag2);
-                }else if (arm.clawRotation == Arm.ClawRotation.Diag2){
-                    arm.clawRotate(Arm.ClawRotation.Vert);
-                }
-            }else if (gamepad2.right_trigger < .1){
-                clawRotationRanRight = false;
-            }
-            if (gamepad2.left_bumper && clawRan == false){
-                clawRan = true;
-                if (arm.intakeState == Arm.Intake.INTAKE || arm.intakeState == Arm.Intake.DEPOSIT){
-                    arm.intake(Arm.Intake.CLOSE);
-                }else if (arm.intakeState == Arm.Intake.CLOSE){
-                    if (state == StateMachine.States.BUCKET || state == StateMachine.States.CHAMBER){
-                        arm.intake(Arm.Intake.DEPOSIT);
-                    }else{
-                        arm.intake(Arm.Intake.INTAKE);
-                    }
-                }
-            }else if (!gamepad2.left_bumper){
-                clawRan = false;
-            }
-            if (gamepad2.right_bumper && clawRB2 == false){
-                clawRB2 = true;
-                arm.clawRotate(Arm.ClawRotation.Horz1);
-            }else if (!gamepad2.right_bumper){
-                clawRB2 = false;
-            }
+         arm.intake(stateMachine.clawState);
             if (gamepad1.triangle && ascentA == false){
                 ascentA = true;
                 switch (ascent.climbPosition){
@@ -179,10 +162,19 @@ public class Outreach extends LinearOpMode {
             ascent.reset(gamepad1.options);
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
-            teamColor = arm.switchColor(teamColor,SwitchColor);
+            teamColor = arm.switchColor(teamColor,switchColor);
             arm.update(telemetry, teamColor);
             verticalSlides.update();
-            driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
+
+            if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
+                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x,telemetry);
+                if (arm.isLerpComplete() && state == StateMachine.States.SAMPLE_INTAKE && System.currentTimeMillis() - arm.shoulderLerpStartTime < 1000){
+                    stateMachine.setClawState(Arm.Intake.CLOSE);
+                }
+            }else{
+                webcam.webcamDrive(drive,arm,telemetry);
+            }
+            webcam.loop(telemetry);
             telemetry.addData("CurrentState", state);
             telemetry.update();
         }
