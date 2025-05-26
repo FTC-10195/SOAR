@@ -138,6 +138,8 @@ Constants.setConstants(FConstants.class, LConstants.class);
 
         poseUpdater.update();
         Vector heading = new Vector(1.0, poseUpdater.getPose().getHeading() - Math.PI / 2);
+
+
         if (!end) {
             if (!stopping) {
                 if (MathFunctions.dotProduct(poseUpdater.getVelocity(), heading) > VELOCITY) {
