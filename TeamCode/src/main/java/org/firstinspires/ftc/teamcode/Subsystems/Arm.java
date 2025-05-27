@@ -80,7 +80,7 @@ public class Arm {
     //Shoulder Positions:
     public static double shoulderInit = .15;
     public static double shoulderChamberIntake = 0.09;
-    public static double shoulderBucket = .24;
+    public static double shoulderBucket = .3;
     public static double shoulderBackwards = .1;
     public static double shoulderUpwards = 0.4;
     public static double shoulderForwards = 0.52;   //Should be parallel to the ground

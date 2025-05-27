@@ -107,7 +107,7 @@ public class ChamberRed extends LinearOpMode {
                     arm.wrist(Arm.Wrist.DOWNWARDS);
                     break;
                 case BUCKET:
-                    arm.extendo(Arm.Extendo.RETRACTED);
+                    arm.extendo(Arm.Extendo.EXTENDED);
                     arm.shoulder(Arm.Shoulder.BUCKET);
                     arm.wrist(Arm.Wrist.FORWARD);
                     arm.clawRotate(Arm.ClawRotation.Horz1);
