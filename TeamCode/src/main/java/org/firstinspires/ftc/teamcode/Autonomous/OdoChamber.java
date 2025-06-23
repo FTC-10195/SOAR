@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
+import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 import org.opencv.core.Mat;
 
@@ -299,7 +300,7 @@ public class OdoChamber extends LinearOpMode {
                                     toScore4(arm, drive, verticalSlides, intakePos2, 8, 0)
                             ),
                             verticalSlides.updateAction(),
-                            arm.updateAction(telemetry, Arm.TeamColor.NONE)
+                            arm.updateAction(telemetry, TeamColor.Color.NONE)
                     )
             );
         }

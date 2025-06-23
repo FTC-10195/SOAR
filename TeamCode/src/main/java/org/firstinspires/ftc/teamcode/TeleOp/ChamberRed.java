@@ -10,10 +10,9 @@ import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
+import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
-
-import java.nio.file.attribute.FileAttribute;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
@@ -33,15 +32,15 @@ public class ChamberRed extends LinearOpMode {
         verticalSlides.initiate(hardwareMap);
         arm.initiate(hardwareMap);
         arm.shoulder(Arm.Shoulder.FORWARDS);
+        TeamColor teamColor = new TeamColor(TeamColor.Color.RED);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
-        Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
         Webcam webcam = new Webcam();
-        webcam.initiate(hardwareMap,teamColor,mode,telemetry);
+        webcam.initiate(hardwareMap,teamColor.getColor(),mode,telemetry);
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
@@ -67,6 +66,7 @@ public class ChamberRed extends LinearOpMode {
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
             mode = stateMachine.switchMode(mode,switchMode);
             state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
+            teamColor.status(telemetry);
             if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()){
                 webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.DONE);
             }else if (LB && state == StateMachine.States.SAMPLE_INTAKE){
@@ -79,7 +79,8 @@ public class ChamberRed extends LinearOpMode {
                 webcam.setColorLocatorMode(mode,false);
             }
             if (switchColor){
-                webcam.setColorLocatorTeam(teamColor,false);
+                teamColor.flipColor();
+                webcam.setColorLocatorTeam(teamColor.getColor(),false);
             }
             //Save processing power idk
             if (state == StateMachine.States.SCOUTING || state == StateMachine.States.SAMPLE_INTAKE){
@@ -122,7 +123,7 @@ public class ChamberRed extends LinearOpMode {
                 case CHAMBER_DEPOSIT:
                     arm.extendo(Arm.Extendo.CHAMBER);
                     arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.wrist(Arm.Wrist.DOWNWARDS);
+                    arm.wrist(Arm.Wrist.FULL_DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_PRE_DEPOSIT:
@@ -160,10 +161,7 @@ public class ChamberRed extends LinearOpMode {
                 ascentSquare = true;
             }
             ascent.reset(gamepad1.options);
-            telemetry.addData("rt2current",gamepad2.right_trigger);
-            telemetry.addData("rt2prev",previousGamepad2.right_trigger);
-            teamColor = arm.switchColor(teamColor,switchColor);
-            arm.update(telemetry, teamColor);
+            arm.update(telemetry, teamColor.getColor());
             verticalSlides.update();
 
             if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
@@ -174,7 +172,7 @@ public class ChamberRed extends LinearOpMode {
             }else{
                 webcam.webcamDrive(drive,arm,telemetry);
             }
-            webcam.loop(telemetry);
+            webcam.status(telemetry);
             telemetry.addData("CurrentState", state);
             telemetry.update();
         }

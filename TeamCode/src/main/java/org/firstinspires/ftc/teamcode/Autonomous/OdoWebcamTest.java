@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.ActionTelemtry;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
+import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
@@ -96,7 +97,7 @@ public class OdoWebcamTest extends LinearOpMode {
         actionTelemtry = new ActionTelemtry();
         drive = new PinpointDrive(hardwareMap, beginPose);
         webcam = new Webcam();
-        webcam.initiate(hardwareMap, Arm.TeamColor.RED, StateMachine.Mode.CHAMBER,telemetry);
+        webcam.initiate(hardwareMap, TeamColor.Color.RED, StateMachine.Mode.CHAMBER,telemetry);
         verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
         arm = new Arm();
@@ -110,7 +111,7 @@ public class OdoWebcamTest extends LinearOpMode {
                                    toSample1(beginPose)
                             ),
                             verticalSlides.updateAction(),
-                            arm.updateAction(telemetry, Arm.TeamColor.NONE),
+                            arm.updateAction(telemetry, TeamColor.Color.NONE),
                             webcam.updateAction(telemetry),
                             actionTelemtry.telemetryAddCameraVec(telemetry,cameraVec),
                             actionTelemtry.telemetryAction(telemetry)

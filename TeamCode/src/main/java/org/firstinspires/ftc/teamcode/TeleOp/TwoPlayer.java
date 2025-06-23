@@ -31,7 +31,6 @@ public class TwoPlayer extends LinearOpMode {
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad currentGamepad2 = new Gamepad();
-        Arm.TeamColor teamColor = Arm.TeamColor.RED;
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
         boolean clawRotationRanLeft = false;
@@ -179,8 +178,6 @@ public class TwoPlayer extends LinearOpMode {
             ascent.reset(gamepad1.options);
             telemetry.addData("rt2current",gamepad2.right_trigger);
             telemetry.addData("rt2prev",previousGamepad2.right_trigger);
-            teamColor = arm.switchColor(teamColor,SwitchColor);
-            arm.update(telemetry, teamColor);
             verticalSlides.update();
             driveTrain.run(gamepad1.left_stick_x * 1.1, -gamepad1.left_stick_y, -gamepad1.right_stick_x, telemetry);
             telemetry.addData("CurrentState", state);

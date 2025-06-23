@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
+import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -212,7 +213,7 @@ public class OdoBucket extends LinearOpMode {
                                     toPark(arm,drive,verticalSlides,scorePos)
                             ),
                             verticalSlides.updateAction(),
-                            arm.updateAction(telemetry, Arm.TeamColor.NONE)
+                            arm.updateAction(telemetry, TeamColor.Color.NONE)
                     )
             );
         }

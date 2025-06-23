@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import java.util.Objects;
 
 @Config
 public class Arm {
@@ -53,11 +52,6 @@ public class Arm {
         Horz2,
     }
 
-    public enum TeamColor {
-        RED,
-        BLUE,
-        NONE
-    }
 
     public Shoulder shoulderState = Shoulder.UPWARDS;
     public Wrist wristState = Wrist.DOWNWARDS;
@@ -71,16 +65,16 @@ public class Arm {
     Servo rightShoulder; //Dominant servo
     Servo leftShoulder; //Copys rightShoulder
     public static double extendoRetractedPos = .49;
-    public static double extendoExtendedPos = .24;
+    public static double extendoExtendedPos = .15;
     public static double extendoChamberPos = .3;
-    public static double wristForwardPos = 0.42; //Should be facing straight forwards
-    public static double wristDownwardsPos = 0.1; //Should be facing towards the ground
-    public static double wristFullDownwardsPos = 0.1; //Should be facing towards the ground
+    public static double wristForwardPos = 0.45; //Should be facing straight forwards
+    public static double wristDownwardsPos = 0.12; //Should be facing towards the ground, only for INTAKING
+    public static double wristFullDownwardsPos = 0.1; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderInit = .15;
     public static double shoulderChamberIntake = 0.09;
-    public static double shoulderBucket = .3;
+    public static double shoulderBucket = .27;
     public static double shoulderBackwards = .1;
     public static double shoulderUpwards = 0.4;
     public static double shoulderForwards = 0.52;   //Should be parallel to the ground
@@ -148,19 +142,8 @@ public class Arm {
         this.clawRotation = clawRotation;
     }
 
-    public TeamColor switchColor(TeamColor teamColor, boolean Switch) {
-        TeamColor newTeamColor = teamColor;
-        if (Switch) {
-            if (teamColor == TeamColor.BLUE) {
-                newTeamColor = TeamColor.RED;
-            } else {
-                newTeamColor = TeamColor.BLUE;
-            }
-        }
-        return newTeamColor;
-    }
 
-    public void update(Telemetry telemetry, TeamColor teamColor) {
+    public void update(Telemetry telemetry, TeamColor.Color teamColor) {
         telemetry.addData("IntakeState", this.intakeState);
         telemetry.addData("Extendo", this.extendoState);
         telemetry.addData("shoulderLerpStartTime", shoulderLerpStartTime);
@@ -247,7 +230,7 @@ public class Arm {
         telemetry.addData("ClawRotation", clawRotation);
     }
 
-    public Intake checkColor(TeamColor teamColor, Telemetry telemetry) {
+    public Intake checkColor(TeamColor.Color teamColor, Telemetry telemetry) {
         return intakeState;
     }
 
@@ -255,7 +238,7 @@ public class Arm {
         return true;
     }
 
-    public Action updateAction(Telemetry telemetry, TeamColor teamColor) {
+    public Action updateAction(Telemetry telemetry, TeamColor.Color teamColor) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {

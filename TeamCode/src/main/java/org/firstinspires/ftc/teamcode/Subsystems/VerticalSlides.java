@@ -30,7 +30,7 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int MAX = 2250;
+    public static int BUCKET = 1550;
     int down = 0;
     public static int CHAMBER = 1650;
     double maxPower = 1;
@@ -61,7 +61,7 @@ public class VerticalSlides {
                 maxPower =downPower;
                 break;
             case BUCKET:
-                targetPos = MAX;
+                targetPos = BUCKET;
                 maxPower = 1;
                 break;
             case CHAMBER:
@@ -73,8 +73,8 @@ public class VerticalSlides {
         if (Math.abs(power) > maxPower){
             power = maxPower * Math.signum(power);
         }
-        leftSlide.setPower(power);
-        rightSlide.setPower(power);
+      //  leftSlide.setPower(power);
+      //  rightSlide.setPower(power);
     }
 
     public void setSlidePosition(SlidePositions slidePosition) {
@@ -87,8 +87,8 @@ public class VerticalSlides {
 
     public void manual(double power, boolean overide, Telemetry telemetry) {
         if (power > 0.1) {
-            leftSlide.setTargetPosition(MAX);
-            rightSlide.setTargetPosition(-MAX);
+            leftSlide.setTargetPosition(BUCKET);
+            rightSlide.setTargetPosition(-BUCKET);
             lock = false;
         } else if (power < -.1) {
             leftSlide.setTargetPosition(0);

@@ -8,37 +8,25 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.arcrobotics.ftclib.controller.PIDFController;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import android.util.Size;
 
 
 import androidx.annotation.NonNull;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.SortOrder;
-
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Autonomous.OdoWebcamTest;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.firstinspires.ftc.vision.opencv.ColorSpace;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 
-import java.util.List;
 import java.util.List;
 
 @Config
@@ -48,6 +36,13 @@ public class Webcam {
         ADJUST,
         DONE
     }
+    public enum BarnacleLocations {
+        LEFT,
+        MIDDLE,
+        RIGHT
+    }
+    public static int white = 190;
+    BarnacleLocations barnacleLocation = BarnacleLocations.LEFT;
     ColorBlobLocatorProcessor colorLocatorRed = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(ColorRange.RED)         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
@@ -69,6 +64,13 @@ public class Webcam {
             .setDrawContours(false)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
+    ColorBlobLocatorProcessor colorLocatorWhite = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(white, white, white), new Scalar(255,255,255)))         // use a predefined color match
+            .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+            .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
+            .setDrawContours(false)                        // Show contours on the Stream Preview
+            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .build();
     ColorBlobLocatorProcessor colorLocatorTeam;
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
@@ -80,6 +82,7 @@ public class Webcam {
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
+    public static double HORIZONTAL_OFFSET_PIX = 0;
 
     public static double convertHorizontalPxToInches(double px) {
         double inches = px * (CAMERA_WIDTH_IN/CAMERA_WIDTH_PX);
@@ -90,7 +93,7 @@ public class Webcam {
         return inches;
     }
 
-    Point clawCenter = new Point(CAMERA_WIDTH_PX/2,(CAMERA_LENGTH_PX/2) + LATERAL_OFFSET_PX);
+    Point clawCenter = new Point(CAMERA_WIDTH_PX/2 + HORIZONTAL_OFFSET_PIX,(CAMERA_LENGTH_PX/2) + LATERAL_OFFSET_PX);
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
     Vector2d targetVectorPx = new Vector2d(0,0); //Becomes the x and y distances of the closest sample in PIXELS
@@ -117,6 +120,56 @@ public class Webcam {
     public void updateCurrentDriveStage(DRIVE_STAGE stage){
         currentDriveStage = stage;
     }
+    public void identifyBarnacle(){
+        //Identify white blobs
+        List<ColorBlobLocatorProcessor.Blob> whiteBlobs = colorLocatorWhite.getBlobs();
+        ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, whiteBlobs);  // filter out very small blobs.
+        List<ColorBlobLocatorProcessor.Blob> colorBlobs;
+        //Identify color blobs
+        //If it can see yellow, must be bucket, otherwise assume chamber
+        if (canSeeYellow) {
+            colorBlobs = colorLocatorYellow.getBlobs();
+            ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, colorBlobs);  // filter out very small blobs.
+        }else{
+            colorBlobs = colorLocatorTeam.getBlobs();
+            ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, colorBlobs);  // filter out very small blobs.
+        }
+
+        Point barnacleCenter = new Point(0,0);
+        Point sampleCenter = new Point(0,0);
+
+        for (ColorBlobLocatorProcessor.Blob blob : whiteBlobs) {
+            RotatedRect boxFit = blob.getBoxFit();
+            barnacleCenter = boxFit.center;
+        }
+        //If barnacle is not visible, it must be on the left
+        if (barnacleCenter.x == 0 && barnacleCenter.y == 0){
+            barnacleLocation = BarnacleLocations.LEFT;
+            return;
+        }
+        //Barnacle IS VISIBLE, compare to sample, this assumes only 1 color sample is visible
+        for (ColorBlobLocatorProcessor.Blob blob : colorBlobs) {
+            RotatedRect boxFit = blob.getBoxFit();
+            sampleCenter = boxFit.center;
+        }
+        //If a sample is present then compare, otherwise, the middle of camera will be reference
+        if (sampleCenter.x != 0 && sampleCenter.y != 0) {
+            if (sampleCenter.x > barnacleCenter.x) {
+                barnacleLocation = BarnacleLocations.MIDDLE;
+            } else {
+                barnacleLocation = BarnacleLocations.RIGHT;
+            }
+        }else{
+            if (CAMERA_WIDTH_PX/2 > barnacleCenter.x) {
+                barnacleLocation = BarnacleLocations.MIDDLE;
+            } else {
+                barnacleLocation = BarnacleLocations.RIGHT;
+            }
+        }
+
+    }
+
+
     public void webcamDrive(PinpointDrive drive, Arm arm, Telemetry telemetry){
         if (currentDriveStage == DRIVE_STAGE.MOVE_TO_TARGET){
             double targetX = (targetVectorInches.y * Math.cos(driveStartPos.heading.toDouble())) + (targetVectorInches.x * Math.sin(driveStartPos.heading.toDouble()));
@@ -181,10 +234,10 @@ public class Webcam {
     }
 
     Point targetPos = clawCenter;
-    public void setColorLocatorTeam(Arm.TeamColor teamColor, boolean override){
-        if (teamColor == Arm.TeamColor.RED){
+    public void setColorLocatorTeam(TeamColor.Color teamColor, boolean override){
+        if (teamColor == TeamColor.Color.RED){
             colorLocatorTeam = colorLocatorRed;
-        }else if (teamColor == Arm.TeamColor.BLUE){
+        }else if (teamColor == TeamColor.Color.BLUE){
             colorLocatorTeam = colorLocatorBlue;
         }else {
             colorLocatorTeam = colorLocatorYellow;
@@ -199,9 +252,9 @@ public class Webcam {
            canSeeYellow = false;
        }
     }
-    public void initiate(HardwareMap hardwareMap, Arm.TeamColor teamColor, StateMachine.Mode mode, Telemetry telemetry) {
+    public void initiate(HardwareMap hardwareMap, TeamColor.Color teamColor, StateMachine.Mode mode, Telemetry telemetry) {
             portal = new VisionPortal.Builder()
-                    .addProcessors(colorLocatorRed,colorLocatorBlue,colorLocatorYellow)
+                    .addProcessors(colorLocatorRed,colorLocatorBlue,colorLocatorYellow,colorLocatorWhite)
                     .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                     .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                     .build();
@@ -210,9 +263,7 @@ public class Webcam {
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
     }
-    public void lookForBlobs(List<ColorBlobLocatorProcessor.Blob> blobs){
-        ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, blobs);  // filter out very small blobs.
-
+    public void findTargetBlob(List<ColorBlobLocatorProcessor.Blob> blobs){
         Point[] myContourPoints;// A list of the many points within the blob
         for (ColorBlobLocatorProcessor.Blob blob : blobs) {
             RotatedRect boxFit = blob.getBoxFit();
@@ -289,6 +340,7 @@ public class Webcam {
         }
     }
 
+
     public void snapshot() {
         //Reset the variables everytime a snapshot is taken
         targetDistancePX = CAMERA_WIDTH_PX / 2;
@@ -302,14 +354,17 @@ public class Webcam {
         // Read the current list, look for yellow ones first
         if (canSeeYellow) {
             List<ColorBlobLocatorProcessor.Blob> blobsYellow = colorLocatorYellow.getBlobs();
-            lookForBlobs(blobsYellow);
+            ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, blobsYellow);  // filter out very small blobs.
+            findTargetBlob(blobsYellow);
         }
         List<ColorBlobLocatorProcessor.Blob> blobsTeam = colorLocatorTeam.getBlobs();
-        lookForBlobs(blobsTeam);
+        ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, blobsTeam);  // filter out very small blobs.
+        findTargetBlob(blobsTeam);
 
     }
-    public void loop(Telemetry telemetry){
-        telemetry.addData("PX Distance Vec", targetVectorPx);
+    public void status(Telemetry telemetry){
+        telemetry.addData("BARNACLE LOCATION", barnacleLocation);
+     /*   telemetry.addData("PX Distance Vec", targetVectorPx);
         telemetry.addData("Inches Distance Vec", targetVectorInches);
         telemetry.addData("Rotation",sampleRotation);
         telemetry.addData("angle",angle);
@@ -320,6 +375,8 @@ public class Webcam {
         telemetry.addData("Distance from crosshair (px):",targetDistancePX);
         telemetry.addData("targetPos",targetPos);
         telemetry.addData("clawCenter",clawCenter);
+      */
+        telemetry.addData("colorLocatorTeam",colorLocatorTeam);
     }
     public void setClawRotation(Arm.ClawRotation rot){
         sampleRotation = rot;
@@ -328,7 +385,7 @@ public class Webcam {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                loop(telemetry);
+                status(telemetry);
                 return true;
             }
         };

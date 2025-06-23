@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
+import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 
 @Autonomous
@@ -59,7 +60,7 @@ public class AutoChamber extends LinearOpMode {
                 driveTrain.run(0, -0.0,-0, telemetry);
             }
             verticalSlides.update();
-            arm.update(telemetry, Arm.TeamColor.NONE);
+            arm.update(telemetry, TeamColor.Color.NONE);
         }
     }
 }
