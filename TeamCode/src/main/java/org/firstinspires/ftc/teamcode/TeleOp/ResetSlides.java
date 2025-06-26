@@ -16,7 +16,10 @@ public class ResetSlides extends LinearOpMode {
         VerticalSlides verticalSlides = new VerticalSlides();
         verticalSlides.initiate(hardwareMap);
         while (opModeIsActive()) {
-
+            if (gamepad1.right_bumper){
+                verticalSlides.reset(true);
+            }
+            verticalSlides.status(telemetry);
             telemetry.update();
         }
     }

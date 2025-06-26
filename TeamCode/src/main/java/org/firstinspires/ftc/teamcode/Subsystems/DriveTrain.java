@@ -30,7 +30,7 @@ public class DriveTrain {
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void run(double x, double y, double rx, Telemetry telemetry) {
+    public void run(double x, double y, double rx) {
         rx=-rx;
         double denominator = (Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1));
         frontLeftMotor.setPower(((y + x + rx) / denominator));

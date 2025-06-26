@@ -70,10 +70,7 @@ public class ChamberRed extends LinearOpMode {
             if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()){
                 webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.DONE);
             }else if (LB && state == StateMachine.States.SAMPLE_INTAKE){
-                webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.MOVE_TO_TARGET);
-                webcam.updateDriveStartPos(drive.pinpoint.getPositionRR());
-                webcam.snapshot();
-                arm.intake(Arm.Intake.INTAKE);
+                webcam.webcamPIDDrive(driveTrain,arm);
             }
             if (switchMode){
                 webcam.setColorLocatorMode(mode,false);
@@ -162,15 +159,11 @@ public class ChamberRed extends LinearOpMode {
             }
             ascent.reset(gamepad1.options);
             arm.update(telemetry, teamColor.getColor());
+            verticalSlides.status(telemetry);
             verticalSlides.update();
 
             if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
-                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x,telemetry);
-                if (arm.isLerpComplete() && state == StateMachine.States.SAMPLE_INTAKE && System.currentTimeMillis() - arm.shoulderLerpStartTime < 1000){
-                    stateMachine.setClawState(Arm.Intake.CLOSE);
-                }
-            }else{
-                webcam.webcamDrive(drive,arm,telemetry);
+                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
             }
             webcam.status(telemetry);
             telemetry.addData("CurrentState", state);

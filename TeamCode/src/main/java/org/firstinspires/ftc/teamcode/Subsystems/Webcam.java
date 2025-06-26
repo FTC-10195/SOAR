@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import android.util.Size;
@@ -74,6 +75,16 @@ public class Webcam {
     ColorBlobLocatorProcessor colorLocatorTeam;
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
+    public static long driveTargetTimeInMilis = 1000;
+    public static int tolerancePID = 10;
+    public static double kPX = 0.003125;
+    public static double kIX = 0;
+    public static double kDX = 0;
+    public static double kFX = 0;
+    public static double kPY = 0.0042;
+    public static double kIY = 0;
+    public static double kDY = 0;
+    public static double kFY = 0;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
     public static double LATERAL_OFFSET_PX = -30;
@@ -83,6 +94,8 @@ public class Webcam {
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
     public static double HORIZONTAL_OFFSET_PIX = 0;
+    PIDFController xPID = new PIDFController(kPX,kIX,kDX,kFX);
+    PIDFController yPID = new PIDFController(kPY,kIY,kDY,kFY);
 
     public static double convertHorizontalPxToInches(double px) {
         double inches = px * (CAMERA_WIDTH_IN/CAMERA_WIDTH_PX);
@@ -169,7 +182,29 @@ public class Webcam {
 
     }
 
-
+    public void webcamPIDDrive(DriveTrain driveTrain, Arm arm){
+        snapshot();
+        long snapshotTime = System.currentTimeMillis();
+        arm.intake(Arm.Intake.INTAKE);
+        while (System.currentTimeMillis() - snapshotTime < driveTargetTimeInMilis && targetDistancePX > tolerancePID){
+            snapshot();
+            double xVec = xPID.calculate(clawCenter.x,targetPos.x);
+            double yVec = yPID.calculate(clawCenter.y,targetPos.y);
+            driveTrain.run(xVec,yVec,0);
+            if (System.currentTimeMillis() - snapshotTime < driveTargetTimeInMilis || targetDistancePX > tolerancePID){
+                break;
+            }
+        }
+        currentDriveStage = DRIVE_STAGE.DONE;
+        arm.setTimeSnapshot(System.currentTimeMillis());
+        arm.shoulder(Arm.Shoulder.DOWNWARDS);
+        snapshotTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - snapshotTime < 500){
+            arm.clawRotate(sampleRotation);
+            arm.intake(Arm.Intake.INTAKE);
+        }
+        arm.intake(Arm.Intake.CLOSE);
+    }
     public void webcamDrive(PinpointDrive drive, Arm arm, Telemetry telemetry){
         if (currentDriveStage == DRIVE_STAGE.MOVE_TO_TARGET){
             double targetX = (targetVectorInches.y * Math.cos(driveStartPos.heading.toDouble())) + (targetVectorInches.x * Math.sin(driveStartPos.heading.toDouble()));

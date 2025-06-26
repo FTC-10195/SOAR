@@ -24,11 +24,11 @@ public class AutoExtremelyBasicFar extends LinearOpMode {
                 startTime = System.currentTimeMillis();
             }
             if (Math.abs(startTime - System.currentTimeMillis()) < 300) {
-                driveTrain.run(0, .3,-0, telemetry);
+                driveTrain.run(0, .3,-0);
             }else if (Math.abs(startTime - System.currentTimeMillis()) < 6000) {
-                driveTrain.run(.3, 0,-0, telemetry);
+                driveTrain.run(.3, 0,-0);
             } else if (Math.abs(startTime - System.currentTimeMillis()) < 7000) {
-                driveTrain.run(0, -.3,-0, telemetry);
+                driveTrain.run(0, -.3,-0);
             }
         }
     }

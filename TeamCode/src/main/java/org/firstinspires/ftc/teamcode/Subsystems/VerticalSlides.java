@@ -73,8 +73,8 @@ public class VerticalSlides {
         if (Math.abs(power) > maxPower){
             power = maxPower * Math.signum(power);
         }
-      //  leftSlide.setPower(power);
-      //  rightSlide.setPower(power);
+        leftSlide.setPower(power);
+        rightSlide.setPower(power);
     }
 
     public void setSlidePosition(SlidePositions slidePosition) {
@@ -122,6 +122,10 @@ public class VerticalSlides {
             leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
+    }
+    public void status(Telemetry telemetry){
+        telemetry.addData("LeftSlidePos",leftSlide.getCurrentPosition());
+        telemetry.addData("RightSlidePos",rightSlide.getCurrentPosition());
     }
 
     public Action updateAction() {

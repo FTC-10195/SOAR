@@ -35,7 +35,7 @@ public class AutoChamber extends LinearOpMode {
                 arm.shoulder(Arm.Shoulder.FORWARDS);
                 arm.wrist(Arm.Wrist.UPWARDS);
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
-                driveTrain.run(0, 0.3,-0, telemetry);
+                driveTrain.run(0, 0.3,-0);
             }else if (System.currentTimeMillis() - startTime > 4000 && System.currentTimeMillis() - startTime < 5000) {
                 arm.extendo(Arm.Extendo.CHAMBER);
                 arm.shoulder(Arm.Shoulder.FORWARDS);
@@ -48,7 +48,7 @@ public class AutoChamber extends LinearOpMode {
                 arm.wrist(Arm.Wrist.FORWARD);
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                 arm.clawRotate(Arm.ClawRotation.Horz1);
-                driveTrain.run(0, 0,-0, telemetry);
+                driveTrain.run(0, 0,-0);
             }else if (System.currentTimeMillis() - startTime > 6000) {
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                 arm.extendo(Arm.Extendo.CHAMBER);
@@ -57,7 +57,7 @@ public class AutoChamber extends LinearOpMode {
                 arm.wrist(Arm.Wrist.FORWARD);
                 verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                 arm.intake(Arm.Intake.CLOSE);
-                driveTrain.run(0, -0.0,-0, telemetry);
+                driveTrain.run(0, -0.0,-0);
             }
             verticalSlides.update();
             arm.update(telemetry, TeamColor.Color.NONE);
