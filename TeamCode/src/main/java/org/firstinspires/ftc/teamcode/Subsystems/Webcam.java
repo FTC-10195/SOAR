@@ -181,6 +181,9 @@ public class Webcam {
         }
 
     }
+    public BarnacleLocations getBarnacleLocation(){
+        return barnacleLocation;
+    }
 
     public void webcamPIDDrive(DriveTrain driveTrain, Arm arm){
         snapshot();
