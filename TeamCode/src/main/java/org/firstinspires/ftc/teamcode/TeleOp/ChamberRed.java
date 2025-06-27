@@ -49,6 +49,7 @@ public class ChamberRed extends LinearOpMode {
         boolean ascentSquare = false;
         Ascent ascent = new Ascent();
         ascent.initiate(hardwareMap);
+        long extendoResetTime = System.currentTimeMillis();
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
             drive.updatePoseEstimate();
@@ -62,15 +63,19 @@ public class ChamberRed extends LinearOpMode {
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
+            if (LB && state == StateMachine.States.SAMPLE_INTAKE){
+                extendoResetTime = System.currentTimeMillis();
+            }
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
             mode = stateMachine.switchMode(mode,switchMode);
             state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
             teamColor.status(telemetry);
             if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()){
-                webcam.updateCurrentDriveStage(Webcam.DRIVE_STAGE.DONE);
+                webcam.setDriveStage(Webcam.DRIVE_STAGE.DONE);
             }else if (LB && state == StateMachine.States.SAMPLE_INTAKE){
-                webcam.webcamPIDDrive(driveTrain,arm);
+                arm.intake(Arm.Intake.INTAKE);
+                webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
             }
             if (switchMode){
                 webcam.setColorLocatorMode(mode,false);
@@ -92,9 +97,14 @@ public class ChamberRed extends LinearOpMode {
                     arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     arm.clawRotate(Arm.ClawRotation.Horz1);
+                    webcam.setClawRotation(Arm.ClawRotation.Horz1);
                     break;
                 case SCOUTING:
-                    arm.extendo(Arm.Extendo.EXTENDED);
+                    if (System.currentTimeMillis() - extendoResetTime > 400){
+                        arm.extendo(Arm.Extendo.EXTENDED);
+                    }else{
+                        arm.extendo(Arm.Extendo.RETRACTED);
+                    }
                     arm.shoulder(Arm.Shoulder.FORWARDS);
                     arm.wrist(Arm.Wrist.FULL_DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
@@ -137,7 +147,6 @@ public class ChamberRed extends LinearOpMode {
                     arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
             }
-         arm.intake(stateMachine.clawState);
             if (gamepad1.triangle && ascentA == false){
                 ascentA = true;
                 switch (ascent.climbPosition){
@@ -157,6 +166,7 @@ public class ChamberRed extends LinearOpMode {
             if (gamepad1.square){
                 ascentSquare = true;
             }
+            webcam.update(driveTrain,arm);
             ascent.reset(gamepad1.options);
             arm.update(telemetry, teamColor.getColor());
             verticalSlides.status(telemetry);
@@ -164,7 +174,15 @@ public class ChamberRed extends LinearOpMode {
 
             if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
                 driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
+            }else if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DROP){
+                stateMachine.setClawState(webcam.intakeState);
+                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
             }
+            else{
+                stateMachine.setClawState(webcam.intakeState);
+            }
+            arm.intake(stateMachine.clawState);
+
             webcam.status(telemetry);
             telemetry.addData("CurrentState", state);
             telemetry.update();

@@ -30,7 +30,7 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int BUCKET = 1550;
+    public static int BUCKET = 1750;
     int down = 0;
     public static int CHAMBER = 1650;
     double maxPower = 1;
@@ -41,8 +41,8 @@ public class VerticalSlides {
 
     public void initiate(HardwareMap hardwareMap) {
         rightSlide = hardwareMap.dcMotor.get("RightSlide");
-        rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide = hardwareMap.dcMotor.get("LeftSlide");
+        leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
