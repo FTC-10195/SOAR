@@ -176,13 +176,14 @@ public class ChamberRed extends LinearOpMode {
                 driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
             }else if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DROP){
                 stateMachine.setClawState(webcam.intakeState);
+                arm.intake(webcam.intakeState);
                 driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
             }
             else{
+                arm.intake(webcam.intakeState);
                 stateMachine.setClawState(webcam.intakeState);
             }
             arm.intake(stateMachine.clawState);
-
             webcam.status(telemetry);
             telemetry.addData("CurrentState", state);
             telemetry.update();

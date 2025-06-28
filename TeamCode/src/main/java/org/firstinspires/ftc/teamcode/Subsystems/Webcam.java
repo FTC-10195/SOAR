@@ -78,7 +78,7 @@ public class Webcam {
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
-    public static long driveTargetTimeInMilis = 1000;
+    public static long driveTargetTimeInMilis = 800;
     public static int tolerancePID = 12;
     public static double kPX = 0.004225;
     public static double kIX = 0;
@@ -215,9 +215,9 @@ public class Webcam {
                 break;
             case DROP:
                 arm.clawRotate(sampleRotation);
-                if (System.currentTimeMillis() - snapshotTime > 700 && System.currentTimeMillis() - snapshotTime < 1000) {
+                if (System.currentTimeMillis() - snapshotTime > 400 && System.currentTimeMillis() - snapshotTime < 700) {
                     intakeState = Arm.Intake.CLOSE;
-                }else if (System.currentTimeMillis() - snapshotTime > 1000){
+                }else if (System.currentTimeMillis() - snapshotTime > 700){
                     setDriveStage(DRIVE_STAGE.DONE);
                 }
                 else{

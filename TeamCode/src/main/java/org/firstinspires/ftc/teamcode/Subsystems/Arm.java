@@ -65,7 +65,7 @@ public class Arm {
     Servo rightShoulder; //Dominant servo
     Servo leftShoulder; //Copys rightShoulder
     public static double extendoRetractedPos = .49;
-    public static double extendoExtendedPos = .15;
+    public static double extendoExtendedPos = .22;
     public static double extendoChamberPos = .3;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.12; //Should be facing towards the ground, only for INTAKING
@@ -207,7 +207,6 @@ public class Arm {
                 claw.setPosition(clawClosed);
                 break;
         }
-        intakeState = checkColor(teamColor, telemetry);
         switch (clawRotation) {
             case Vert:
                 clawRotationServo.setPosition(clawVert);
@@ -230,9 +229,6 @@ public class Arm {
         telemetry.addData("ClawRotation", clawRotation);
     }
 
-    public Intake checkColor(TeamColor.Color teamColor, Telemetry telemetry) {
-        return intakeState;
-    }
 
     public boolean isGrabbed() {
         return true;

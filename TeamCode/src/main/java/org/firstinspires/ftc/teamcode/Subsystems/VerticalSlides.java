@@ -30,7 +30,7 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int BUCKET = 1750;
+    public static int BUCKET = 1600;
     int down = 0;
     public static int CHAMBER = 1650;
     double maxPower = 1;
