@@ -22,7 +22,8 @@ public class VerticalSlides {
     public enum SlidePositions {
         DOWN,
         BUCKET,
-        CHAMBER
+        CHAMBER,
+        BARNACLE
     }
     double targetPos;
     PIDFController pidfController = new PIDFController(kP, kI, kD, kF);
@@ -33,6 +34,7 @@ public class VerticalSlides {
     public static int BUCKET = 1600;
     int down = 0;
     public static int CHAMBER = 1650;
+    public static int BARNACLE = 800;
     double maxPower = 1;
     double lockPower = .1;
     public static double downPower = .3;
@@ -67,6 +69,10 @@ public class VerticalSlides {
             case CHAMBER:
                 targetPos = CHAMBER;
                 maxPower =1;
+                break;
+            case BARNACLE:
+                targetPos = BARNACLE;
+                maxPower = 1;
                 break;
         }
         double power = pidfController.calculate(leftSlide.getCurrentPosition(),targetPos);

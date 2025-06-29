@@ -21,7 +21,7 @@ public class ChamberRed extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
       //  Webcam webcam = new Webcam();
       //  webcam.initiate(hardwareMap,telemetry);
-        PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
+       // PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
@@ -52,7 +52,6 @@ public class ChamberRed extends LinearOpMode {
         long extendoResetTime = System.currentTimeMillis();
         while (opModeIsActive()) {
        //     webcam.rotate(arm.getClawRotation(),telemetry);
-            drive.updatePoseEstimate();
             ascent.update(ascentSquare, telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);

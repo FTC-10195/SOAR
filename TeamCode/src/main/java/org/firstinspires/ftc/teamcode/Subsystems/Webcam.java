@@ -147,8 +147,6 @@ public class Webcam {
 
     public void identifyBarnacle() {
         //Identify white blobs
-        List<ColorBlobLocatorProcessor.Blob> whiteBlobs = colorLocatorWhite.getBlobs();
-        ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, whiteBlobs);  // filter out very small blobs.
         List<ColorBlobLocatorProcessor.Blob> colorBlobs;
         //Identify color blobs
         //If it can see yellow, must be bucket, otherwise assume chamber
@@ -160,37 +158,43 @@ public class Webcam {
             ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, colorBlobs);  // filter out very small blobs.
         }
 
-        Point barnacleCenter = new Point(0, 0);
-        Point sampleCenter = new Point(0, 0);
-
-        for (ColorBlobLocatorProcessor.Blob blob : whiteBlobs) {
-            RotatedRect boxFit = blob.getBoxFit();
-            barnacleCenter = boxFit.center;
-        }
-        //If barnacle is not visible, it must be on the left
-        if (barnacleCenter.x == 0 && barnacleCenter.y == 0) {
-            barnacleLocation = BarnacleLocations.LEFT;
-            return;
-        }
-        //Barnacle IS VISIBLE, compare to sample, this assumes only 1 color sample is visible
+        ColorBlobLocatorProcessor.Blob middleSample;
+        ColorBlobLocatorProcessor.Blob rightSample;
+        Point middleSamplePos =new Point (1000,1000);
+        Point rightSamplePos =new Point (1000,1000);
+        double middleSampleSize = 0;
+        double rightSampleSize = 0;
+        int numberOfBlobs = 0;
+        //It is possible that the tape is white, to identify barnacle we must compare based on size
         for (ColorBlobLocatorProcessor.Blob blob : colorBlobs) {
             RotatedRect boxFit = blob.getBoxFit();
-            sampleCenter = boxFit.center;
+            numberOfBlobs += 1;
+            if (boxFit.center.x < middleSamplePos.x){
+                middleSamplePos = boxFit.center;
+                if (boxFit.size.area() > middleSampleSize){
+                    middleSampleSize = boxFit.size.area();
+                    middleSample = blob;
+                }
+            }else{
+                if (boxFit.center.x > rightSamplePos.x){
+                    rightSamplePos = boxFit.center;
+                    if (boxFit.size.area() > rightSampleSize){
+                        rightSampleSize = boxFit.size.area();
+                        rightSample = blob;
+                    }
+                }
+            }
         }
-        //If a sample is present then compare, otherwise, the middle of camera will be reference
-        if (sampleCenter.x != 0 && sampleCenter.y != 0) {
-            if (sampleCenter.x > barnacleCenter.x) {
+        if (numberOfBlobs >= 2 && middleSampleSize != 0 && rightSampleSize != 0){
+            barnacleLocation = BarnacleLocations.LEFT;
+        }else{
+            if (middleSampleSize != 0 && rightSampleSize == 0){
                 barnacleLocation = BarnacleLocations.MIDDLE;
-            } else {
+            }else if (rightSampleSize != 0 && middleSampleSize == 0){
                 barnacleLocation = BarnacleLocations.RIGHT;
             }
-        } else {
-            if (CAMERA_WIDTH_PX / 2 > barnacleCenter.x) {
-                barnacleLocation = BarnacleLocations.MIDDLE;
-            } else {
-                barnacleLocation = BarnacleLocations.RIGHT;
-            }
         }
+
 
     }
 
@@ -217,10 +221,9 @@ public class Webcam {
                 arm.clawRotate(sampleRotation);
                 if (System.currentTimeMillis() - snapshotTime > 400 && System.currentTimeMillis() - snapshotTime < 700) {
                     intakeState = Arm.Intake.CLOSE;
-                }else if (System.currentTimeMillis() - snapshotTime > 700){
+                } else if (System.currentTimeMillis() - snapshotTime > 700) {
                     setDriveStage(DRIVE_STAGE.DONE);
-                }
-                else{
+                } else {
                     intakeState = Arm.Intake.INTAKE;
                 }
 
