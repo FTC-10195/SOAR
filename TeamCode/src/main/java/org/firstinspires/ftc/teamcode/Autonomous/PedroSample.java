@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
+import org.firstinspires.ftc.teamcode.Subsystems.BarnacleCamera;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
@@ -32,13 +33,14 @@ public class PedroSample extends LinearOpMode {
     Arm arm = new Arm();
     DriveTrain driveTrain = new DriveTrain();
     Webcam webcam = new Webcam();
+   // BarnacleCamera barnacleCamera = new BarnacleCamera();
+    Path noPath;
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));  // Starting position
     private final Pose scorePose = new Pose(8, 124, Math.toRadians(315));
-    private final Pose barnicleIdentificationPose = new Pose(12, 117.5, Math.toRadians(360));
-    private final Pose rightGrab = new Pose(12, 115, Math.toRadians(360));
+    private final Pose rightGrab = new Pose(12, 113, Math.toRadians(360));
     private final Pose middleGrab = new Pose(12, 119, Math.toRadians(360));
     private final Pose leftGrab = new Pose(12, 119, Math.toRadians(405));
-    private Path scorePreload, park, barnicleIdentification, right1, middle1, middle2, left2, left3;
+    private Path scorePreload, park, right1, middle1, middle2, left2, left3, score1, score2;
     //right1, middle2
     //right1, left2,
     //middle1, left3,
@@ -48,23 +50,27 @@ public class PedroSample extends LinearOpMode {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
-        barnicleIdentification = new Path(new BezierLine(new Point(scorePose), new Point(barnicleIdentificationPose)));
-        barnicleIdentification.setLinearHeadingInterpolation(scorePose.getHeading(), barnicleIdentificationPose.getHeading());
 
-        right1 = new Path(new BezierLine(new Point(barnicleIdentificationPose), new Point(rightGrab)));
-        right1.setLinearHeadingInterpolation(barnicleIdentificationPose.getHeading(), rightGrab.getHeading());
+        right1 = new Path(new BezierLine(new Point(scorePose), new Point(rightGrab)));
+        right1.setLinearHeadingInterpolation(scorePose.getHeading(), rightGrab.getHeading());
 
         middle2 = new Path(new BezierLine(new Point(rightGrab), new Point(middleGrab)));
         middle2.setLinearHeadingInterpolation(rightGrab.getHeading(), middleGrab.getHeading());
 
-        middle1 = new Path(new BezierLine(new Point(barnicleIdentificationPose), new Point(middleGrab)));
-        middle1.setLinearHeadingInterpolation(barnicleIdentificationPose.getHeading(), middleGrab.getHeading());
+        middle1 = new Path(new BezierLine(new Point(scorePose), new Point(middleGrab)));
+        middle1.setLinearHeadingInterpolation(scorePose.getHeading(), middleGrab.getHeading());
 
         left2 = new Path(new BezierLine(new Point(rightGrab), new Point(leftGrab)));
         left2.setLinearHeadingInterpolation(rightGrab.getHeading(), leftGrab.getHeading());
 
         left2 = new Path(new BezierLine(new Point(middleGrab), new Point(leftGrab)));
         left2.setLinearHeadingInterpolation(middleGrab.getHeading(), leftGrab.getHeading());
+
+        score1 = new Path(new BezierLine(new Point(rightGrab), new Point(scorePose)));
+        score1.setLinearHeadingInterpolation(rightGrab.getHeading(), scorePose.getHeading());
+
+        score2 = new Path(new BezierLine(new Point(middleGrab), new Point(scorePose)));
+        score2.setLinearHeadingInterpolation(middleGrab.getHeading(), scorePose.getHeading());
 
     }
 
@@ -73,28 +79,49 @@ public class PedroSample extends LinearOpMode {
             case 0: // Move from start to scoring position
                 //   scoreSubsystems(1000);
                 follower.followPath(scorePreload);
+                follower.setMaxPower(1);
                 setPathState(1);
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 1: // Move from scoring to barnacle identification position
                 scoreSubsystems(1350, pathState);
+                follower.setMaxPower(1);
                 break;
             case 2:
-                follower.followPath(barnicleIdentification);
                 restSubsystems(800,pathState);
+                follower.setMaxPower(1);
+                follower.followPath(right1);
                 break;
             case 3:
-                barnacleSubsystems(1200, pathState);
+                scoutSubsystems(800, pathState);
+                follower.setMaxPower(1);
+                break;
             case 4:
-                webcam.identifyBarnacle();
-                pathState += 1;
+                webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
+                follower.setMaxPower(0);
+                setPathState(5);
                 break;
             case 5:
-                switch (webcam.getBarnacleLocation()) {
-                    case LEFT:
-                        scoutSubsystems(400, pathState);
-                        follower.followPath(right1);
+                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
+                    arm.intake(Arm.Intake.CLOSE);
+                    timeSnapshot = System.currentTimeMillis();
+                    follower.setMaxPower(0);
+                    setPathState(6);
                 }
+                break;
+            case 6:
+                restSubsystems(800,pathState);
+                follower.setMaxPower(1);
+            case 7:
+                follower.followPath(score1);
+                scoreSubsystems(1350,pathState);
+                follower.setMaxPower(1);
+                break;
+            case 8:
+                follower.followPath(middle2);
+                restSubsystems(800,pathState);
+                follower.setMaxPower(1);
+                break;
       /*
             case 2:
                 switch (webcam.getBarnacleLocation()) {
@@ -189,6 +216,7 @@ public class PedroSample extends LinearOpMode {
         verticalSlides.initiate(hardwareMap);
         webcam.initiate(hardwareMap, teamColor.getColor(), StateMachine.Mode.BUCKET, telemetry);
         driveTrain.initiate(hardwareMap);
+        //barnacleCamera.initiate(hardwareMap);
         pathTimer = new Timer();
         constants = new Constants();
         constants.setConstants(FConstants.class, LConstants.class);

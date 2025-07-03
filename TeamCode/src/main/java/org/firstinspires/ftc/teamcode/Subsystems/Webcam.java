@@ -38,14 +38,8 @@ public class Webcam {
         DONE
     }
 
-    public enum BarnacleLocations {
-        LEFT,
-        MIDDLE,
-        RIGHT
-    }
 
     public static int white = 190;
-    BarnacleLocations barnacleLocation = BarnacleLocations.LEFT;
     ColorBlobLocatorProcessor colorLocatorRed = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(ColorRange.RED)         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
@@ -145,62 +139,6 @@ public class Webcam {
         driveStartPos = pos;
     }
 
-    public void identifyBarnacle() {
-        //Identify white blobs
-        List<ColorBlobLocatorProcessor.Blob> colorBlobs;
-        //Identify color blobs
-        //If it can see yellow, must be bucket, otherwise assume chamber
-        if (canSeeYellow) {
-            colorBlobs = colorLocatorYellow.getBlobs();
-            ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, colorBlobs);  // filter out very small blobs.
-        } else {
-            colorBlobs = colorLocatorTeam.getBlobs();
-            ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, colorBlobs);  // filter out very small blobs.
-        }
-
-        ColorBlobLocatorProcessor.Blob middleSample;
-        ColorBlobLocatorProcessor.Blob rightSample;
-        Point middleSamplePos =new Point (1000,1000);
-        Point rightSamplePos =new Point (1000,1000);
-        double middleSampleSize = 0;
-        double rightSampleSize = 0;
-        int numberOfBlobs = 0;
-        //It is possible that the tape is white, to identify barnacle we must compare based on size
-        for (ColorBlobLocatorProcessor.Blob blob : colorBlobs) {
-            RotatedRect boxFit = blob.getBoxFit();
-            numberOfBlobs += 1;
-            if (boxFit.center.x < middleSamplePos.x){
-                middleSamplePos = boxFit.center;
-                if (boxFit.size.area() > middleSampleSize){
-                    middleSampleSize = boxFit.size.area();
-                    middleSample = blob;
-                }
-            }else{
-                if (boxFit.center.x > rightSamplePos.x){
-                    rightSamplePos = boxFit.center;
-                    if (boxFit.size.area() > rightSampleSize){
-                        rightSampleSize = boxFit.size.area();
-                        rightSample = blob;
-                    }
-                }
-            }
-        }
-        if (numberOfBlobs >= 2 && middleSampleSize != 0 && rightSampleSize != 0){
-            barnacleLocation = BarnacleLocations.LEFT;
-        }else{
-            if (middleSampleSize != 0 && rightSampleSize == 0){
-                barnacleLocation = BarnacleLocations.MIDDLE;
-            }else if (rightSampleSize != 0 && middleSampleSize == 0){
-                barnacleLocation = BarnacleLocations.RIGHT;
-            }
-        }
-
-
-    }
-
-    public BarnacleLocations getBarnacleLocation() {
-        return barnacleLocation;
-    }
 
     public void update(DriveTrain driveTrain, Arm arm) {
         switch (currentDriveStage) {
@@ -395,7 +333,6 @@ public class Webcam {
 
     public void status(Telemetry telemetry) {
         telemetry.addData("DRIVE STAGE", currentDriveStage);
-        telemetry.addData("BARNACLE LOCATION", barnacleLocation);
      /*   telemetry.addData("PX Distance Vec", targetVectorPx);
         telemetry.addData("Inches Distance Vec", targetVectorInches);
         telemetry.addData("Rotation",sampleRotation);

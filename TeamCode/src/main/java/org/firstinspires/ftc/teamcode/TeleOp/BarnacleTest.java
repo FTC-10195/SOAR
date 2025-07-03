@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.Subsystems.BarnacleCamera;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
@@ -13,13 +14,11 @@ import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 public class BarnacleTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-      //  Webcam webcam = new Webcam();
-      //  webcam.initiate(hardwareMap,telemetry);
         waitForStart();
         if (isStopRequested()) return;
         TeamColor teamColor = new TeamColor(TeamColor.Color.RED);
-        Webcam webcam = new Webcam();
-        webcam.initiate(hardwareMap, teamColor.getColor(), StateMachine.Mode.CHAMBER,telemetry);
+       // BarnacleCamera barnacleCamera = new BarnacleCamera();
+     //   barnacleCamera.initiate(hardwareMap);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
@@ -35,7 +34,7 @@ public class BarnacleTest extends LinearOpMode {
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
             if (gamepad1.left_bumper){
-                webcam.identifyBarnacle();
+          //      barnacleCamera.identifyBarnacle();
             }
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
@@ -43,7 +42,7 @@ public class BarnacleTest extends LinearOpMode {
                 teamColor.flipColor();
             }
             teamColor.status(telemetry);
-            webcam.status(telemetry);
+         //   barnacleCamera.status(telemetry);
             telemetry.update();
         }
     }
