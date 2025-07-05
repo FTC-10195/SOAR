@@ -37,7 +37,7 @@ public class VerticalSlides {
     public static int BARNACLE = 800;
     double maxPower = 1;
     double lockPower = .1;
-    public static double downPower = .3;
+    public static double downPower = .4;
     boolean lock = false;
     int lockPosition;
 
