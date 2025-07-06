@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.util.Constants;
+import com.pedropathing.util.CustomFilteredPIDFCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -37,9 +38,9 @@ public class PedroSample extends LinearOpMode {
    // BarnacleCamera barnacleCamera = new BarnacleCamera();
     Path noPath;
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));  // Starting position
-    private final Pose scorePose = new Pose(12.5, 124, Math.toRadians(315));
+    private final Pose scorePose = new Pose(10, 122, Math.toRadians(315));
     private final Pose rightGrab = new Pose(14, 111, Math.toRadians(360));
-    private final Pose middleGrab = new Pose(14, 121.5, Math.toRadians(360));
+    private final Pose middleGrab = new Pose(14, 121, Math.toRadians(360));
     private final Pose leftGrab = new Pose(14, 119, Math.toRadians(405));
     private Path scorePreload, park, right, middle, left, score1, score2, score3;
     private Path sub1;
@@ -65,7 +66,7 @@ public class PedroSample extends LinearOpMode {
 
         sub1 = new Path(new BezierCurve(
                 new Point(12.5, 124, Point.CARTESIAN),
-                new Point(63.252, 117.757, Point.CARTESIAN),
+                new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
                 new Point(64.000, 99.000, Point.CARTESIAN)
             )
         );
@@ -77,6 +78,15 @@ public class PedroSample extends LinearOpMode {
 
         score2 = new Path(new BezierLine(new Point(middleGrab), new Point(scorePose)));
         score2.setLinearHeadingInterpolation(middleGrab.getHeading(), scorePose.getHeading());
+
+        score3 = new Path(
+                new BezierCurve(
+                        new Point(64.000, 99.000, Point.CARTESIAN),
+                        new Point(61.6822429906542, 109.23364485981308, Point.CARTESIAN),
+                        new Point(10.000, 122.000, Point.CARTESIAN)
+                )
+        );
+        score3.setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(315));
 
     }
 
@@ -96,42 +106,103 @@ public class PedroSample extends LinearOpMode {
                 follower.followPath(right);
                 break;
             case 3:
-                scoutSubsystems(1600, pathState);
+                scoutSubsystems(1300, pathState);
                 break;
             case 4:
                 intakeSubsystems(1000, pathState);
                 break;
             case 5:
-                restSubsystems(500, pathState);
-                follower.followPath(score1);
+                restSubsystems(700, pathState);
+                if (System.currentTimeMillis() - timeSnapshot > 300){
+                    follower.followPath(score1);
+                }
                 break;
             case 6:
-                scoreSubsystems(1300, pathState);
+                scoreSubsystems(1400, pathState);
                 break;
             case 7:
             restSubsystems(500,pathState);
             follower.followPath(middle);
             break;
             case 8:
-                scoutSubsystems(1600, pathState);
+                scoutSubsystems(1300, pathState);
                 break;
             case 9:
                 intakeSubsystems(1000, pathState);
                 break;
             case 10:
-                restSubsystems(400, pathState);
-                follower.followPath(score2);
+                restSubsystems(600, pathState);
+                if (System.currentTimeMillis() - timeSnapshot > 300){
+                    follower.followPath(score2);
+                }
                 break;
             case 11:
-                scoreSubsystems(1350, pathState);
+                scoreSubsystems(1400, pathState);
                 break;
             case 12:
-                restSubsystems(1000, pathState);
+                restSubsystems(300, pathState);
                 follower.followPath(sub1);
                 break;
             case 13:
-                scoutSubsystems(2000, pathState);
+                if (System.currentTimeMillis() - timeSnapshot < 1500){
+                    follower.setDrivePIDF(new CustomFilteredPIDFCoefficients(0.1,0,0,6,0));
+                }else{
+                    follower.setDrivePIDF(new CustomFilteredPIDFCoefficients(0.01,0,0,6,0));
+                    scoutSubsystems(1000000000, pathState);
+                    if (follower.driveError < 3 && follower.headingError < Math.toRadians(10)){
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+
+                    }
+                }
                 break;
+            case 14:
+                if (System.currentTimeMillis() - timeSnapshot > 500){
+                    setPathState(pathState + 1);
+                }
+            case 15:
+                webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
+                follower.breakFollowing();
+                setPathState(pathState + 1);
+                timeSnapshot = System.currentTimeMillis();
+                break;
+            case 16:
+                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
+                    timeSnapshot = System.currentTimeMillis();
+                    setPathState(pathState + 1);
+                }
+                break;
+            case 17:
+                if (System.currentTimeMillis() - timeSnapshot > 500 && System.currentTimeMillis() - timeSnapshot < 800){
+                    arm.intake(Arm.Intake.CLOSE);
+                }else if (System.currentTimeMillis() - timeSnapshot > 800){
+                    if (System.currentTimeMillis() - timeSnapshot > 1100){
+                        timeSnapshot = System.currentTimeMillis();
+                        follower.followPath(score3);
+                        setPathState(pathState+1);
+                        arm.intake(Arm.Intake.CLOSE);
+                    }else{
+                        arm.intake(Arm.Intake.INTAKE);
+                    }
+
+                }
+                break;
+            case 18:
+                if (System.currentTimeMillis() - timeSnapshot < 2500){
+                    follower.setDrivePIDF(new CustomFilteredPIDFCoefficients(0.1,0,0,6,0));
+                    if (System.currentTimeMillis() - timeSnapshot > 1000){
+                        restSubsystems(1000000000, pathState);
+                    }
+                }else{
+                    if (follower.driveError < 13 && follower.headingError < Math.toRadians(10)){
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                    }
+                }
+                break;
+            case 19:
+                follower.setDrivePIDF(new CustomFilteredPIDFCoefficients(0.01,0,0,6,0));
+                scoreSubsystems(1500, pathState);
         }
 
 

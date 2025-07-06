@@ -72,7 +72,7 @@ public class Webcam {
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
-    public static long driveTargetTimeInMilis = 800;
+    public static long driveTargetTimeInMilis = 1000;
     public static int tolerancePID = 9;
     public static double kPX = 0.004525;
     public static double kIX = 0;
