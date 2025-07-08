@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-@Disabled
+//@Disabled
 public final class TuningOpModes {
     public static final Class<?> DRIVE_CLASS = PinpointDrive.class; // TODO: change to your drive class i.e. PinpointDrive if using pinpoint
 

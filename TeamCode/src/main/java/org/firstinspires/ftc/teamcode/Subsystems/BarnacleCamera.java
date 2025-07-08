@@ -48,19 +48,15 @@ public class BarnacleCamera {
     VisionPortal portal;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
+    public static int MIN_SAMPLE_AREA_PX = 800; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
-    public static double leftX = 107;
-    public static double middleX = 214;
-    public static double rightX = CAMERA_WIDTH_PX;
-    public static double bottomY = 320;
-    public static double topY = 0;
+    public static double dividerLineX = CAMERA_WIDTH_PX/2;
+    double barnacleSize = 0;
 
-    //Points for extremedies
-    Point bottomLeft = null;
-    Point bottomRight = null;
-    Point topLeft = null;
-    Point topRight = null;
+
+
+
+
 
 
     public void setLiveView(boolean On) {
@@ -73,39 +69,26 @@ public class BarnacleCamera {
 
     public void identifyBarnacle() {
         //Identify white blobs
+        barnacleSize = 800;
+        barnacleLocation = BarnacleLocations.LEFT;
         List<ColorBlobLocatorProcessor.Blob> whiteBlobs;
         whiteBlobs = colorLocatorWhite.getBlobs();
         ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, whiteBlobs);
-        double barnacleSize = 0;
-        int leftSize = 0;
-        int middleSize = 0;
-        int rightSize = 0;
         for (ColorBlobLocatorProcessor.Blob blob : whiteBlobs) {
             RotatedRect boxFit = blob.getBoxFit();
-            if (boxFit.size.area() > barnacleSize){
+            if (boxFit.size.width * 5 < boxFit.size.height || boxFit.size.height * 5 < boxFit.size.width) {
+                //Proportions are super out of whack like wth is this
+                return;
+            }
+            if (boxFit.size.area() > barnacleSize) {
                 barnacleSize = boxFit.size.area();
-                Point[] myContourPoints;// A list of the many points within the blob
-                myContourPoints = blob.getContourPoints();
-                for (Point p : myContourPoints) {
-                    if (p.y < bottomY && p.y > topY){
-                        return;
-                    }
-                    if (p.x < leftX){
-                        leftSize +=1;
-                    }else if (p.x > leftX && p.x < middleX){
-                        middleSize += 1;
-                    }else{
-                        rightSize += 1;
-                    }
+                if (boxFit.center.x > dividerLineX) {
+                    barnacleLocation = BarnacleLocations.RIGHT;
+                } else {
+                    barnacleLocation = BarnacleLocations.MIDDLE;
                 }
             }
-        }
-        if (leftSize > rightSize && leftSize > middleSize){
-            barnacleLocation = BarnacleLocations.LEFT;
-        }else if (rightSize > leftSize && rightSize > middleSize){
-            barnacleLocation = BarnacleLocations.RIGHT;
-        }else if (middleSize > leftSize && middleSize > rightSize){
-            barnacleLocation = BarnacleLocations.MIDDLE;
+
         }
     }
 
@@ -128,6 +111,7 @@ public class BarnacleCamera {
 
     public void status(Telemetry telemetry) {
         telemetry.addData("BARNACLE LOCATION", barnacleLocation);
+        telemetry.addData("BARNACLE SIZE", barnacleSize);
     }
 
 

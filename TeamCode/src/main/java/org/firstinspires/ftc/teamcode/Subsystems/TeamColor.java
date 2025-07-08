@@ -12,6 +12,7 @@ public class TeamColor {
    public enum Color{
        RED,
        BLUE,
+       YELLOW,
        BOTH,
        NONE
    }
@@ -32,6 +33,9 @@ public class TeamColor {
                break;
            case BLUE:
                setColor(Color.RED);
+               break;
+           case YELLOW:
+               setColor(Color.YELLOW);
                break;
            case BOTH:
            case NONE:

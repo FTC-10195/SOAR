@@ -16,9 +16,9 @@ public class BarnacleTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         waitForStart();
         if (isStopRequested()) return;
-        TeamColor teamColor = new TeamColor(TeamColor.Color.RED);
-       // BarnacleCamera barnacleCamera = new BarnacleCamera();
-     //   barnacleCamera.initiate(hardwareMap);
+        TeamColor teamColor = new TeamColor(TeamColor.Color.YELLOW);
+        BarnacleCamera barnacleCamera = new BarnacleCamera();
+        barnacleCamera.initiate(hardwareMap);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
@@ -33,16 +33,13 @@ public class BarnacleTest extends LinearOpMode {
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
+            barnacleCamera.setLiveView(true);
             if (gamepad1.left_bumper){
-          //      barnacleCamera.identifyBarnacle();
+               barnacleCamera.identifyBarnacle();
             }
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
-            boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
-            if (switchColor){
-                teamColor.flipColor();
-            }
             teamColor.status(telemetry);
-         //   barnacleCamera.status(telemetry);
+            barnacleCamera.status(telemetry);
             telemetry.update();
         }
     }
