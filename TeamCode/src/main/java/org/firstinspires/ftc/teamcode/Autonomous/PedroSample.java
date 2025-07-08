@@ -70,7 +70,7 @@ public class PedroSample extends LinearOpMode {
                 new Point(64.000, 99.000, Point.CARTESIAN)
             )
         );
-        sub1.setLinearHeadingInterpolation(Math.toRadians(scorePose.getHeading()), Math.toRadians(270));
+        sub1.setLinearHeadingInterpolation(Math.toRadians(scorePose.getHeading()), Math.toRadians(275));
 
 
         score1 = new Path(new BezierLine(new Point(rightGrab), new Point(scorePose)));
@@ -86,7 +86,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(10.000, 122.000, Point.CARTESIAN)
                 )
         );
-        score3.setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(315));
+        score3.setLinearHeadingInterpolation(Math.toRadians(275), Math.toRadians(315));
 
     }
 
@@ -152,17 +152,16 @@ public class PedroSample extends LinearOpMode {
                     if (follower.driveError < 3 && follower.headingError < Math.toRadians(10)){
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
-
+                        follower.breakFollowing();
                     }
                 }
                 break;
             case 14:
-                if (System.currentTimeMillis() - timeSnapshot > 500){
+                if (System.currentTimeMillis() - timeSnapshot > 700){
                     setPathState(pathState + 1);
                 }
             case 15:
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
-                follower.breakFollowing();
                 setPathState(pathState + 1);
                 timeSnapshot = System.currentTimeMillis();
                 break;
@@ -176,7 +175,7 @@ public class PedroSample extends LinearOpMode {
                 if (System.currentTimeMillis() - timeSnapshot > 500 && System.currentTimeMillis() - timeSnapshot < 800){
                     arm.intake(Arm.Intake.CLOSE);
                 }else if (System.currentTimeMillis() - timeSnapshot > 800){
-                    if (System.currentTimeMillis() - timeSnapshot > 1100){
+                    if (System.currentTimeMillis() - timeSnapshot > 950){
                         timeSnapshot = System.currentTimeMillis();
                         follower.followPath(score3);
                         setPathState(pathState+1);
@@ -188,9 +187,10 @@ public class PedroSample extends LinearOpMode {
                 }
                 break;
             case 18:
+                arm.intake(Arm.Intake.CLOSE);
                 if (System.currentTimeMillis() - timeSnapshot < 2500){
                     follower.setDrivePIDF(new CustomFilteredPIDFCoefficients(0.1,0,0,6,0));
-                    if (System.currentTimeMillis() - timeSnapshot > 1000){
+                    if (System.currentTimeMillis() - timeSnapshot > 500){
                         restSubsystems(1000000000, pathState);
                     }
                 }else{
@@ -218,7 +218,7 @@ public class PedroSample extends LinearOpMode {
         arm.shoulder(Arm.Shoulder.BUCKET);
         arm.extendo(Arm.Extendo.EXTENDED);
         arm.wrist(Arm.Wrist.FORWARD);
-
+        arm.clawRotate(Arm.ClawRotation.Horz1);
 
         if (System.currentTimeMillis() - timeSnapshot > (timeToWaitMilis)) {
             arm.intake(Arm.Intake.DEPOSIT);
@@ -237,6 +237,7 @@ public class PedroSample extends LinearOpMode {
         arm.extendo(Arm.Extendo.RETRACTED);
         arm.wrist(Arm.Wrist.FORWARD);
         arm.intake(Arm.Intake.CLOSE);
+        arm.clawRotate(Arm.ClawRotation.Horz1);
 
         if (System.currentTimeMillis() - timeSnapshot > timeToWaitMilis) {
             setPathState(pathState + 1);
