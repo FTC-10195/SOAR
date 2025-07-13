@@ -26,6 +26,7 @@ public class Arm {
         UPWARDS,//Upwards is what it will do during resting
         FORWARDS, //Parallel to the ground
         DOWNWARDS, //Used for intaking only
+        CHAMBER_SCORE,
         BACKWARDS,
         CHAMBER_INTAKE,
         BUCKET,
@@ -74,11 +75,12 @@ public class Arm {
     //Shoulder Positions:
     public static double shoulderInit = .15;
     public static double shoulderChamberIntake = 0.09;
-    public static double shoulderBucket = .27;
-    public static double shoulderBackwards = .1;
-    public static double shoulderUpwards = 0.4;
-    public static double shoulderForwards = 0.52;   //Should be parallel to the ground
-    public static double shoulderDownwards = 0.625;   //Should be low enough to intake
+    public static double shoulderBucket = .3;
+    public static double shoulderBackwards = .12;
+    public static double shoulderUpwards = 0.45;
+    public static double shoulderForwards = 0.57;   //Should be parallel to the ground
+    public static double shoulderChamberScore = 0.55;
+    public static double shoulderDownwards = 0.675;   //Should be low enough to intake
     public static double clawClosed = .39;
     public static double clawOpen = .6;
     public static double clawVert = .75;
@@ -168,6 +170,9 @@ public class Arm {
                 break;
             case CHAMBER_INTAKE:
                 rightShoulder.setPosition(shoulderChamberIntake);
+                break;
+            case CHAMBER_SCORE:
+                rightShoulder.setPosition(shoulderChamberScore);
                 break;
         }
         leftShoulder.setPosition(1 - rightShoulder.getPosition());

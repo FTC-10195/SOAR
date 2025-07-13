@@ -19,6 +19,7 @@ public class BarnacleTest extends LinearOpMode {
         TeamColor teamColor = new TeamColor(TeamColor.Color.YELLOW);
         BarnacleCamera barnacleCamera = new BarnacleCamera();
         barnacleCamera.initiate(hardwareMap);
+       // barnacleCamera.setLiveView(true);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
@@ -33,7 +34,7 @@ public class BarnacleTest extends LinearOpMode {
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
-            barnacleCamera.setLiveView(true);
+          //  barnacleCamera.setLiveView(true);
             if (gamepad1.left_bumper){
                barnacleCamera.identifyBarnacle();
             }

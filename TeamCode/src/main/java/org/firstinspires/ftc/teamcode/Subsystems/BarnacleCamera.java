@@ -59,13 +59,15 @@ public class BarnacleCamera {
 
 
 
-    public void setLiveView(boolean On) {
+   /* public void setLiveView(boolean On) {
         if (On) {
             portal.resumeLiveView();
         } else {
             portal.stopLiveView();
         }
     }
+
+    */
 
     public void identifyBarnacle() {
         //Identify white blobs
@@ -106,9 +108,13 @@ public class BarnacleCamera {
                 .addProcessors(colorLocatorWhite)
                 .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 2"))
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
+                .enableLiveView(false)
                 .build();
     }
-
+    public void clear(){
+        portal.close();
+    }
     public void status(Telemetry telemetry) {
         telemetry.addData("BARNACLE LOCATION", barnacleLocation);
         telemetry.addData("BARNACLE SIZE", barnacleSize);

@@ -122,7 +122,7 @@ public class ChamberRed extends LinearOpMode {
                     break;
                 case CHAMBER:
                     arm.extendo(Arm.Extendo.RETRACTED);
-                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    arm.shoulder(Arm.Shoulder.CHAMBER_SCORE);
                     arm.wrist(Arm.Wrist.DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;

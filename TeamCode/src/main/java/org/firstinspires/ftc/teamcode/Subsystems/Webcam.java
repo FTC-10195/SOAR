@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -55,7 +56,7 @@ public class Webcam {
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
     ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(180, 160, 0), new Scalar(240, 240, 190)))         // use a predefined color match
+            .setTargetColorRange(new ColorRange(ColorSpace.HSV, new Scalar(10, 60, 60), new Scalar(30, 255, 255)))         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
             .setDrawContours(false)                        // Show contours on the Stream Preview
@@ -72,7 +73,7 @@ public class Webcam {
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
-    public static long driveTargetTimeInMilis = 1000;
+    public static long driveTargetTimeInMilis = 800;
     public static int tolerancePID = 9;
     public static double kPX = 0.004525;
     public static double kIX = 0;
@@ -233,7 +234,9 @@ public class Webcam {
                 .addProcessors(colorLocatorRed, colorLocatorBlue, colorLocatorYellow)
                 .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .enableLiveView(false)
                 .build();
+        FtcDashboard.getInstance().startCameraStream(portal, 0);
         setColorLocatorTeam(teamColor, true);
         setColorLocatorMode(mode, true);
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
