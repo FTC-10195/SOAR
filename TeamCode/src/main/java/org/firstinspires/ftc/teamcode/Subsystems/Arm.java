@@ -74,11 +74,11 @@ public class Arm {
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderInit = .15;
-    public static double shoulderChamberIntake = 0.09;
-    public static double shoulderBucket = .3;
+    public static double shoulderChamberIntake = 0.13;
+    public static double shoulderBucket = .29;
     public static double shoulderBackwards = .12;
     public static double shoulderUpwards = 0.45;
-    public static double shoulderForwards = 0.57;   //Should be parallel to the ground
+    public static double shoulderForwards = 0.58;   //Should be parallel to the ground
     public static double shoulderChamberScore = 0.55;
     public static double shoulderDownwards = 0.675;   //Should be low enough to intake
     public static double clawClosed = .39;

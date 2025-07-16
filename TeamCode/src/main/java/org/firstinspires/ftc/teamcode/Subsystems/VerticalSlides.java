@@ -31,7 +31,7 @@ public class VerticalSlides {
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int BUCKET = 1600;
+    public static int BUCKET = 1900;
     int down = 0;
     public static int CHAMBER = 1650;
     public static int BARNACLE = 800;

@@ -74,12 +74,12 @@ public class Webcam {
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
     public static long driveTargetTimeInMilis = 800;
-    public static int tolerancePID = 9;
+    public static int tolerancePID = 12;
     public static double kPX = 0.004525;
     public static double kIX = 0;
     public static double kDX = 0;
     public static double kFX = 0;
-    public static double kPY = -0.0022;
+    public static double kPY = -0.0042;
     public static double kIY = 0;
     public static double kDY = 0;
     public static double kFY = 0;
@@ -92,6 +92,8 @@ public class Webcam {
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
     public static double HORIZONTAL_OFFSET_PIX = 0;
+    public static double MAX_SPEED = 0.2;
+
     PIDFController xPID = new PIDFController(kPX, kIX, kDX, kFX);
     PIDFController yPID = new PIDFController(kPY, kIY, kDY, kFY);
 
@@ -144,14 +146,33 @@ public class Webcam {
     }
 
 
-    public void update(DriveTrain driveTrain, Arm arm) {
+    public void update(DriveTrain driveTrain, Arm arm, TelemetryPacket packet) {
+        xPID.setP(kPX);
+        xPID.setI(kIX);
+        xPID.setD(kDX);
+        yPID.setP(kPY);
+        yPID.setI(kIY);
+        yPID.setD(kDY);
         switch (currentDriveStage) {
             case DRIVE:
                 snapshot();
                 intakeState = Arm.Intake.INTAKE;
                 double xVec = xPID.calculate(clawCenter.x, targetPos.x);
                 double yVec = yPID.calculate(clawCenter.y, targetPos.y);
+                double speed = Math.sqrt(Math.pow(xVec, 2) + Math.pow(yVec, 2));
+                packet.put("Old xVec", xVec);
+                packet.put("Old yVec", yVec);
+                packet.put("speed", speed);
+                if (speed > MAX_SPEED) {
+                    double greaterSpeed = Math.max(Math.abs(xVec), Math.abs(yVec));
+                    double scaler = Math.abs(greaterSpeed / MAX_SPEED);
+                    xVec /= scaler;
+                    yVec /= scaler;
+                }
+                packet.put("New xVec", xVec);
+                packet.put("New yVec", yVec);
                 driveTrain.run(xVec, yVec, 0);
+
                 if (
                         System.currentTimeMillis() - snapshotTime > driveTargetTimeInMilis ||
                                 targetDistancePX < tolerancePID ||
@@ -163,6 +184,7 @@ public class Webcam {
                 }
                 break;
             case DROP:
+                driveTrain.run(0, 0, 0);
                 arm.clawRotate(sampleRotation);
                 if (System.currentTimeMillis() - snapshotTime > 400 && System.currentTimeMillis() - snapshotTime < 700) {
                     intakeState = Arm.Intake.CLOSE;
@@ -361,6 +383,11 @@ public class Webcam {
         telemetry.addData("clawCenter",clawCenter);
       */
         telemetry.addData("colorLocatorTeam", colorLocatorTeam);
+    }
+    public void statusFTCDashboard(TelemetryPacket packet){
+        packet.put("Webcam error", targetDistancePX);
+        packet.put("Webcam error X", targetDistanceX);
+        packet.put("Webcam error Y", targetDistanceY);
     }
 
     public void setClawRotation(Arm.ClawRotation rot) {

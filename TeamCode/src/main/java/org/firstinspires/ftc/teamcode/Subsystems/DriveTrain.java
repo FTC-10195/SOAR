@@ -16,6 +16,7 @@ public class DriveTrain {
     DcMotor frontRightMotor;
     DcMotor backLeftMotor;
     DcMotor backRightMotor;
+    double x, y;
     public void initiate(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("motor0");
         frontRightMotor = hardwareMap.dcMotor.get("motor1");
@@ -37,6 +38,8 @@ public class DriveTrain {
         backLeftMotor.setPower(((y - x + rx) / denominator));
         frontRightMotor.setPower(((y - x - rx) / denominator));
         backRightMotor.setPower(((y + x - rx) / denominator));
+        this.x = x;
+        this.y = y;
     }
     public void testStrafe(double power) {
             frontLeftMotor.setPower(power);
@@ -69,5 +72,14 @@ public class DriveTrain {
             backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
+    }
+
+    public void getStatus(TelemetryPacket packet) {
+        packet.put("FLPower", frontLeftMotor.getPower());
+        packet.put("FRPower", frontRightMotor.getPower());
+        packet.put("BLPower", backLeftMotor.getPower());
+        packet.put("BRPower", backRightMotor.getPower());
+        packet.put("XPower", x);
+        packet.put("YPower", y);
     }
 }

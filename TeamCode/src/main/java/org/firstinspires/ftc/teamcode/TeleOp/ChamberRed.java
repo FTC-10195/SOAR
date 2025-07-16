@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.TeleOp;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -62,9 +64,10 @@ public class ChamberRed extends LinearOpMode {
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
-            if (LB && state == StateMachine.States.SAMPLE_INTAKE){
+            if ((LB && state == StateMachine.States.SAMPLE_INTAKE) || (LB && state == StateMachine.States.RESTING)){
                 extendoResetTime = System.currentTimeMillis();
             }
+
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
             mode = stateMachine.switchMode(mode,switchMode);
@@ -116,8 +119,8 @@ public class ChamberRed extends LinearOpMode {
                 case BUCKET:
                     arm.extendo(Arm.Extendo.EXTENDED);
                     arm.shoulder(Arm.Shoulder.BUCKET);
-                    arm.wrist(Arm.Wrist.FORWARD);
-                    arm.clawRotate(Arm.ClawRotation.Horz1);
+                    arm.wrist(Arm.Wrist.UPWARDS);
+                    arm.clawRotate(Arm.ClawRotation.Vert);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                     break;
                 case CHAMBER:
@@ -165,7 +168,8 @@ public class ChamberRed extends LinearOpMode {
             if (gamepad1.square){
                 ascentSquare = true;
             }
-            webcam.update(driveTrain,arm);
+            TelemetryPacket packet = new TelemetryPacket();
+            webcam.update(driveTrain,arm,packet);
             ascent.reset(gamepad1.options);
             arm.update(telemetry, teamColor.getColor());
             verticalSlides.status(telemetry);
@@ -184,8 +188,11 @@ public class ChamberRed extends LinearOpMode {
             }
             arm.intake(stateMachine.clawState);
             webcam.status(telemetry);
+            webcam.statusFTCDashboard(packet);
             telemetry.addData("CurrentState", state);
             telemetry.update();
+            driveTrain.getStatus(packet);
+            FtcDashboard.getInstance().sendTelemetryPacket(packet);
         }
     }
 }
