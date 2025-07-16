@@ -42,8 +42,8 @@ public class PedroSample extends LinearOpMode {
     BarnacleCamera barnacleCamera = new BarnacleCamera();
     Path noPath;
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));  // Starting position
-    private final Pose scorePose = new Pose(7.5, 125, Math.toRadians(315));
-    private final Pose identifyPose = new Pose(14, 116, Math.toRadians(360));
+    private final Pose scorePose = new Pose(9, 123, Math.toRadians(315));
+    private final Pose identifyPose = new Pose(14, 115.35, Math.toRadians(360));
     private final Pose rightGrab = new Pose(14, 109.7, Math.toRadians(360));
     private final Pose middleGrab = new Pose(14, 121, Math.toRadians(360));
     private final Pose leftGrab = new Pose(17, 119, Math.toRadians(380));
@@ -561,19 +561,6 @@ public class PedroSample extends LinearOpMode {
             setPathState(pathState + 1);
         } else {
             arm.intake(Arm.Intake.INTAKE);
-        }
-    }
-
-    public void barnacleSubsystems(int timeToWaitMilis, int pathState) {
-        verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BARNACLE);
-        arm.shoulder(Arm.Shoulder.FORWARDS);
-        arm.extendo(Arm.Extendo.EXTENDED);
-        arm.wrist(Arm.Wrist.DOWNWARDS);
-        arm.intake(Arm.Intake.CLOSE);
-
-        if (System.currentTimeMillis() - timeSnapshot > timeToWaitMilis) {
-            setPathState(pathState + 1);
-            timeSnapshot = System.currentTimeMillis();
         }
     }
 
