@@ -27,12 +27,6 @@ import pedroPathing.constants.LConstants;
 
 @Autonomous
 public class PedroSample extends LinearOpMode {
-    enum SubmersibleStates {
-        FIRST,
-        SECOND
-    }
-
-    SubmersibleStates submersibleState = SubmersibleStates.FIRST;
     public double firstSubX = 0;
     public double firstSubY = 0;
     public double secondSubX = 0;
