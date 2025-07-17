@@ -20,12 +20,23 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Autonomous
 public class PedroSample extends LinearOpMode {
+    enum SubmersibleStates {
+        FIRST,
+        SECOND
+    }
+
+    SubmersibleStates submersibleState = SubmersibleStates.FIRST;
+    public double firstSubX = 0;
+    public double firstSubY = 0;
+    public double secondSubX = 0;
+    public double secondSubY = 0;
     int pathState = 0;
     Timer pathTimer;
     Constants constants;
@@ -36,7 +47,6 @@ public class PedroSample extends LinearOpMode {
     DriveTrain driveTrain = new DriveTrain();
     Webcam webcam = new Webcam();
     BarnacleCamera barnacleCamera = new BarnacleCamera();
-    Path noPath;
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));  // Starting position
     private final Pose scorePose = new Pose(9, 123, Math.toRadians(315));
     private final Pose identifyPose = new Pose(14, 115.35, Math.toRadians(360));
@@ -83,7 +93,7 @@ public class PedroSample extends LinearOpMode {
         left = new Path(new BezierLine(new Point(scorePose), new Point(leftGrab)));
         left.setLinearHeadingInterpolation(scorePose.getHeading(), leftGrab.getHeading());
 
-        sub1End = new Point(63.000, 106.000, Point.CARTESIAN);
+        sub1End = new Point(65.000 + firstSubX, 106.000 + firstSubY, Point.CARTESIAN);
         sub1 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
@@ -92,7 +102,7 @@ public class PedroSample extends LinearOpMode {
         );
         sub1.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
 
-        sub2End = new Point(65.000, 106.000, Point.CARTESIAN);
+        sub2End = new Point(65.000 + secondSubX, 106.000 + secondSubY, Point.CARTESIAN);
         sub2 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
@@ -101,7 +111,7 @@ public class PedroSample extends LinearOpMode {
         );
         sub2.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
 
-        sub3End = new Point(65.000, 106.000, Point.CARTESIAN);
+        sub3End = new Point(65.000 + firstSubX, 106.000 + secondSubY, Point.CARTESIAN);
         sub3 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(13.682, 105.164, Point.CARTESIAN),
@@ -112,7 +122,7 @@ public class PedroSample extends LinearOpMode {
         );
         sub3.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
 
-        sub4End = new Point(65.000, 106.000, Point.CARTESIAN);
+        sub4End = new Point(65.000 + secondSubX, 106.000 + secondSubY, Point.CARTESIAN);
         sub4 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(13.682, 105.164, Point.CARTESIAN),
@@ -140,7 +150,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        score4.setLinearHeadingInterpolation(Math.toRadians(275),scorePose.getHeading());
+        score4.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
 
         score5 = new Path(
                 new BezierCurve(
@@ -149,7 +159,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        score5.setLinearHeadingInterpolation(Math.toRadians(275),scorePose.getHeading());
+        score5.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
 
         scoreRight1 = new Path(
                 new BezierCurve(
@@ -160,7 +170,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        scoreRight1.setLinearHeadingInterpolation(Math.toRadians(275),scorePose.getHeading());
+        scoreRight1.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
 
         scoreRight2 = new Path(
                 new BezierCurve(
@@ -171,9 +181,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        scoreRight2.setLinearHeadingInterpolation(Math.toRadians(275),scorePose.getHeading());
-
-
+        scoreRight2.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
 
 
         dockLeft = new Path(new BezierLine(new Point(scorePose), new Point(leftDockPose)));
@@ -285,7 +293,7 @@ public class PedroSample extends LinearOpMode {
             case 15:
                 scoreSubsystems(1900, pathState);
                 break;
-                //Start of 4 samp
+            //Start of 4 samp
             case 16:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
@@ -304,7 +312,7 @@ public class PedroSample extends LinearOpMode {
                 scoutSubsystems(1000000, pathState);
                 driveErrorX = Math.abs(sub2End.getX() - follower.getPose().getX());
                 driveErrorY = Math.abs(sub2End.getY() - follower.getPose().getY());
-                switch (barnacleCamera.getBarnacleLocation()){
+                switch (barnacleCamera.getBarnacleLocation()) {
                     case RIGHT:
                         driveErrorY = Math.abs(sub3End.getY() - follower.getPose().getY());
                         driveErrorX = Math.abs(sub3End.getX() - follower.getPose().getX());
@@ -337,7 +345,7 @@ public class PedroSample extends LinearOpMode {
                 if (System.currentTimeMillis() - timeSnapshot > 300) {
                     arm.intake(Arm.Intake.CLOSE);
                 }
-                if (System.currentTimeMillis() - timeSnapshot > 500){
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
                     switch (barnacleCamera.getBarnacleLocation()) {
                         case LEFT:
                         case MIDDLE:
@@ -373,9 +381,9 @@ public class PedroSample extends LinearOpMode {
                 }
                 break;
             case 25:
-                scoreSubsystems(1900,pathState);
+                scoreSubsystems(1900, pathState);
                 break;
-                //Start of 5 Samp
+            //Start of 5 Samp
             case 26:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
@@ -394,7 +402,7 @@ public class PedroSample extends LinearOpMode {
                 scoutSubsystems(1000000, pathState);
                 driveErrorX = Math.abs(sub2End.getX() - follower.getPose().getX());
                 driveErrorY = Math.abs(sub2End.getY() - follower.getPose().getY());
-                switch (barnacleCamera.getBarnacleLocation()){
+                switch (barnacleCamera.getBarnacleLocation()) {
                     case RIGHT:
                         driveErrorY = Math.abs(sub4End.getY() - follower.getPose().getY());
                         driveErrorX = Math.abs(sub4End.getX() - follower.getPose().getX());
@@ -427,7 +435,7 @@ public class PedroSample extends LinearOpMode {
                 if (System.currentTimeMillis() - timeSnapshot > 300) {
                     arm.intake(Arm.Intake.CLOSE);
                 }
-                if (System.currentTimeMillis() - timeSnapshot > 500){
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
                     switch (barnacleCamera.getBarnacleLocation()) {
@@ -463,12 +471,12 @@ public class PedroSample extends LinearOpMode {
                 }
                 break;
             case 35:
-                scoreSubsystems(1900,pathState);
+                scoreSubsystems(1900, pathState);
                 break;
             case 36:
-                restSubsystems(0,pathState);
+                restSubsystems(0, pathState);
                 timeSnapshot = System.currentTimeMillis();
-                switch (barnacleCamera.getBarnacleLocation()){
+                switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         follower.followPath(dockLeft);
                         break;
@@ -481,7 +489,7 @@ public class PedroSample extends LinearOpMode {
                 }
                 setPathState(pathState + 1);
             case 37:
-                if (System.currentTimeMillis() - timeSnapshot > 500){
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
                     arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
                 }
                 break;
@@ -571,10 +579,40 @@ public class PedroSample extends LinearOpMode {
         pathTimer = new Timer();
         constants = new Constants();
         constants.setConstants(FConstants.class, LConstants.class);
+        Gamepad previousGamepad = gamepad1;
+        while (!opModeIsActive()){
+            if (gamepad1.dpad_down && !previousGamepad.dpad_down){
+                firstSubX -=1;
+            }
+            if (gamepad1.dpad_up && !previousGamepad.dpad_up){
+                firstSubX +=1;
+            }
+            if (gamepad1.dpad_right && !previousGamepad.dpad_right){
+                firstSubY -=1;
+            }
+            if (gamepad1.dpad_left && !previousGamepad.dpad_left){
+                firstSubY +=1;
+            }
+
+            if (gamepad1.cross && !previousGamepad.cross){
+                secondSubX -=1;
+            }
+            if (gamepad1.triangle && !previousGamepad.triangle){
+                secondSubX +=1;
+            }
+            if (gamepad1.circle && !previousGamepad.circle){
+                secondSubY -=1;
+            }
+            if (gamepad1.square && !previousGamepad.square){
+                secondSubY +=1;
+            }
+
+            previousGamepad.copy(gamepad1);
+        }
+        waitForStart();
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
         buildPaths();
-        waitForStart();
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             verticalSlides.update();
@@ -588,6 +626,12 @@ public class PedroSample extends LinearOpMode {
             }
             webcam.status(telemetry);
             barnacleCamera.status(telemetry);
+            telemetry.addLine("X IS FORWARDS (greater X = more forwards) AND Y IS SIDEWAYS (greater Y = more left) RELATIVE TO DRIVER FOR BUCKET");
+            telemetry.addData("FirstX",firstSubX);
+            telemetry.addData("FirstY",firstSubY);
+            telemetry.addData("SecondX",secondSubX);
+            telemetry.addData("SecondY",secondSubY);
+
             telemetry.addData("Heading Error", follower.headingError);
             telemetry.addData("Path State", pathState);
             telemetry.addData("Position", follower.getPose().toString());
