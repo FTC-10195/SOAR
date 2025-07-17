@@ -8,8 +8,6 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
-import com.pedropathing.util.CustomFilteredPIDFCoefficients;
-import com.pedropathing.util.CustomPIDFCoefficients;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -40,16 +38,18 @@ public class PedroChamberRed extends LinearOpMode {
     Path noPath;
     private final Pose startPose = new Pose(7, 64, Math.toRadians(0));  // Starting position
     private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));  // Starting position
+    private final Pose humanIntakePose = new Pose(12,43,Math.toRadians(0));
     private final Pose identifyPose = new Pose(21.5,43, Math.toRadians(-38));
     private final Pose middleGrabPose = new Pose(21.5,55, Math.toRadians(-38));
-    private final Pose deposit1Pose = new Pose(21.5, 45, Math.toRadians(-125));
-    private final Pose deposit2Pose = new Pose(middleGrabPose.getX(),middleGrabPose.getY(), Math.toRadians(-125));
-    private Path scorePreload, identify, deposit1, deposit2, intakeMiddle,intakeLeft;
-    //sub3 and sub4 are for when the barnacle is on the right
-    //scoreRight 1 and 2 are for when barnacle is on the right
-    //right1, middle2
-    //right1, left2,
-    //middle1, left3,
+    private final Pose rightGrabPose = new Pose(21.5, 67, Math.toRadians(-38));
+    private final Pose depositFirstLeftPose = new Pose(21.5, identifyPose.getY() + 2, Math.toRadians(-125));
+    private final Pose depositFirstMiddlePose = new Pose(middleGrabPose.getX(),middleGrabPose.getY() + 2, Math.toRadians(-125));
+    private final Pose depositSecondMiddlePose = new Pose(humanIntakePose.getX(), middleGrabPose.getY(), Math.toRadians(0));
+    private final Pose depositSecondRightPose = new Pose(humanIntakePose.getX(), rightGrabPose.getY(), Math.toRadians(0));
+    private Path scorePreload, identify, firstGrabMiddle, secondGrabMiddle, secondGrabRightPreviousLeft, secondGrabRightPreviousMiddle, depositFirstLeft, depositFirstMiddle, depositSecondMiddle, depositSecondRight;
+
+
+
     long timeSnapshot = System.currentTimeMillis();
 
 
@@ -64,11 +64,43 @@ public class PedroChamberRed extends LinearOpMode {
         ));
         identify.setLinearHeadingInterpolation(scorePose.getHeading(), identifyPose.getHeading());
 
-        deposit1 = new Path(new BezierLine(new Point(identifyPose), new Point(deposit1Pose)));
-        deposit1.setLinearHeadingInterpolation(identifyPose.getHeading(), deposit1Pose.getHeading());
 
-        deposit2 = new Path(new BezierLine(new Point(middleGrabPose), new Point(deposit2Pose)));
-        deposit2.setLinearHeadingInterpolation(middleGrabPose.getHeading(), deposit2Pose.getHeading());
+        //BARNACLE LEFT
+        //firstGrabMiddle -> depositFirstMiddle -> secondGrabRightPreviousMiddle -> depositSecondMiddle -> scoring
+
+        firstGrabMiddle = new Path(new BezierLine(new Point(identifyPose), new Point(middleGrabPose)));
+        firstGrabMiddle.setLinearHeadingInterpolation(identifyPose.getHeading(), middleGrabPose.getHeading());
+
+        depositFirstMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(depositFirstMiddlePose)));
+        depositFirstMiddle.setLinearHeadingInterpolation(middleGrabPose.getHeading(), depositFirstMiddlePose.getHeading());
+
+        secondGrabRightPreviousMiddle = new Path(new BezierLine(new Point(depositFirstMiddlePose), new Point(rightGrabPose)));
+        secondGrabRightPreviousMiddle.setLinearHeadingInterpolation(depositFirstMiddlePose.getHeading(), rightGrabPose.getHeading());
+
+        depositSecondRight = new Path(new BezierLine(new Point(rightGrabPose), new Point(depositSecondRightPose)));
+        depositSecondRight.setLinearHeadingInterpolation(rightGrabPose.getHeading(), depositSecondRightPose.getHeading());
+
+        //BARNACLE MIDDLE
+        //identify -> depositFirstLeft -> secondGrabRightPreviousLeft -> depositSecondMiddle -> scoring
+
+        depositFirstLeft = new Path(new BezierLine(new Point(identifyPose), new Point(depositFirstLeftPose)));
+        depositFirstLeft.setLinearHeadingInterpolation(identifyPose.getHeading(), depositFirstLeftPose.getHeading());
+
+        secondGrabRightPreviousLeft = new Path(new BezierLine(new Point(depositFirstMiddlePose), new Point(rightGrabPose)));
+        secondGrabRightPreviousLeft.setLinearHeadingInterpolation(depositFirstMiddlePose.getHeading(), rightGrabPose.getHeading());
+
+        depositSecondRight = new Path(new BezierLine(new Point(rightGrabPose), new Point(depositSecondRightPose)));
+        depositSecondRight.setLinearHeadingInterpolation(rightGrabPose.getHeading(), depositSecondRightPose.getHeading());
+
+        //BARNACLE RIGHT
+        //identify -> depositFirst1 -> secondGrabMiddle -> depositSecond1 -> scoring
+
+        secondGrabMiddle = new Path(new BezierLine(new Point(depositFirstLeftPose), new Point(middleGrabPose)));
+        secondGrabMiddle.setLinearHeadingInterpolation(depositFirstLeftPose.getHeading(), middleGrabPose.getHeading());
+
+        depositSecondMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(depositSecondMiddlePose)));
+        depositSecondMiddle.setLinearHeadingInterpolation(middleGrabPose.getHeading(), depositSecondMiddlePose.getHeading());
+
 
     }
 
@@ -122,7 +154,7 @@ public class PedroChamberRed extends LinearOpMode {
             case 8:
                 switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        follower.followPath(intakeMiddle);
+                        follower.followPath(firstGrabMiddle);
                         break;
                     case MIDDLE:
                     case RIGHT:
@@ -155,7 +187,7 @@ public class PedroChamberRed extends LinearOpMode {
                         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                         arm.shoulder(Arm.Shoulder.FORWARDS);
                         arm.wrist(Arm.Wrist.DOWNWARDS);
-                        follower.followPath(deposit1);
+                        follower.followPath(depositFirstLeft);
                         timeSnapshot =System.currentTimeMillis();
                         setPathState(pathState+1);
                         break;
@@ -167,7 +199,7 @@ public class PedroChamberRed extends LinearOpMode {
                         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                         arm.shoulder(Arm.Shoulder.FORWARDS);
                         arm.wrist(Arm.Wrist.DOWNWARDS);
-                        follower.followPath(deposit2);
+                        follower.followPath(depositFirstMiddle);
                         timeSnapshot =System.currentTimeMillis();
                         setPathState(pathState+1);
                         break;
@@ -182,7 +214,23 @@ public class PedroChamberRed extends LinearOpMode {
                 }
                 break;
             case 12:
-
+                switch (barnacleCamera.getBarnacleLocation()) {
+                    case LEFT:
+                        if (System.currentTimeMillis() - timeSnapshot > 900){
+                            timeSnapshot =System.currentTimeMillis();
+                            arm.intake(Arm.Intake.DEPOSIT);
+                            setPathState(pathState+1);
+                        }
+                        break;
+                    case RIGHT:
+                        follower.followPath(secondGrabMiddle);
+                        break;
+                    case MIDDLE:
+                        follower.followPath(secondGrabRightPreviousLeft);
+                        break;
+                }
+                break;
+            case 13:
                 break;
         }
 
