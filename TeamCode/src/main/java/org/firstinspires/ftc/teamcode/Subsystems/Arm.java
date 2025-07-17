@@ -67,7 +67,7 @@ public class Arm {
     Servo leftShoulder; //Copys rightShoulder
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .22;
-    public static double extendoChamberPos = .32;
+    public static double extendoChamberPos = .49;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.12; //Should be facing towards the ground, only for INTAKING
     public static double wristFullDownwardsPos = 0.1; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
