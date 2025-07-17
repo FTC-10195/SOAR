@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.Subsystems.BarnacleCamera;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
-import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
@@ -17,6 +16,7 @@ public class BarnacleTest extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
         TeamColor teamColor = new TeamColor(TeamColor.Color.YELLOW);
+        teamColor.initiate(hardwareMap);
         BarnacleCamera barnacleCamera = new BarnacleCamera();
         barnacleCamera.initiate(hardwareMap);
        // barnacleCamera.setLiveView(true);
@@ -36,11 +36,15 @@ public class BarnacleTest extends LinearOpMode {
             currentGamepad2.copy(gamepad2);
           //  barnacleCamera.setLiveView(true);
             if (gamepad1.left_bumper){
-               barnacleCamera.identifyBarnacle();
+               barnacleCamera.identifyBarnacleBucket();
+            }
+            if (gamepad1.right_bumper){
+                barnacleCamera.identifyBarnacleChamber();
             }
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             teamColor.status(telemetry);
             barnacleCamera.status(telemetry);
+            teamColor.update();
             telemetry.update();
         }
     }

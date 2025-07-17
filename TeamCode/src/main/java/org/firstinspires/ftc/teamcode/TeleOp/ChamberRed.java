@@ -21,9 +21,9 @@ import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 public class ChamberRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-      //  Webcam webcam = new Webcam();
-      //  webcam.initiate(hardwareMap,telemetry);
-       // PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
+        //  Webcam webcam = new Webcam();
+        //  webcam.initiate(hardwareMap,telemetry);
+        // PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
@@ -35,6 +35,7 @@ public class ChamberRed extends LinearOpMode {
         arm.initiate(hardwareMap);
         arm.shoulder(Arm.Shoulder.FORWARDS);
         TeamColor teamColor = new TeamColor(TeamColor.Color.RED);
+        teamColor.initiate(hardwareMap);
         Gamepad previousGamepad1 = new Gamepad();
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad2 = new Gamepad();
@@ -42,7 +43,7 @@ public class ChamberRed extends LinearOpMode {
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
         Webcam webcam = new Webcam();
-        webcam.initiate(hardwareMap,teamColor.getColor(),mode,telemetry);
+        webcam.initiate(hardwareMap, teamColor.getColor(), mode, telemetry);
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
@@ -53,7 +54,7 @@ public class ChamberRed extends LinearOpMode {
         ascent.initiate(hardwareMap);
         long extendoResetTime = System.currentTimeMillis();
         while (opModeIsActive()) {
-       //     webcam.rotate(arm.getClawRotation(),telemetry);
+            //     webcam.rotate(arm.getClawRotation(),telemetry);
             ascent.update(ascentSquare, telemetry);
             previousGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
@@ -64,32 +65,32 @@ public class ChamberRed extends LinearOpMode {
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
             boolean LB = gamepad1.left_bumper && !previousGamepad1.left_bumper;
-            if ((LB && state == StateMachine.States.SAMPLE_INTAKE) || (LB && state == StateMachine.States.RESTING)){
+            if ((LB && state == StateMachine.States.SAMPLE_INTAKE) || (LB && state == StateMachine.States.RESTING) || (RT && state == StateMachine.States.CHAMBER_HUMAN_INTAKE)) {
                 extendoResetTime = System.currentTimeMillis();
             }
 
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
-            mode = stateMachine.switchMode(mode,switchMode);
-            state = stateMachine.setState(state,mode, RT, LT, RB, LB, telemetry);
+            mode = stateMachine.switchMode(mode, switchMode);
+            state = stateMachine.setState(state, mode, RT, LT, RB, LB, telemetry);
             teamColor.status(telemetry);
-            if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()){
+            if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()) {
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DONE);
-            }else if (LB && state == StateMachine.States.SAMPLE_INTAKE){
+            } else if (LB && state == StateMachine.States.SAMPLE_INTAKE) {
                 arm.intake(Arm.Intake.INTAKE);
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
             }
-            if (switchMode){
-                webcam.setColorLocatorMode(mode,false);
+            if (switchMode) {
+                webcam.setColorLocatorMode(mode, false);
             }
-            if (switchColor){
+            if (switchColor) {
                 teamColor.flipColor();
-                webcam.setColorLocatorTeam(teamColor.getColor(),false);
+                webcam.setColorLocatorTeam(teamColor.getColor(), false);
             }
             //Save processing power idk
-            if (state == StateMachine.States.SCOUTING || state == StateMachine.States.SAMPLE_INTAKE){
+            if (state == StateMachine.States.SCOUTING || state == StateMachine.States.SAMPLE_INTAKE) {
                 webcam.setLiveView(true);
-            }else{
+            } else {
                 webcam.setLiveView(false);
             }
             switch (state) {
@@ -102,9 +103,9 @@ public class ChamberRed extends LinearOpMode {
                     webcam.setClawRotation(Arm.ClawRotation.Horz1);
                     break;
                 case SCOUTING:
-                    if (System.currentTimeMillis() - extendoResetTime > 400){
+                    if (System.currentTimeMillis() - extendoResetTime > 400) {
                         arm.extendo(Arm.Extendo.EXTENDED);
-                    }else{
+                    } else {
                         arm.extendo(Arm.Extendo.RETRACTED);
                     }
                     arm.shoulder(Arm.Shoulder.FORWARDS);
@@ -124,8 +125,13 @@ public class ChamberRed extends LinearOpMode {
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                     break;
                 case CHAMBER:
-                    arm.extendo(Arm.Extendo.RETRACTED);
+                    if (System.currentTimeMillis() - extendoResetTime > 400) {
+                        arm.extendo(Arm.Extendo.CHAMBER);
+                    } else {
+                        arm.extendo(Arm.Extendo.RETRACTED);
+                    }
                     arm.shoulder(Arm.Shoulder.CHAMBER_SCORE);
+                    arm.clawRotate(Arm.ClawRotation.Horz1);
                     arm.wrist(Arm.Wrist.DOWNWARDS);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
@@ -149,9 +155,9 @@ public class ChamberRed extends LinearOpMode {
                     arm.clawRotate(Arm.ClawRotation.Horz1);
                     break;
             }
-            if (gamepad1.triangle && ascentA == false){
+            if (gamepad1.triangle && ascentA == false) {
                 ascentA = true;
-                switch (ascent.climbPosition){
+                switch (ascent.climbPosition) {
                     case DOWN:
                         ascent.setClimb(Ascent.ClimbPositions.PLACE);
                         break;
@@ -162,33 +168,33 @@ public class ChamberRed extends LinearOpMode {
                         ascent.setClimb(Ascent.ClimbPositions.PLACE);
                         break;
                 }
-            }else if (!gamepad1.triangle){
+            } else if (!gamepad1.triangle) {
                 ascentA = false;
             }
-            if (gamepad1.square){
+            if (gamepad1.square) {
                 ascentSquare = true;
             }
             TelemetryPacket packet = new TelemetryPacket();
-            webcam.update(driveTrain,arm,packet);
+            webcam.update(driveTrain, arm, packet);
             ascent.reset(gamepad1.options);
             arm.update(telemetry, teamColor.getColor());
             verticalSlides.status(telemetry);
             verticalSlides.update();
 
-            if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
-                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
-            }else if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DROP){
+            if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE) {
+                driveTrain.run(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
+            } else if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DROP) {
                 stateMachine.setClawState(webcam.intakeState);
                 arm.intake(webcam.intakeState);
-                driveTrain.run(gamepad1.left_stick_x,-gamepad1.left_stick_y,-gamepad1.right_stick_x);
-            }
-            else{
+                driveTrain.run(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x);
+            } else {
                 arm.intake(webcam.intakeState);
                 stateMachine.setClawState(webcam.intakeState);
             }
             arm.intake(stateMachine.clawState);
             webcam.status(telemetry);
             webcam.statusFTCDashboard(packet);
+            teamColor.update();
             telemetry.addData("CurrentState", state);
             telemetry.update();
             driveTrain.getStatus(packet);

@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
+@Config
 public class TeamColor {
    public enum Color{
        RED,
@@ -17,6 +20,10 @@ public class TeamColor {
        NONE
    }
    Color currentColor;
+   Servo rgbIndicator;
+   Servo headlight;
+   public static double headlightOn = .5;
+   public static double headlightOff = 0;
    public TeamColor(Color color){
        currentColor = color;
    }
@@ -42,7 +49,14 @@ public class TeamColor {
                break;
        }
    }
+   public void initiate(HardwareMap hardwareMap){
+       headlight = hardwareMap.servo.get("headlight");
+   }
+   public void update(){
+       headlight.setPosition(headlightOn);
+   }
    public void status(Telemetry telemetry){
        telemetry.addData("TeamColor",currentColor);
+       telemetry.addData("headlightPower", headlightOn);
    }
 }

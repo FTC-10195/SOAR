@@ -2,26 +2,17 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import android.util.Size;
 
-import androidx.annotation.NonNull;
-
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.arcrobotics.ftclib.controller.PIDFController;
-import com.arcrobotics.ftclib.geometry.Pose2d;
-import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ColorBlobLocatorProcessor;
 import org.firstinspires.ftc.vision.opencv.ColorRange;
 import org.firstinspires.ftc.vision.opencv.ColorSpace;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
-import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 
@@ -36,7 +27,7 @@ public class BarnacleCamera {
         RIGHT
     }
 
-    public static int white = 190;
+    public static int white = 197;
     BarnacleLocations barnacleLocation = BarnacleLocations.LEFT;
     ColorBlobLocatorProcessor colorLocatorWhite = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(white, white, white), new Scalar(255, 255, 255)))         // use a predefined color match
@@ -50,7 +41,8 @@ public class BarnacleCamera {
     public static int CAMERA_LENGTH_PX = 240;
     public static int MIN_SAMPLE_AREA_PX = 800; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
-    public static double dividerLineX = CAMERA_WIDTH_PX/2;
+    public static double dividerLineXBucket = CAMERA_WIDTH_PX/2;
+    public static double dividerLineXChamber = 190;
     double barnacleSize = 0;
 
 
@@ -69,7 +61,7 @@ public class BarnacleCamera {
 
     */
 
-    public void identifyBarnacle() {
+    public void identifyBarnacleBucket() {
         //Identify white blobs
         barnacleSize = 800;
         barnacleLocation = BarnacleLocations.LEFT;
@@ -84,10 +76,34 @@ public class BarnacleCamera {
             }
             if (boxFit.size.area() > barnacleSize) {
                 barnacleSize = boxFit.size.area();
-                if (boxFit.center.x > dividerLineX) {
+                if (boxFit.center.x > dividerLineXBucket) {
                     barnacleLocation = BarnacleLocations.RIGHT;
                 } else {
                     barnacleLocation = BarnacleLocations.MIDDLE;
+                }
+            }
+
+        }
+    }
+    public void identifyBarnacleChamber() {
+        //Identify white blobs
+        barnacleSize = 250;
+        barnacleLocation = BarnacleLocations.RIGHT;
+        List<ColorBlobLocatorProcessor.Blob> whiteBlobs;
+        whiteBlobs = colorLocatorWhite.getBlobs();
+        ColorBlobLocatorProcessor.Util.filterByArea(MIN_SAMPLE_AREA_PX, MAX_SAMPLE_AREA_PX, whiteBlobs);
+        for (ColorBlobLocatorProcessor.Blob blob : whiteBlobs) {
+            RotatedRect boxFit = blob.getBoxFit();
+            if (boxFit.size.width * 5 < boxFit.size.height || boxFit.size.height * 5 < boxFit.size.width) {
+                //Proportions are super out of whack like wth is this
+                return;
+            }
+            if (boxFit.size.area() > barnacleSize) {
+                barnacleSize = boxFit.size.area();
+                if (boxFit.center.x > dividerLineXChamber) {
+                    barnacleLocation = BarnacleLocations.MIDDLE;
+                } else {
+                    barnacleLocation = BarnacleLocations.LEFT;
                 }
             }
 
@@ -111,6 +127,7 @@ public class BarnacleCamera {
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(false)
                 .build();
+        FtcDashboard.getInstance().startCameraStream(portal, 0);
     }
     public void clear(){
         portal.close();

@@ -2,10 +2,7 @@ package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.pathgen.BezierCurve;
-import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.util.Constants;
-import com.pedropathing.util.CustomFilteredPIDFCoefficients;
-import com.pedropathing.util.CustomPIDFCoefficients;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -23,7 +20,6 @@ import com.pedropathing.pathgen.BezierLine;
 import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -44,12 +40,12 @@ public class PedroSample extends LinearOpMode {
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));  // Starting position
     private final Pose scorePose = new Pose(9, 123, Math.toRadians(315));
     private final Pose identifyPose = new Pose(14, 115.35, Math.toRadians(360));
-    private final Pose rightGrab = new Pose(14, 109.7, Math.toRadians(360));
-    private final Pose middleGrab = new Pose(14, 121, Math.toRadians(360));
+    private final Pose rightGrab = new Pose(14, 110.7, Math.toRadians(360));
+    private final Pose middleGrab = new Pose(14, 121.5, Math.toRadians(360));
     private final Pose leftGrab = new Pose(17, 119, Math.toRadians(380));
     private final Pose leftDockPose = new Pose(7.5, 112, Math.toRadians(315));
-    private final Pose middleDockPose = new Pose(7.5, 88, Math.toRadians(315));
-    private final Pose rightDockPose = new Pose(7.5, 60, Math.toRadians(315));
+    private final Pose middleDockPose = new Pose(7.5, 92, Math.toRadians(315));
+    private final Pose rightDockPose = new Pose(7.5, 88, Math.toRadians(315));
     private Path scorePreload, identify, park, rightStart, right, middleStart, middle, leftStart, left, score1, score2, score3, score4, score5, scoreRight1, scoreRight2, dockLeft, dockMiddle, dockRight;
     //sub3 and sub4 are for when the barnacle is on the right
     //scoreRight 1 and 2 are for when barnacle is on the right
@@ -87,27 +83,27 @@ public class PedroSample extends LinearOpMode {
         left = new Path(new BezierLine(new Point(scorePose), new Point(leftGrab)));
         left.setLinearHeadingInterpolation(scorePose.getHeading(), leftGrab.getHeading());
 
-        sub1End = new Point(63.000, 104.000, Point.CARTESIAN);
+        sub1End = new Point(63.000, 106.000, Point.CARTESIAN);
         sub1 = new Path(new BezierCurve(
-                new Point(12.5, 124, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
                 sub1End
         )
         );
         sub1.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
 
-        sub2End = new Point(65.000, 104.000, Point.CARTESIAN);
+        sub2End = new Point(65.000, 106.000, Point.CARTESIAN);
         sub2 = new Path(new BezierCurve(
-                new Point(12.5, 124, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
                 sub2End
         )
         );
         sub2.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
 
-        sub3End = new Point(65.000, 104.000, Point.CARTESIAN);
+        sub3End = new Point(65.000, 106.000, Point.CARTESIAN);
         sub3 = new Path(new BezierCurve(
-                new Point(12.500, 122.000, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(13.682, 105.164, Point.CARTESIAN),
                 new Point(44.411, 90.808, Point.CARTESIAN),
                 new Point(67.065, 124.229, Point.CARTESIAN),
@@ -116,9 +112,9 @@ public class PedroSample extends LinearOpMode {
         );
         sub3.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
 
-        sub4End = new Point(65.000, 104.000, Point.CARTESIAN);
+        sub4End = new Point(65.000, 106.000, Point.CARTESIAN);
         sub4 = new Path(new BezierCurve(
-                new Point(12.500, 122.000, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(13.682, 105.164, Point.CARTESIAN),
                 new Point(44.411, 90.808, Point.CARTESIAN),
                 new Point(67.065, 124.229, Point.CARTESIAN),
@@ -161,7 +157,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(67.065, 124.229, Point.CARTESIAN),
                         new Point(44.411, 90.808, Point.CARTESIAN),
                         new Point(13.682, 105.164, Point.CARTESIAN),
-                        new Point(scorePose.getX()-1, scorePose.getY(), Point.CARTESIAN)
+                        new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
         scoreRight1.setLinearHeadingInterpolation(Math.toRadians(275),scorePose.getHeading());
@@ -172,7 +168,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(67.065, 124.229, Point.CARTESIAN),
                         new Point(44.411, 90.808, Point.CARTESIAN),
                         new Point(13.682, 105.164, Point.CARTESIAN),
-                        new Point(scorePose.getX() -1, scorePose.getY(), Point.CARTESIAN)
+                        new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
         scoreRight2.setLinearHeadingInterpolation(Math.toRadians(275),scorePose.getHeading());
@@ -206,13 +202,14 @@ public class PedroSample extends LinearOpMode {
             case 2:
                 follower.followPath(identify);
                 setPathState(pathState + 1);
+                timeSnapshot = System.currentTimeMillis();
                 break;
             case 3:
                 restSubsystems(1000, pathState);
                 break;
             case 4:
                 scoutSubsystems(500, pathState);
-                barnacleCamera.identifyBarnacle();
+                barnacleCamera.identifyBarnacleBucket();
                 setPathState(pathState + 1);
                 break;
             case 5:
@@ -293,7 +290,7 @@ public class PedroSample extends LinearOpMode {
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                     case MIDDLE:
-                        follower.followPath(sub2);
+                        follower.followPath(sub1);
                         break;
                     case RIGHT:
                         follower.followPath(sub3);

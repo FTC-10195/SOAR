@@ -67,19 +67,19 @@ public class Arm {
     Servo leftShoulder; //Copys rightShoulder
     public static double extendoRetractedPos = .49;
     public static double extendoExtendedPos = .22;
-    public static double extendoChamberPos = .3;
+    public static double extendoChamberPos = .32;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
     public static double wristDownwardsPos = 0.12; //Should be facing towards the ground, only for INTAKING
     public static double wristFullDownwardsPos = 0.1; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
     public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
     //Shoulder Positions:
-    public static double shoulderInit = .15;
+    public static double shoulderInit = .2;
     public static double shoulderChamberIntake = 0.13;
     public static double shoulderBucket = .29;
     public static double shoulderBackwards = .12;
     public static double shoulderUpwards = 0.45;
     public static double shoulderForwards = 0.58;   //Should be parallel to the ground
-    public static double shoulderChamberScore = 0.55;
+    public static double shoulderChamberScore = 0.42;
     public static double shoulderDownwards = 0.675;   //Should be low enough to intake
     public static double clawClosed = .39;
     public static double clawOpen = .6;
@@ -87,7 +87,7 @@ public class Arm {
     public static double clawDiag1 = .6;
     public static double clawDiag2 = .2;
     public static double clawHorz1 = .4;
-    public static double clawHorz2 = 0;
+    public static double clawHorz2 = 1;
 
     public long shoulderLerpStartTime = System.currentTimeMillis();
     public static long SHOULDER_LERP_TIME_IN_MILLIS = 400;
@@ -186,6 +186,7 @@ public class Arm {
             case CHAMBER:
                 extendoServo.setPosition(extendoChamberPos);
                 break;
+
         }
         switch (wristState) {
             case FORWARD:

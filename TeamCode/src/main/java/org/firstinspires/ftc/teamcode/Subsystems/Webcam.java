@@ -41,26 +41,44 @@ public class Webcam {
 
 
     public static int white = 190;
+    public static int hMinYellow = 10;
+    public static int sMinYellow = 70;
+    public static int vMinYellow = 70;
+    public static int hMaxYellow = 50;
+    public static int sMaxYellow = 255;
+    public static int vMaxYellow = 255;
+    public static int blurSizeYellow = 3;
+    public static int lowYRed = 0;
+    public static int highYRed = 255;
+    public static int lowCrRed = 140;
+    public static int highCrRed = 255;
+    public static int lowCbRed = 0;
+    public static int highCbRed = 160;
+
     ColorBlobLocatorProcessor colorLocatorRed = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(ColorRange.RED)         // use a predefined color match
+            .setTargetColorRange(new ColorRange(
+                    ColorSpace.YCrCb,
+                    new Scalar(lowYRed, lowCrRed,  lowCbRed),
+                    new Scalar(highYRed, highCrRed, highCbRed)
+            ))
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
-            .setDrawContours(false)                        // Show contours on the Stream Preview
+            .setDrawContours(true)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
     ColorBlobLocatorProcessor colorLocatorBlue = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
-            .setDrawContours(false)                        // Show contours on the Stream Preview
+            .setDrawContours(true)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
     ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(new ColorRange(ColorSpace.HSV, new Scalar(10, 60, 60), new Scalar(30, 255, 255)))         // use a predefined color match
+            .setTargetColorRange(new ColorRange(ColorSpace.HSV, new Scalar(hMinYellow, sMinYellow, vMinYellow), new Scalar(hMaxYellow, sMaxYellow, vMaxYellow)))         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
-            .setDrawContours(false)                        // Show contours on the Stream Preview
-            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .setDrawContours(true)                        // Show contours on the Stream Preview
+            .setBlurSize(blurSizeYellow)                               // Smooth the transitions between different colors in image
             .build();
     ColorBlobLocatorProcessor colorLocatorWhite = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(white, white, white), new Scalar(255, 255, 255)))         // use a predefined color match
@@ -73,8 +91,8 @@ public class Webcam {
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
-    public static long driveTargetTimeInMilis = 800;
-    public static int tolerancePID = 12;
+    public static long driveTargetTimeInMilis = 1000;
+    public static int tolerancePID = 9;
     public static double kPX = 0.004525;
     public static double kIX = 0;
     public static double kDX = 0;
@@ -112,7 +130,6 @@ public class Webcam {
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
     double targetDistanceX = CAMERA_WIDTH_PX / 2;
     double targetDistanceY = CAMERA_LENGTH_PX / 2;
-    double targetBlobArea = 0;
     Vector2d targetVectorPx = new Vector2d(0, 0); //Becomes the x and y distances of the closest sample in PIXELS
     public static Vector2d targetVectorInches = new Vector2d(0, 0); //Becomes the x and y distances of the closest sample in INCHES
     public double angle = 0; //Angle of the target sample
@@ -196,6 +213,8 @@ public class Webcam {
 
                 break;
         }
+
+
     }
 
     Vector2d targetVec = new Vector2d(0, 0);
@@ -258,7 +277,7 @@ public class Webcam {
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .enableLiveView(false)
                 .build();
-        FtcDashboard.getInstance().startCameraStream(portal, 0);
+       // FtcDashboard.getInstance().startCameraStream(portal, 0);
         setColorLocatorTeam(teamColor, true);
         setColorLocatorMode(mode, true);
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
@@ -268,31 +287,31 @@ public class Webcam {
     public void findTargetBlob(List<ColorBlobLocatorProcessor.Blob> blobs) {
         Point[] myContourPoints;// A list of the many points within the blob
         for (ColorBlobLocatorProcessor.Blob blob : blobs) {
-            RotatedRect boxFit = blob.getBoxFit();
             //Variables FOR THIS BLOB
-            double distanceXPx = (clawCenter.x - boxFit.center.x);
-            double distanceYPx = (clawCenter.y - boxFit.center.y);
-            double distancePx = Math.sqrt(Math.pow(distanceXPx, 2) + Math.pow(distanceYPx, 2));
+            double distanceXPx;
+            double distanceYPx;
+            double distancePx;
+            double sumX = 0, sumY = 0;
+            myContourPoints = blob.getContourPoints();
+            for (Point p : myContourPoints) {
+                sumX += p.x;
+                sumY += p.y;
+            }
+            double count = myContourPoints.length;
+            Point centroid = new Point((double) (sumX / count), (double) (sumY / count));
+
+            distanceYPx = (clawCenter.y - centroid.y);
+            distanceXPx = (clawCenter.x - centroid.x);
+            distancePx = Math.sqrt(Math.pow(distanceXPx, 2) + Math.pow(distanceYPx, 2));
             if (distancePx < targetDistancePX && distanceXPx != 160 && distanceYPx != 120) {
-                targetBlobArea = boxFit.size.area();
                 //Sets variables depending on what the target is
                 targetDistancePX = distancePx;
                 targetVectorPx = new Vector2d(distanceXPx, distanceYPx);
                 targetDistanceX = distanceXPx;
                 targetDistanceY = distanceYPx;
                 targetVectorInches = new Vector2d(-convertHorizontalPxToInches(distanceXPx), convertVerticalPxToInches(distanceYPx));
-                targetPos = boxFit.center;
-                myContourPoints = blob.getContourPoints();
+                targetPos = centroid;
 
-                double sumX = 0, sumY = 0;
-                double count = myContourPoints.length;
-
-                for (Point p : myContourPoints) {
-                    sumX += p.x;
-                    sumY += p.y;
-                }
-
-                Point centroid = new Point((double) (sumX / count), (double) (sumY / count));
 
                 for (Point p : myContourPoints) {
 
@@ -368,7 +387,6 @@ public class Webcam {
     }
 
     public void status(Telemetry telemetry) {
-        telemetry.addData("targetBlobArea", targetBlobArea);
         telemetry.addData("DRIVE STAGE", currentDriveStage);
      /*   telemetry.addData("PX Distance Vec", targetVectorPx);
         telemetry.addData("Inches Distance Vec", targetVectorInches);
