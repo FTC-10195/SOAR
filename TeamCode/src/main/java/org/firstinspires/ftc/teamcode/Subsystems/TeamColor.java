@@ -24,6 +24,8 @@ public class TeamColor {
    Servo headlight;
    public static double headlightOn = .5;
    public static double headlightOff = 0;
+   public static double redColor = 0.3;
+    public static double blueColor = 0.65;
    public TeamColor(Color color){
        currentColor = color;
    }
@@ -51,9 +53,18 @@ public class TeamColor {
    }
    public void initiate(HardwareMap hardwareMap){
        headlight = hardwareMap.servo.get("headlight");
+       rgbIndicator = hardwareMap.servo.get("rgb");
    }
    public void update(){
        headlight.setPosition(headlightOn);
+       switch (currentColor){
+           case RED:
+               rgbIndicator.setPosition(redColor);
+               break;
+           case BLUE:
+               rgbIndicator.setPosition(blueColor);
+               break;
+       }
    }
    public void status(Telemetry telemetry){
        telemetry.addData("TeamColor",currentColor);

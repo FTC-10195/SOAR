@@ -187,10 +187,10 @@ public class FiveSpec extends LinearOpMode {
         dockLeft = new Path(new BezierLine(new Point(scorePose.getX(), scorePose.getY() -2), new Point(dockLeftPose)));
         dockLeft.setLinearHeadingInterpolation(scorePose.getHeading(), dockLeftPose.getHeading());
 
-        dockRight = new Path(new BezierLine(new Point((scorePose.getX(), scorePose.getY() -2), new Point(dockRightPose)));
+        dockRight = new Path(new BezierLine(new Point(scorePose.getX(), scorePose.getY() -2), new Point(dockRightPose)));
         dockRight.setLinearHeadingInterpolation(scorePose.getHeading(), dockRightPose.getHeading());
 
-        dockMiddle = new Path(new BezierLine(new Point((scorePose.getX(), scorePose.getY() -2), new Point(dockMiddlePose)));
+        dockMiddle = new Path(new BezierLine(new Point(scorePose.getX(), scorePose.getY() -2), new Point(dockMiddlePose)));
         dockMiddle.setLinearHeadingInterpolation(scorePose.getHeading(), dockMiddlePose.getHeading());
 
     }
@@ -290,7 +290,7 @@ public class FiveSpec extends LinearOpMode {
                 break;
             case 13:
                 scoutSubsystems(800, pathState);
-                arm.clawRotate(Arm.ClawRotation.Diag1);
+                arm.clawRotate(Arm.ClawRotation.LEFTDIAG);
                 barnacleCamera.identifyBarnacleChamber();
                 break;
             case 14:

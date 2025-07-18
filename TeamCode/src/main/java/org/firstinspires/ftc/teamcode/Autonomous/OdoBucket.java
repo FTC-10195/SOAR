@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.MinMax;
 import com.acmerobotics.roadrunner.ParallelAction;
@@ -12,8 +11,6 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
@@ -156,7 +153,7 @@ public class OdoBucket extends LinearOpMode {
         return
                 new SequentialAction(
                         scouting(arm,verticalSlides),
-                        arm.clawRotationAction(Arm.ClawRotation.Diag2),
+                        arm.clawRotationAction(Arm.ClawRotation.RIGHTDIAG),
                         drive.actionBuilder(pos)
                                 .strafeToLinearHeading(sample3Vec, Math.toRadians(sample3Rot))
                                 .build(),

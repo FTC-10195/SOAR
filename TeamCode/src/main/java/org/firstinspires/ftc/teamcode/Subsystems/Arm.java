@@ -5,8 +5,6 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -47,9 +45,9 @@ public class Arm {
 
     public enum ClawRotation {
         Vert,
-        Diag1,
+        LEFTDIAG,
         Horz1,
-        Diag2,
+        RIGHTDIAG,
         Horz2,
     }
 
@@ -217,7 +215,7 @@ public class Arm {
             case Vert:
                 clawRotationServo.setPosition(clawVert);
                 break;
-            case Diag1:
+            case LEFTDIAG:
                 clawRotationServo.setPosition(clawDiag1);
                 break;
             case Horz1:
@@ -226,7 +224,7 @@ public class Arm {
             case Horz2:
                 clawRotationServo.setPosition(clawHorz2);
                 break;
-            case Diag2:
+            case RIGHTDIAG:
                 clawRotationServo.setPosition(clawDiag2);
                 break;
         }

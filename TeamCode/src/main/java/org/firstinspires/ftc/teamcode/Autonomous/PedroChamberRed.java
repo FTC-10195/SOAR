@@ -214,7 +214,7 @@ public class PedroChamberRed extends LinearOpMode {
                 break;
             case 7:
                 scoutSubsystems(800, pathState);
-                arm.clawRotate(Arm.ClawRotation.Diag1);
+                arm.clawRotate(Arm.ClawRotation.LEFTDIAG);
                 barnacleCamera.identifyBarnacleChamber();
                 break;
             case 8:

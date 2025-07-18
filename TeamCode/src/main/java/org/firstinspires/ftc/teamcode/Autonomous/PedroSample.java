@@ -31,6 +31,8 @@ public class PedroSample extends LinearOpMode {
     public double firstSubY = 0;
     public double secondSubX = 0;
     public double secondSubY = 0;
+    public boolean clawRotationOveride = false;
+    public Arm.ClawRotation clawRotation = Arm.ClawRotation.Horz1;
     int pathState = 0;
     Timer pathTimer;
     Constants constants;
@@ -582,6 +584,27 @@ public class PedroSample extends LinearOpMode {
         boolean firstSub = true;
 
         while (!opModeIsActive() && !isStopRequested()){
+            if (gamepad1.start){
+                clawRotationOveride = true;
+            }
+            if (gamepad1.share){
+                clawRotationOveride = false;
+            }
+            if (clawRotationOveride){
+                if (gamepad1.triangle){
+                    clawRotation = Arm.ClawRotation.Horz1;
+                }
+                if (gamepad1.cross){
+                    clawRotation = Arm.ClawRotation.Vert;
+                }
+                if (gamepad1.square){
+                    clawRotation = Arm.ClawRotation.LEFTDIAG;
+                }
+                if (gamepad1.circle){
+                    clawRotation = Arm.ClawRotation.RIGHTDIAG;
+                }
+            }
+
             if (gamepad1.right_bumper){
                 firstSub = false;
             }
@@ -645,6 +668,9 @@ public class PedroSample extends LinearOpMode {
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             verticalSlides.update();
+            if (clawRotationOveride){
+                arm.clawRotate(clawRotation);
+            }
             arm.update(telemetry, teamColor.getColor());
             autonomousPathUpdate();
             follower.update();
