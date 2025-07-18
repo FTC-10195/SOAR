@@ -61,7 +61,7 @@ public class PedroSample extends LinearOpMode {
     long timeSnapshot = System.currentTimeMillis();
 
 
-    public void buildPaths() {
+    public void buildPaths(double fx, double fy, double sx, double sy) {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
@@ -87,25 +87,25 @@ public class PedroSample extends LinearOpMode {
         left = new Path(new BezierLine(new Point(scorePose), new Point(leftGrab)));
         left.setLinearHeadingInterpolation(scorePose.getHeading(), leftGrab.getHeading());
 
-        sub1End = new Point(65.000 + firstSubX, 106.000 + firstSubY, Point.CARTESIAN);
+        sub1End = new Point(65.001 + fx, 106.001 + fy, Point.CARTESIAN);
         sub1 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
                 sub1End
         )
         );
-        sub1.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
+        sub1.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(270));
 
-        sub2End = new Point(65.000 + secondSubX, 106.000 + secondSubY, Point.CARTESIAN);
+        sub2End = new Point(65.002 + sx, 106.002 + sy, Point.CARTESIAN);
         sub2 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532, 110.35514018691589, Point.CARTESIAN),
                 sub2End
         )
         );
-        sub2.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
+        sub2.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(270));
 
-        sub3End = new Point(65.000 + firstSubX, 106.000 + secondSubY, Point.CARTESIAN);
+        sub3End = new Point(65.003 + fx, 106.003 + fy, Point.CARTESIAN);
         sub3 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(13.682, 105.164, Point.CARTESIAN),
@@ -114,9 +114,9 @@ public class PedroSample extends LinearOpMode {
                 sub3End
         )
         );
-        sub3.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
+        sub3.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(270));
 
-        sub4End = new Point(65.000 + secondSubX, 106.000 + secondSubY, Point.CARTESIAN);
+        sub4End = new Point(65.004 + sx, 106.004 + sy, Point.CARTESIAN);
         sub4 = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(13.682, 105.164, Point.CARTESIAN),
@@ -125,7 +125,7 @@ public class PedroSample extends LinearOpMode {
                 sub4End
         )
         );
-        sub4.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(275));
+        sub4.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(270));
 
 
         score1 = new Path(new BezierLine(new Point(rightGrab), new Point(scorePose)));
@@ -144,7 +144,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        score4.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
+        score4.setLinearHeadingInterpolation(Math.toRadians(270), scorePose.getHeading());
 
         score5 = new Path(
                 new BezierCurve(
@@ -153,7 +153,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        score5.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
+        score5.setLinearHeadingInterpolation(Math.toRadians(270), scorePose.getHeading());
 
         scoreRight1 = new Path(
                 new BezierCurve(
@@ -164,7 +164,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        scoreRight1.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
+        scoreRight1.setLinearHeadingInterpolation(Math.toRadians(270), scorePose.getHeading());
 
         scoreRight2 = new Path(
                 new BezierCurve(
@@ -175,7 +175,7 @@ public class PedroSample extends LinearOpMode {
                         new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN)
                 )
         );
-        scoreRight2.setLinearHeadingInterpolation(Math.toRadians(275), scorePose.getHeading());
+        scoreRight2.setLinearHeadingInterpolation(Math.toRadians(270), scorePose.getHeading());
 
 
         dockLeft = new Path(new BezierLine(new Point(scorePose), new Point(leftDockPose)));
@@ -574,39 +574,74 @@ public class PedroSample extends LinearOpMode {
         constants = new Constants();
         constants.setConstants(FConstants.class, LConstants.class);
         Gamepad previousGamepad = gamepad1;
-        while (!opModeIsActive()){
-            if (gamepad1.dpad_down && !previousGamepad.dpad_down){
-                firstSubX -=1;
+        boolean previousDown = false;
+        boolean previousUp = false;
+        boolean previousLeft = false;
+        boolean previousRight = false;
+
+        boolean firstSub = true;
+
+        while (!opModeIsActive() && !isStopRequested()){
+            if (gamepad1.right_bumper){
+                firstSub = false;
             }
-            if (gamepad1.dpad_up && !previousGamepad.dpad_up){
-                firstSubX +=1;
+            if (gamepad1.left_bumper){
+                firstSub = true;
             }
-            if (gamepad1.dpad_right && !previousGamepad.dpad_right){
-                firstSubY -=1;
+            if (gamepad1.dpad_down && !previousDown){
+                if (firstSub){
+                    firstSubX -=1;
+                }else{
+                    secondSubX -=1;
+                }
+                previousDown = true;
+            }else if (!gamepad1.dpad_down){
+                previousDown = false;
             }
-            if (gamepad1.dpad_left && !previousGamepad.dpad_left){
-                firstSubY +=1;
+            if (gamepad1.dpad_up && !previousUp){
+                if (firstSub){
+                    firstSubX +=1;
+                }else{
+                    secondSubX +=1;
+                }
+                previousUp = true;
+            }else if (!gamepad1.dpad_up){
+                previousUp = false;
+            }
+            if (gamepad1.dpad_right && !previousRight){
+                if (firstSub){
+                    firstSubY +=1;
+                }else{
+                    secondSubY +=1;
+                }
+                previousRight = true;
+            }else if (!gamepad1.dpad_right){
+                previousRight = false;
+            }
+            if (gamepad1.dpad_left && !previousLeft){
+                if (firstSub){
+                    firstSubY -=1;
+                }else{
+                    secondSubY -=1;
+                }
+                previousLeft = true;
+            }else if (!gamepad1.dpad_left){
+                previousLeft = false;
             }
 
-            if (gamepad1.cross && !previousGamepad.cross){
-                secondSubX -=1;
-            }
-            if (gamepad1.triangle && !previousGamepad.triangle){
-                secondSubX +=1;
-            }
-            if (gamepad1.circle && !previousGamepad.circle){
-                secondSubY -=1;
-            }
-            if (gamepad1.square && !previousGamepad.square){
-                secondSubY +=1;
-            }
 
             previousGamepad.copy(gamepad1);
+            telemetry.addLine("X IS FORWARDS (greater X = more forwards) AND Y IS SIDEWAYS (greater Y = more left) RELATIVE TO DRIVER FOR BUCKET");
+            telemetry.addData("FirstX",firstSubX);
+            telemetry.addData("FirstY",firstSubY);
+            telemetry.addData("SecondX",secondSubX);
+            telemetry.addData("SecondY",secondSubY);
+            telemetry.update();
         }
         waitForStart();
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
-        buildPaths();
+        buildPaths(firstSubX,firstSubY,secondSubX,secondSubY);
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             verticalSlides.update();
@@ -620,11 +655,6 @@ public class PedroSample extends LinearOpMode {
             }
             webcam.status(telemetry);
             barnacleCamera.status(telemetry);
-            telemetry.addLine("X IS FORWARDS (greater X = more forwards) AND Y IS SIDEWAYS (greater Y = more left) RELATIVE TO DRIVER FOR BUCKET");
-            telemetry.addData("FirstX",firstSubX);
-            telemetry.addData("FirstY",firstSubY);
-            telemetry.addData("SecondX",secondSubX);
-            telemetry.addData("SecondY",secondSubY);
 
             telemetry.addData("Heading Error", follower.headingError);
             telemetry.addData("Path State", pathState);

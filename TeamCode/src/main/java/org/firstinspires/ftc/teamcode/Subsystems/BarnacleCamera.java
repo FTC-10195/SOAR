@@ -27,22 +27,23 @@ public class BarnacleCamera {
         RIGHT
     }
 
-    public static int white = 197;
+    public static int white = 195;
+    public static int blurSize = 7;
     BarnacleLocations barnacleLocation = BarnacleLocations.LEFT;
     ColorBlobLocatorProcessor colorLocatorWhite = new ColorBlobLocatorProcessor.Builder()
             .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(white, white, white), new Scalar(255, 255, 255)))         // use a predefined color match
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
             .setDrawContours(false)                        // Show contours on the Stream Preview
-            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .setBlurSize(blurSize)                               // Smooth the transitions between different colors in image
             .build();
     VisionPortal portal;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static int MIN_SAMPLE_AREA_PX = 800; //Filter out small blobs
+    public static int MIN_SAMPLE_AREA_PX = 250; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
     public static double dividerLineXBucket = CAMERA_WIDTH_PX/2;
-    public static double dividerLineXChamber = 190;
+    public static double dividerLineXChamber = 180;
     double barnacleSize = 0;
 
 

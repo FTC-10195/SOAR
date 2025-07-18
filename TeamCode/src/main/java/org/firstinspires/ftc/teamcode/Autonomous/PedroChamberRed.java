@@ -38,11 +38,11 @@ public class PedroChamberRed extends LinearOpMode {
     Path noPath;
     private final Pose startPose = new Pose(7, 64, Math.toRadians(0));  // Starting position
     private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));  // Starting position
-    private final Pose humanIntakePose = new Pose(12, 35, Math.toRadians(0));
+    private final Pose humanIntakePose = new Pose(11, 35, Math.toRadians(0));
     private final Pose identifyPose = new Pose(21.5, 42.7, Math.toRadians(-38));
     private final Pose middleGrabPose = new Pose(22, 35, Math.toRadians(-38));
-    private final Pose rightGrabPose = new Pose(22, 24, Math.toRadians(-38));
-    private final Pose depositFirstLeftPose = new Pose(21.5, identifyPose.getY() + 2, Math.toRadians(-125));
+    private final Pose rightGrabPose = new Pose(22, 25.7, Math.toRadians(-38));
+    private final Pose depositFirstLeftPose = new Pose(21.5, identifyPose.getY() + 3, Math.toRadians(-125));
     private final Pose depositFirstMiddlePose = new Pose(middleGrabPose.getX(), middleGrabPose.getY() + 2, Math.toRadians(-125));
     private final Pose depositSecondMiddlePose = new Pose(humanIntakePose.getX() + 6, middleGrabPose.getY() - 3, Math.toRadians(0));
     private final Pose depositSecondRightPose = new Pose(humanIntakePose.getX() + 6, rightGrabPose.getY() - 3, Math.toRadians(0));
@@ -61,6 +61,7 @@ public class PedroChamberRed extends LinearOpMode {
     public void buildPaths() {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
+        scorePreload.setZeroPowerAccelerationMultiplier(3);
 
         identify = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
@@ -73,7 +74,7 @@ public class PedroChamberRed extends LinearOpMode {
         //BARNACLE LEFT
         //firstGrabMiddle -> depositFirstMiddle -> secondGrabRightPreviousMiddle -> depositSecondMiddle -> scoring
 
-        firstGrabMiddle = new Path(new BezierLine(new Point(identifyPose), new Point(middleGrabPose)));
+        firstGrabMiddle = new Path(new BezierLine(new Point(identifyPose), new Point(middleGrabPose.getX(), middleGrabPose.getY() - .7)));
         firstGrabMiddle.setLinearHeadingInterpolation(identifyPose.getHeading(), middleGrabPose.getHeading());
 
         depositFirstMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(depositFirstMiddlePose)));
@@ -89,13 +90,13 @@ public class PedroChamberRed extends LinearOpMode {
         humanIntakeRight.setLinearHeadingInterpolation(depositSecondRightPose.getHeading(), humanIntakeRightPose.getHeading());
 
         //BARNACLE MIDDLE
-        //identify -> depositFirstLeft -> secondGrabRightPreviousLeft -> depositSecondMiddle -> scoring
+        //identify -> depositFirstLeft -> secondGrabRightPreviousLeft -> depositSecondRight -> scoring
 
         depositFirstLeft = new Path(new BezierLine(new Point(identifyPose), new Point(depositFirstLeftPose)));
         depositFirstLeft.setLinearHeadingInterpolation(identifyPose.getHeading(), depositFirstLeftPose.getHeading());
 
-        secondGrabRightPreviousLeft = new Path(new BezierLine(new Point(depositFirstMiddlePose), new Point(rightGrabPose)));
-        secondGrabRightPreviousLeft.setLinearHeadingInterpolation(depositFirstMiddlePose.getHeading(), rightGrabPose.getHeading());
+        secondGrabRightPreviousLeft = new Path(new BezierLine(new Point(depositFirstLeftPose), new Point(rightGrabPose)));
+        secondGrabRightPreviousLeft.setLinearHeadingInterpolation(depositFirstLeftPose.getHeading(), rightGrabPose.getHeading());
 
 
         //BARNACLE RIGHT
@@ -180,6 +181,7 @@ public class PedroChamberRed extends LinearOpMode {
                 break;
             case 1:
                 if (System.currentTimeMillis() - timeSnapshot > 700) {
+
                     arm.intake(Arm.Intake.CLOSE);
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
@@ -197,7 +199,6 @@ public class PedroChamberRed extends LinearOpMode {
                 break;
             case 4:
                 follower.followPath(identify);
-                follower.setMaxPower(.8);
                 timeSnapshot = System.currentTimeMillis();
                 setPathState(pathState + 1);
                 break;
@@ -232,13 +233,14 @@ public class PedroChamberRed extends LinearOpMode {
             case 9:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
-                        if (System.currentTimeMillis() - timeSnapshot > 900) {
+                        if (System.currentTimeMillis() - timeSnapshot > 1200) {
                             timeSnapshot = System.currentTimeMillis();
                             setPathState(pathState + 1);
                         }
                         break;
                     case MIDDLE:
                     case RIGHT:
+                        //Sample 1
                         intakeSubsystems(900, pathState);
                         break;
                 }
@@ -282,6 +284,11 @@ public class PedroChamberRed extends LinearOpMode {
             case 12:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
+                        if (System.currentTimeMillis() - timeSnapshot < 500) {
+                            arm.extendo(Arm.Extendo.RETRACTED);
+                        }else{
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                        }
                         if (System.currentTimeMillis() - timeSnapshot > 900) {
                             timeSnapshot = System.currentTimeMillis();
                             arm.intake(Arm.Intake.DEPOSIT);
@@ -308,15 +315,43 @@ public class PedroChamberRed extends LinearOpMode {
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
+                        scoutSubsystems(1300,pathState);
+                        break;
                     case MIDDLE:
-                        scoutSubsystems(1300, pathState);
+                        verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                        arm.shoulder(Arm.Shoulder.FORWARDS);
+                        arm.wrist(Arm.Wrist.DOWNWARDS);
+                        arm.intake(Arm.Intake.INTAKE);
+                        if (System.currentTimeMillis() - timeSnapshot > 1300) {
+                            setPathState(pathState + 1);
+                            timeSnapshot = System.currentTimeMillis();
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                            arm.shoulderLerpStartTime = System.currentTimeMillis();
+                        } else if (System.currentTimeMillis() - timeSnapshot < 900){
+                            arm.extendo(Arm.Extendo.RETRACTED);
+                        }else{
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                        }
                         break;
                 }
                 break;
             case 14:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
-                        scoutSubsystems(1300, pathState);
+                        verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                        arm.shoulder(Arm.Shoulder.FORWARDS);
+                        arm.wrist(Arm.Wrist.DOWNWARDS);
+                        arm.intake(Arm.Intake.INTAKE);
+                        if (System.currentTimeMillis() - timeSnapshot > 1300) {
+                            setPathState(pathState + 1);
+                            timeSnapshot = System.currentTimeMillis();
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                            arm.shoulderLerpStartTime = System.currentTimeMillis();
+                        } else if (System.currentTimeMillis() - timeSnapshot < 900){
+                            arm.extendo(Arm.Extendo.RETRACTED);
+                        }else{
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                        }
                         break;
                     case RIGHT:
                     case MIDDLE:
