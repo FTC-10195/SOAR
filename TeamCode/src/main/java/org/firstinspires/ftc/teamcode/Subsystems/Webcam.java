@@ -42,9 +42,9 @@ public class Webcam {
 
     public static int white = 190;
     public static int hMinYellow = 10;
-    public static int sMinYellow = 70;
-    public static int vMinYellow = 70;
-    public static int hMaxYellow = 50;
+    public static int sMinYellow = 100;
+    public static int vMinYellow = 150;
+    public static int hMaxYellow = 80;
     public static int sMaxYellow = 255;
     public static int vMaxYellow = 255;
     public static int blurSizeYellow = 3;
@@ -74,7 +74,8 @@ public class Webcam {
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
     ColorBlobLocatorProcessor colorLocatorYellow = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(new ColorRange(ColorSpace.HSV, new Scalar(hMinYellow, sMinYellow, vMinYellow), new Scalar(hMaxYellow, sMaxYellow, vMaxYellow)))         // use a predefined color match
+            .setTargetColorRange(new ColorRange(ColorSpace.HSV, new Scalar(hMinYellow, sMinYellow, vMinYellow), new Scalar(hMaxYellow, sMaxYellow, vMaxYellow)))
+            //new ColorRange(ColorSpace.HSV, new Scalar(hMinYellow, sMinYellow, vMinYellow), new Scalar(hMaxYellow, sMaxYellow, vMaxYellow)
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
             .setDrawContours(true)                        // Show contours on the Stream Preview
@@ -103,7 +104,7 @@ public class Webcam {
     public static double kFY = 0;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = -30;
+    public static double LATERAL_OFFSET_PX = -40;
     public static double CAMERA_WIDTH_IN = 8.5;
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
@@ -277,7 +278,7 @@ public class Webcam {
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .enableLiveView(false)
                 .build();
-       // FtcDashboard.getInstance().startCameraStream(portal, 0);
+        FtcDashboard.getInstance().startCameraStream(portal, 0);
         setColorLocatorTeam(teamColor, true);
         setColorLocatorMode(mode, true);
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
@@ -303,7 +304,7 @@ public class Webcam {
             distanceYPx = (clawCenter.y - centroid.y);
             distanceXPx = (clawCenter.x - centroid.x);
             distancePx = Math.sqrt(Math.pow(distanceXPx, 2) + Math.pow(distanceYPx, 2));
-            if (distancePx < targetDistancePX && distanceXPx != 160 && distanceYPx != 120) {
+            if (distancePx < targetDistancePX && distanceXPx != 10000 && distanceYPx != 1000) {
                 //Sets variables depending on what the target is
                 targetDistancePX = distancePx;
                 targetVectorPx = new Vector2d(distanceXPx, distanceYPx);
@@ -364,9 +365,9 @@ public class Webcam {
 
     public void snapshot() {
         //Reset the variables everytime a snapshot is taken
-        targetDistancePX = CAMERA_WIDTH_PX / 2;
-        targetDistancePX = CAMERA_WIDTH_PX / 2;
-        targetDistanceY = CAMERA_LENGTH_PX / 2;
+        targetDistancePX = 10000;
+        targetDistancePX = 10000;
+        targetDistanceY = 10000;
         targetVectorInches = new Vector2d(0, 0);
         targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
         bottomLeft = null;

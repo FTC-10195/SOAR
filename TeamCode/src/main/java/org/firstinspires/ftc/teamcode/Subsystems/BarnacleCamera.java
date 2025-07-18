@@ -128,7 +128,7 @@ public class BarnacleCamera {
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(false)
                 .build();
-        FtcDashboard.getInstance().startCameraStream(portal, 0);
+      //  FtcDashboard.getInstance().startCameraStream(portal, 0);
     }
     public void clear(){
         portal.close();
