@@ -24,11 +24,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Autonomous
-public class FiveSpec extends LinearOpMode {
-    public double firstSubX = 0;
-    public double firstSubY = 0;
-    public boolean clawRotationOveride = false;
-    public Arm.ClawRotation clawRotation = Arm.ClawRotation.Horz1;
+public class PedroChamberPlusOne extends LinearOpMode {
     int pathState = 0;
     Timer pathTimer;
     Constants constants;
@@ -39,10 +35,9 @@ public class FiveSpec extends LinearOpMode {
     DriveTrain driveTrain = new DriveTrain();
     Webcam webcam = new Webcam();
     BarnacleCamera barnacleCamera = new BarnacleCamera();
+    Path noPath;
     private final Pose startPose = new Pose(7, 64, Math.toRadians(0));  // Starting position
-    private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));
-    private final Pose intakeSubPose = new Pose(41, 64, Math.toRadians(0));
-    private final Pose depositSubPose = new Pose(21, 48.7, Math.toRadians(-120));
+    private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));  // Starting position
     private final Pose humanIntakePose = new Pose(11, 35, Math.toRadians(0));
     private final Pose identifyPose = new Pose(21.5, 42.7, Math.toRadians(-38));
     private final Pose middleGrabPose = new Pose(22, 35, Math.toRadians(-38));
@@ -54,38 +49,29 @@ public class FiveSpec extends LinearOpMode {
     private final Pose dockLeftPose = new Pose(15, 125, Math.toRadians(0));
     private final Pose dockMiddlePose = new Pose(15, 105, Math.toRadians(0));
     private final Pose dockRightPose = new Pose(15, 80, Math.toRadians(0));
+    private final Pose bucketPose = new Pose(9, 134, Math.toRadians(-45));
     private final Pose humanIntakeMiddlePose = new Pose(humanIntakePose.getX(), depositSecondMiddlePose.getY(), Math.toRadians(0));
     private final Pose humanIntakeRightPose = new Pose(humanIntakePose.getX(), depositSecondRightPose.getY(), Math.toRadians(0));
-    private Path scorePreload, intakeSub, depositSub, identify, firstGrabMiddle, secondGrabMiddle, secondGrabRightPreviousLeft, secondGrabRightPreviousMiddle, depositFirstLeft, depositFirstMiddle, depositSecondMiddle, depositSecondRight, humanIntakeMiddle, humanIntakeRight, scoreFirstMiddle, scoreFirstRight, scoreSecond, scoreThird, scoreFourth, humanIntakeSecond, humanIntakeThird, humanIntakeFourth, dockLeft, dockMiddle, dockRight;
+    double driveErrorX = 1000;
+    double driveErrorY = 1000;
+    private Path scorePreload, identify, firstGrabMiddle, secondGrabMiddle, secondGrabRightPreviousLeft, secondGrabRightPreviousMiddle, depositFirstLeft, depositFirstMiddle, depositSecondMiddle, depositSecondRight
+            , humanIntakeMiddle, humanIntakeRight, scoreFirstMiddle, scoreFirstRight, scoreSecond, scoreThird, humanIntakeSecond, humanIntakeThird, humanIntakeFourth, dockLeft,dockMiddle,dockRight, buckeScore;
 
 
     long timeSnapshot = System.currentTimeMillis();
 
 
-    public void buildPaths(double fx, double fy) {
+    public void buildPaths() {
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
         scorePreload.setZeroPowerAccelerationMultiplier(3);
 
-        intakeSub = new Path(new BezierCurve(
+        identify = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
-                new Point(10, 64, Point.CARTESIAN),
-                new Point(intakeSubPose.getX() +fx, intakeSubPose.getY() +fy, Point.CARTESIAN)
+                new Point(10.409, 64.483, Point.CARTESIAN),
+                new Point(identifyPose.getX(), identifyPose.getY(), Point.CARTESIAN)
         ));
-        intakeSub.setLinearHeadingInterpolation(scorePose.getHeading(), intakeSubPose.getHeading());
-
-        depositSub = new Path(new BezierCurve(
-                new Point(intakeSubPose.getX() +fx, intakeSubPose.getY() +fy, Point.CARTESIAN),
-                new Point(19, 100, Point.CARTESIAN),
-                new Point(depositSubPose.getX(), depositSubPose.getY(), Point.CARTESIAN)
-        ));
-        depositSub.setLinearHeadingInterpolation(intakeSubPose.getHeading(), depositSubPose.getHeading());
-
-        identify = new Path(new BezierLine(
-                new Point(depositSubPose),
-                new Point(identifyPose)
-        ));
-        identify.setLinearHeadingInterpolation(depositSubPose.getHeading(), identifyPose.getHeading());
+        identify.setLinearHeadingInterpolation(scorePose.getHeading(), identifyPose.getHeading());
 
 
         //BARNACLE LEFT
@@ -146,7 +132,7 @@ public class FiveSpec extends LinearOpMode {
 
 
         humanIntakeSecond = new Path(new BezierCurve(
-                new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY() +2, Point.CARTESIAN),
                 new Point(26, 64, Point.CARTESIAN),
                 new Point(40, 33, Point.CARTESIAN),
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN)
@@ -154,7 +140,7 @@ public class FiveSpec extends LinearOpMode {
         humanIntakeSecond.setLinearHeadingInterpolation(scorePose.getHeading(), humanIntakePose.getHeading());
 
         humanIntakeThird = new Path(new BezierCurve(
-                new Point(scorePose.getX(), scorePose.getY() + 4, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY() +4, Point.CARTESIAN),
                 new Point(26, 64, Point.CARTESIAN),
                 new Point(40, 33, Point.CARTESIAN),
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN)
@@ -162,40 +148,42 @@ public class FiveSpec extends LinearOpMode {
         humanIntakeThird.setLinearHeadingInterpolation(scorePose.getHeading(), humanIntakePose.getHeading());
 
         humanIntakeFourth = new Path(new BezierCurve(
-                new Point(scorePose.getX(), scorePose.getY() + 6, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY() +6, Point.CARTESIAN),
                 new Point(26, 64, Point.CARTESIAN),
                 new Point(40, 33, Point.CARTESIAN),
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN)
         ));
         humanIntakeFourth.setLinearHeadingInterpolation(scorePose.getHeading(), humanIntakePose.getHeading());
 
+        buckeScore = new Path(new BezierCurve(
+                new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
+                new Point(50, 93, Point.CARTESIAN),
+                new Point(bucketPose.getX(), bucketPose.getY(), Point.CARTESIAN)
+        ));
+        buckeScore.setLinearHeadingInterpolation(humanIntakePose.getHeading(), bucketPose.getHeading());
+
+
         scoreSecond = new Path(new BezierCurve(
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
                 new Point(22, 62, Point.CARTESIAN),
-                new Point(scorePose.getX(), scorePose.getY() + 4, Point.CARTESIAN)
+                new Point(scorePose.getX(), scorePose.getY() +4, Point.CARTESIAN)
         ));
         scoreSecond.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
         scoreThird = new Path(new BezierCurve(
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
                 new Point(22, 62, Point.CARTESIAN),
-                new Point(scorePose.getX(), scorePose.getY() + 6, Point.CARTESIAN)
+                new Point(scorePose.getX(), scorePose.getY() +6, Point.CARTESIAN)
         ));
         scoreThird.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
-        scoreFourth = new Path(new BezierCurve(
-                new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
-                new Point(22, 62, Point.CARTESIAN),
-                new Point(scorePose.getX(), scorePose.getY() - 2, Point.CARTESIAN)
-        ));
-        scoreFourth.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
 
-        dockLeft = new Path(new BezierLine(new Point(scorePose.getX(), scorePose.getY() - 2), new Point(dockLeftPose)));
-        dockLeft.setLinearHeadingInterpolation(scorePose.getHeading(), dockLeftPose.getHeading());
+        dockLeft = new Path(new BezierLine(new Point(bucketPose), new Point(dockLeftPose)));
+        dockLeft.setLinearHeadingInterpolation(bucketPose.getHeading(), dockLeftPose.getHeading());
 
-        dockRight = new Path(new BezierLine(new Point(scorePose.getX(), scorePose.getY() - 2), new Point(dockRightPose)));
-        dockRight.setLinearHeadingInterpolation(scorePose.getHeading(), dockRightPose.getHeading());
+        dockRight = new Path(new BezierLine(new Point(bucketPose), new Point(dockRightPose)));
+        dockRight.setLinearHeadingInterpolation(bucketPose.getHeading(), dockRightPose.getHeading());
 
-        dockMiddle = new Path(new BezierLine(new Point(scorePose.getX(), scorePose.getY() - 2), new Point(dockMiddlePose)));
-        dockMiddle.setLinearHeadingInterpolation(scorePose.getHeading(), dockMiddlePose.getHeading());
+        dockMiddle = new Path(new BezierLine(new Point(bucketPose), new Point(dockMiddlePose)));
+        dockMiddle.setLinearHeadingInterpolation(bucketPose.getHeading(), dockMiddlePose.getHeading());
 
     }
 
@@ -229,77 +217,26 @@ public class FiveSpec extends LinearOpMode {
                 scoreSubsystems(1400, pathState);
                 break;
             case 4:
-                follower.followPath(intakeSub);
-                arm.shoulder(Arm.Shoulder.BUCKET);
+                follower.followPath(identify);
                 timeSnapshot = System.currentTimeMillis();
                 setPathState(pathState + 1);
                 break;
             case 5:
-                if (System.currentTimeMillis() - timeSnapshot > 900) {
-                    arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.extendo(Arm.Extendo.EXTENDED);
-                    arm.wrist(Arm.Wrist.DOWNWARDS);
-                } else if (System.currentTimeMillis() - timeSnapshot > 500) {
-                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
-                    arm.shoulder(Arm.Shoulder.FORWARDS);
-                    arm.wrist(Arm.Wrist.DOWNWARDS);
-                    arm.extendo(Arm.Extendo.RETRACTED);
-                }
-                if (System.currentTimeMillis() - timeSnapshot > 1300) {
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
+                    follower.setMaxPower(1);
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
-                    follower.breakFollowing();
                 }
                 break;
             case 6:
-                webcam.snapshot();
-                webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
-                timeSnapshot = System.currentTimeMillis();
-                setPathState(pathState + 1);
+                restSubsystems(1000, pathState);
                 break;
             case 7:
-                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE) {
-                    timeSnapshot = System.currentTimeMillis();
-                    setPathState(pathState + 1);
-                }
-                break;
-            case 8:
-                if (System.currentTimeMillis() - timeSnapshot > 500) {
-                    arm.intake(Arm.Intake.CLOSE);
-                    timeSnapshot = System.currentTimeMillis();
-                    setPathState(pathState + 1);
-                }
-                break;
-            case 9:
-                arm.shoulder(Arm.Shoulder.FORWARDS);
-                arm.extendo(Arm.Extendo.RETRACTED);
-                follower.followPath(depositSub);
-                timeSnapshot = System.currentTimeMillis();
-                setPathState(pathState + 1);
-                break;
-            case 10:
-                if (System.currentTimeMillis() - timeSnapshot > 1000) {
-                    arm.extendo(Arm.Extendo.EXTENDED);
-                }
-                if (System.currentTimeMillis() - timeSnapshot > 2000) {
-                    arm.intake(Arm.Intake.DEPOSIT);
-                    follower.followPath(identify);
-                    timeSnapshot = System.currentTimeMillis();
-                    setPathState(pathState + 1);
-                }
-                break;
-            case 11:
-                restSubsystems(1000, pathState);
-                break;
-            case 12:
-                restSubsystems(1000, pathState);
-                break;
-            case 13:
                 scoutSubsystems(800, pathState);
                 arm.clawRotate(Arm.ClawRotation.LEFTDIAG);
                 barnacleCamera.identifyBarnacleChamber();
                 break;
-            case 14:
+            case 8:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         follower.followPath(firstGrabMiddle);
@@ -312,7 +249,7 @@ public class FiveSpec extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 setPathState(pathState + 1);
                 break;
-            case 15:
+            case 9:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         if (System.currentTimeMillis() - timeSnapshot > 1200) {
@@ -327,7 +264,7 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 16:
+            case 10:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         intakeSubsystems(900, pathState);
@@ -343,7 +280,7 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 17:
+            case 11:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
@@ -363,12 +300,12 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 18:
+            case 12:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         if (System.currentTimeMillis() - timeSnapshot < 500) {
                             arm.extendo(Arm.Extendo.RETRACTED);
-                        } else {
+                        }else{
                             arm.extendo(Arm.Extendo.EXTENDED);
                         }
                         if (System.currentTimeMillis() - timeSnapshot > 900) {
@@ -389,7 +326,7 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 19:
+            case 13:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         follower.followPath(secondGrabRightPreviousMiddle);
@@ -397,7 +334,7 @@ public class FiveSpec extends LinearOpMode {
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
-                        scoutSubsystems(1300, pathState);
+                        scoutSubsystems(1300,pathState);
                         break;
                     case MIDDLE:
                         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
@@ -409,15 +346,15 @@ public class FiveSpec extends LinearOpMode {
                             timeSnapshot = System.currentTimeMillis();
                             arm.extendo(Arm.Extendo.EXTENDED);
                             arm.shoulderLerpStartTime = System.currentTimeMillis();
-                        } else if (System.currentTimeMillis() - timeSnapshot < 900) {
+                        } else if (System.currentTimeMillis() - timeSnapshot < 900){
                             arm.extendo(Arm.Extendo.RETRACTED);
-                        } else {
+                        }else{
                             arm.extendo(Arm.Extendo.EXTENDED);
                         }
                         break;
                 }
                 break;
-            case 20:
+            case 14:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
@@ -429,9 +366,9 @@ public class FiveSpec extends LinearOpMode {
                             timeSnapshot = System.currentTimeMillis();
                             arm.extendo(Arm.Extendo.EXTENDED);
                             arm.shoulderLerpStartTime = System.currentTimeMillis();
-                        } else if (System.currentTimeMillis() - timeSnapshot < 900) {
+                        } else if (System.currentTimeMillis() - timeSnapshot < 900){
                             arm.extendo(Arm.Extendo.RETRACTED);
-                        } else {
+                        }else{
                             arm.extendo(Arm.Extendo.EXTENDED);
                         }
                         break;
@@ -441,7 +378,7 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 21:
+            case 15:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         intakeSubsystems(900, pathState);
@@ -458,7 +395,7 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 22:
+            case 16:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
                         follower.followPath(depositSecondRight);
@@ -480,8 +417,8 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 23:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 17:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
                         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                         arm.shoulder(Arm.Shoulder.BACKWARDS);
@@ -498,19 +435,19 @@ public class FiveSpec extends LinearOpMode {
                     case MIDDLE:
                         if (System.currentTimeMillis() - timeSnapshot > 300) {
                             arm.intake(Arm.Intake.DEPOSIT);
-                            if (System.currentTimeMillis() - timeSnapshot > 600) {
+                            if (System.currentTimeMillis() - timeSnapshot > 600){
                                 timeSnapshot = System.currentTimeMillis();
                                 setPathState(pathState + 1);
                             }
                         }
                 }
                 break;
-            case 24:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 18:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
                         if (System.currentTimeMillis() - timeSnapshot > 300) {
                             arm.intake(Arm.Intake.DEPOSIT);
-                            if (System.currentTimeMillis() - timeSnapshot > 600) {
+                            if (System.currentTimeMillis() - timeSnapshot > 600){
                                 timeSnapshot = System.currentTimeMillis();
                                 setPathState(pathState + 1);
                             }
@@ -528,8 +465,8 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 25:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 19:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
                         follower.followPath(humanIntakeRight);
                         timeSnapshot = System.currentTimeMillis();
@@ -547,8 +484,8 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 26:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 20:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
                         if (System.currentTimeMillis() - timeSnapshot > 500) {
                             arm.intake(Arm.Intake.CLOSE);
@@ -570,8 +507,8 @@ public class FiveSpec extends LinearOpMode {
                         break;
                 }
                 break;
-            case 27:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 21:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
                         follower.followPath(scoreFirstMiddle);
                         timeSnapshot = System.currentTimeMillis();
@@ -579,205 +516,240 @@ public class FiveSpec extends LinearOpMode {
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        scoreSubsystems(1900, pathState);
+                        scoreSubsystems(2000,pathState);
                         break;
                 }
                 break;
-            case 28:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 22:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        scoreSubsystems(1900, pathState);
+                        scoreSubsystems(2000,pathState);
                         break;
                     case RIGHT:
                     case MIDDLE:
                         follower.followPath(humanIntakeSecond);
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                        break;
+                }
+                break;
+            case 23:
+                switch (barnacleCamera.getBarnacleLocation()){
+                    case LEFT:
+                        follower.followPath(humanIntakeSecond);
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                        break;
+                    case RIGHT:
+                    case MIDDLE:
+                        humanIntakeSubsystems(2500,pathState);
+                        break;
+                }
+                break;
+            case 24:
+                switch (barnacleCamera.getBarnacleLocation()){
+                    case LEFT:
+                        humanIntakeSubsystems(2500,pathState);
+                        break;
+                    case RIGHT:
+                    case MIDDLE:
+                        follower.followPath(scoreSecond);
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                        break;
+                }
+                break;
+            case 25:
+                switch (barnacleCamera.getBarnacleLocation()){
+                    case LEFT:
+                        follower.followPath(scoreSecond);
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                        break;
+                    case RIGHT:
+                    case MIDDLE:
+                        scoreSubsystems(2000,pathState);
+                        break;
+                }
+                break;
+            case 26:
+                switch (barnacleCamera.getBarnacleLocation()){
+                    case LEFT:
+                        scoreSubsystems(2000,pathState);
+                        break;
+                    case RIGHT:
+                    case MIDDLE:
+                        follower.followPath(humanIntakeThird);
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                        break;
+                }
+                break;
+            case 27:
+                switch (barnacleCamera.getBarnacleLocation()){
+                    case LEFT:
+                        follower.followPath(humanIntakeThird);
+                        timeSnapshot = System.currentTimeMillis();
+                        setPathState(pathState + 1);
+                        break;
+                    case RIGHT:
+                    case MIDDLE:
+                        humanIntakeSubsystems(2500,pathState);
+                        break;
+                }
+                break;
+            case 28:
+                switch (barnacleCamera.getBarnacleLocation()){
+                    case LEFT:
+                        humanIntakeSubsystems(2500,pathState);
+                        break;
+                    case RIGHT:
+                    case MIDDLE:
+                        follower.followPath(scoreThird);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                 }
                 break;
             case 29:
-                switch (barnacleCamera.getBarnacleLocation()) {
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        follower.followPath(humanIntakeSecond);
+                        follower.followPath(scoreThird);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        humanIntakeSubsystems(2500, pathState);
+                      scoreSubsystems(2000,pathState);
                         break;
                 }
                 break;
+
             case 30:
-                switch (barnacleCamera.getBarnacleLocation()) {
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        humanIntakeSubsystems(2500, pathState);
+                        scoreSubsystems(2000,pathState);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        follower.followPath(scoreSecond);
+                        follower.followPath(humanIntakeFourth);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                 }
                 break;
             case 31:
-                switch (barnacleCamera.getBarnacleLocation()) {
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        follower.followPath(scoreSecond);
+                        follower.followPath(humanIntakeFourth);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        scoreSubsystems(1900, pathState);
+                        humanIntakeSubsystems(2500,pathState);
                         break;
                 }
                 break;
             case 32:
-                switch (barnacleCamera.getBarnacleLocation()) {
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        scoreSubsystems(1900, pathState);
+                        humanIntakeSubsystems(2500,pathState);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        follower.followPath(humanIntakeThird);
+                        follower.followPath(buckeScore);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                 }
                 break;
             case 33:
-                switch (barnacleCamera.getBarnacleLocation()) {
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        follower.followPath(humanIntakeThird);
+                        follower.followPath(buckeScore);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        humanIntakeSubsystems(2500, pathState);
+                        if (System.currentTimeMillis() - timeSnapshot < 6000){
+                            verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
+                            arm.shoulder(Arm.Shoulder.BUCKET);
+                        }
+                        if (System.currentTimeMillis() - timeSnapshot > 2000){
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                        }
+                        driveErrorX = Math.abs(bucketPose.getX() - follower.getPose().getX());
+                        driveErrorY = Math.abs(bucketPose.getY() - follower.getPose().getY());
+                        if (driveErrorX < 3 && driveErrorY < 3){
+                            arm.intake(Arm.Intake.DEPOSIT);
+                            timeSnapshot = System.currentTimeMillis();
+                            setPathState(pathState+1);
+
+                        }
                         break;
                 }
                 break;
+
+
             case 34:
-                switch (barnacleCamera.getBarnacleLocation()) {
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        humanIntakeSubsystems(2500, pathState);
-                        break;
-                    case RIGHT:
-                    case MIDDLE:
-                        follower.followPath(scoreThird);
-                        timeSnapshot = System.currentTimeMillis();
-                        setPathState(pathState + 1);
-                        break;
-                }
-                break;
-            case 35:
-                switch (barnacleCamera.getBarnacleLocation()) {
-                    case LEFT:
-                        follower.followPath(scoreThird);
-                        timeSnapshot = System.currentTimeMillis();
-                        setPathState(pathState + 1);
-                        break;
-                    case RIGHT:
-                    case MIDDLE:
-                        scoreSubsystems(1900, pathState);
-                        break;
-                }
-                break;
+                        if (System.currentTimeMillis() - timeSnapshot < 6000){
+                            verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
+                            arm.shoulder(Arm.Shoulder.BUCKET);
+                        }
+                        if (System.currentTimeMillis() - timeSnapshot > 2000){
+                            arm.extendo(Arm.Extendo.EXTENDED);
+                        }
+                        driveErrorX = Math.abs(bucketPose.getX() - follower.getPose().getX());
+                        driveErrorY = Math.abs(bucketPose.getY() - follower.getPose().getY());
+                        if (driveErrorX < 3 && driveErrorY < 3){
+                            arm.intake(Arm.Intake.DEPOSIT);
+                            timeSnapshot = System.currentTimeMillis();
+                            setPathState(pathState+1);
 
-
-            case 36:
-                switch (barnacleCamera.getBarnacleLocation()) {
-                    case LEFT:
-                        scoreSubsystems(1900, pathState);
+                        }
                         break;
                     case RIGHT:
-                    case MIDDLE:
-                        follower.followPath(humanIntakeFourth);
-                        timeSnapshot = System.currentTimeMillis();
-                        setPathState(pathState + 1);
-                        break;
-                }
-                break;
-            case 37:
-                switch (barnacleCamera.getBarnacleLocation()) {
-                    case LEFT:
-                        follower.followPath(humanIntakeFourth);
-                        timeSnapshot = System.currentTimeMillis();
-                        setPathState(pathState + 1);
-                        break;
-                    case RIGHT:
-                    case MIDDLE:
-                        humanIntakeSubsystems(2500, pathState);
-                        break;
-                }
-                break;
-            case 38:
-                switch (barnacleCamera.getBarnacleLocation()) {
-                    case LEFT:
-                        humanIntakeSubsystems(2500, pathState);
-                        break;
-                    case RIGHT:
-                    case MIDDLE:
-                        follower.followPath(scoreFourth);
-                        timeSnapshot = System.currentTimeMillis();
-                        setPathState(pathState + 1);
-                        break;
-                }
-                break;
-            case 39:
-                switch (barnacleCamera.getBarnacleLocation()) {
-                    case LEFT:
-                        follower.followPath(scoreFourth);
-                        timeSnapshot = System.currentTimeMillis();
-                        setPathState(pathState + 1);
-                        break;
-                    case RIGHT:
-                    case MIDDLE:
-                        scoreSubsystems(2000, pathState);
-                        break;
-                }
-                break;
-
-
-            case 40:
-                switch (barnacleCamera.getBarnacleLocation()) {
-                    case LEFT:
-                        scoreSubsystems(2000, pathState);
-                        break;
-                    case RIGHT:
+                        arm.intake(Arm.Intake.DEPOSIT);
                         follower.followPath(dockRight);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case MIDDLE:
+                        arm.intake(Arm.Intake.DEPOSIT);
                         follower.followPath(dockMiddle);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                 }
                 break;
-            case 41:
-                switch (barnacleCamera.getBarnacleLocation()) {
+            case 35:
+                switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
+                        arm.intake(Arm.Intake.DEPOSIT);
                         follower.followPath(dockLeft);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
-                        humanIntakeSubsystems(0, pathState);
+                        if (System.currentTimeMillis() - timeSnapshot > 500){
+                            humanIntakeSubsystems(0,pathState);
+                        }
                         break;
                     case MIDDLE:
-                        humanIntakeSubsystems(0, pathState);
+                        if (System.currentTimeMillis() - timeSnapshot > 500){
+                            humanIntakeSubsystems(0,pathState);
+                        }
                         break;
                 }
                 break;
-            case 42:
-                humanIntakeSubsystems(0, pathState);
-                break;
+            case 36:
+                if (System.currentTimeMillis() - timeSnapshot > 500){
+                    humanIntakeSubsystems(0,pathState);
+                }
 
         }
 
@@ -819,7 +791,6 @@ public class FiveSpec extends LinearOpMode {
             timeSnapshot = System.currentTimeMillis();
         }
     }
-
     public void humanIntakeSubsystems(int timeToWaitMilis, int pathState) {
         verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
         arm.shoulder(Arm.Shoulder.BACKWARDS);
@@ -884,67 +855,17 @@ public class FiveSpec extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         arm.initiate(hardwareMap);
         verticalSlides.initiate(hardwareMap);
-        webcam.initiate(hardwareMap, teamColor.getColor(), StateMachine.Mode.CHAMBER, telemetry);
+        webcam.initiate(hardwareMap, teamColor.getColor(), StateMachine.Mode.BUCKET, telemetry);
         driveTrain.initiate(hardwareMap);
         barnacleCamera.initiate(hardwareMap);
         pathTimer = new Timer();
         constants = new Constants();
         constants.setConstants(FConstants.class, LConstants.class);
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
-        boolean previousDown = false;
-        boolean previousUp = false;
-        boolean previousLeft = false;
-        boolean previousRight = false;
-        while (!opModeIsActive() && !isStopRequested()) {
-            if (gamepad1.start) {
-                clawRotationOveride = true;
-            }
-            if (gamepad1.share) {
-                clawRotationOveride = false;
-            }
-            if (clawRotationOveride) {
-                if (gamepad1.triangle) {
-                    clawRotation = Arm.ClawRotation.Horz1;
-                }
-                if (gamepad1.cross) {
-                    clawRotation = Arm.ClawRotation.Vert;
-                }
-                if (gamepad1.square) {
-                    clawRotation = Arm.ClawRotation.LEFTDIAG;
-                }
-                if (gamepad1.circle) {
-                    clawRotation = Arm.ClawRotation.RIGHTDIAG;
-                }
-            }
-            if (gamepad1.dpad_down && !previousDown) {
-                firstSubX -= 1;
-                previousDown = true;
-            } else if (!gamepad1.dpad_down) {
-                previousDown = false;
-            }
-            if (gamepad1.dpad_up && !previousUp) {
-                firstSubX += 1;
-                previousUp = true;
-            } else if (!gamepad1.dpad_up) {
-                previousUp = false;
-            }
-            if (gamepad1.dpad_right && !previousRight) {
-                firstSubY += 1;
-                previousRight = true;
-            } else if (!gamepad1.dpad_right) {
-                previousRight = false;
-            }
-            if (gamepad1.dpad_left && !previousLeft) {
-                firstSubY -= 1;
-                previousLeft = true;
-            } else if (!gamepad1.dpad_left) {
-                previousLeft = false;
-            }
-        }
         waitForStart();
         teamColor.initiate(hardwareMap);
         follower.setStartingPose(startPose);
-        buildPaths(firstSubX,firstSubY);
+        buildPaths();
         if (isStopRequested()) return;
         while (opModeIsActive()) {
             verticalSlides.update();
