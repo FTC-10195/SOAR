@@ -24,8 +24,9 @@ public class TeamColor {
    Servo headlight;
    public static double headlightOn = .5;
    public static double headlightOff = 0;
-   public static double redColor = 0.3;
-    public static double blueColor = 0.65;
+   public static double redColor = 0.279;
+    public static double blueColor = 0.611;
+    public static double yellowColor = .34;
    public TeamColor(Color color){
        currentColor = color;
    }
@@ -63,6 +64,9 @@ public class TeamColor {
                break;
            case BLUE:
                rgbIndicator.setPosition(blueColor);
+               break;
+           case YELLOW:
+               rgbIndicator.setPosition(yellowColor);
                break;
        }
    }

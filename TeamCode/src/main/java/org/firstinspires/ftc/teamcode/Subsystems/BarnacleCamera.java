@@ -64,7 +64,7 @@ public class BarnacleCamera {
 
     public void identifyBarnacleBucket() {
         //Identify white blobs
-        barnacleSize = 800;
+        barnacleSize = 250;
         barnacleLocation = BarnacleLocations.LEFT;
         List<ColorBlobLocatorProcessor.Blob> whiteBlobs;
         whiteBlobs = colorLocatorWhite.getBlobs();
@@ -128,7 +128,7 @@ public class BarnacleCamera {
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG)
                 .enableLiveView(false)
                 .build();
-      //  FtcDashboard.getInstance().startCameraStream(portal, 0);
+        FtcDashboard.getInstance().startCameraStream(portal, 0);
     }
     public void clear(){
         portal.close();

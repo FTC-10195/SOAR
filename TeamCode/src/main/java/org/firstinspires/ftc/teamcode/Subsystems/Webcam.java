@@ -90,7 +90,7 @@ public class Webcam {
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
     public static long driveTargetTimeInMilis = 1000;
     public static int tolerancePID = 9;
-    public static double kPX = 0.004525;
+    public static double kPX = 0.003525;
     public static double kIX = 0;
     public static double kDX = 0;
     public static double kFX = 0;
@@ -107,7 +107,7 @@ public class Webcam {
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
     public static double HORIZONTAL_OFFSET_PIX = 0;
-    public static double MAX_SPEED = 0.2;
+    public static double MAX_SPEED = 0.4;
 
     PIDFController xPID = new PIDFController(kPX, kIX, kDX, kFX);
     PIDFController yPID = new PIDFController(kPY, kIY, kDY, kFY);
@@ -274,7 +274,7 @@ public class Webcam {
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .enableLiveView(false)
                 .build();
-        FtcDashboard.getInstance().startCameraStream(portal, 0);
+        //FtcDashboard.getInstance().startCameraStream(portal, 0);
         setColorLocatorTeam(teamColor, true);
         setColorLocatorMode(mode, true);
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.

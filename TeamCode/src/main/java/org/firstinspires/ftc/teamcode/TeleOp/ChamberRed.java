@@ -27,6 +27,7 @@ public class ChamberRed extends LinearOpMode {
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
+        boolean webcamActive = true;
         Arm arm = new Arm();
         DriveTrain driveTrain = new DriveTrain();
         VerticalSlides verticalSlides = new VerticalSlides();
@@ -68,17 +69,23 @@ public class ChamberRed extends LinearOpMode {
             if ((LB && state == StateMachine.States.SAMPLE_INTAKE) || (LB && state == StateMachine.States.RESTING) || (RT && state == StateMachine.States.CHAMBER_HUMAN_INTAKE)) {
                 extendoResetTime = System.currentTimeMillis();
             }
-
+            boolean switchCameraActive = gamepad1.share && !previousGamepad1.share;
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
             mode = stateMachine.switchMode(mode, switchMode);
             state = stateMachine.setState(state, mode, RT, LT, RB, LB, telemetry);
             teamColor.status(telemetry);
+            if (switchCameraActive){
+                webcamActive = !webcamActive;
+            }
             if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()) {
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DONE);
             } else if (LB && state == StateMachine.States.SAMPLE_INTAKE) {
                 arm.intake(Arm.Intake.INTAKE);
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
+                if (!webcamActive) {
+                    webcam.setDriveStage(Webcam.DRIVE_STAGE.DROP);
+                }
             }
             if (switchMode) {
                 webcam.setColorLocatorMode(mode, false);
