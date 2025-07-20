@@ -52,11 +52,7 @@ public class Webcam {
     public static int highCbRed = 160;
 
     ColorBlobLocatorProcessor colorLocatorRed = new ColorBlobLocatorProcessor.Builder()
-            .setTargetColorRange(new ColorRange(
-                    ColorSpace.YCrCb,
-                    new Scalar(lowYRed, lowCrRed,  lowCbRed),
-                    new Scalar(highYRed, highCrRed, highCbRed)
-            ))
+            .setTargetColorRange(ColorRange.RED)
             .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
             .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
             .setDrawContours(true)                        // Show contours on the Stream Preview
@@ -100,14 +96,14 @@ public class Webcam {
     public static double kFY = 0;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = -40;
+    public static double LATERAL_OFFSET_PX = -20;
     public static double CAMERA_WIDTH_IN = 8.5;
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
     public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
     public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
     public static double HORIZONTAL_OFFSET_PIX = 0;
-    public static double MAX_SPEED = 0.4;
+    public static double MAX_SPEED = 0.35;
 
     PIDFController xPID = new PIDFController(kPX, kIX, kDX, kFX);
     PIDFController yPID = new PIDFController(kPY, kIY, kDY, kFY);

@@ -49,10 +49,10 @@ public class PedroSample extends LinearOpMode {
     BarnacleCamera barnacleCamera = new BarnacleCamera();
     private final Pose startPose = new Pose(7, 112, Math.toRadians(270));  // Starting position
     private final Pose scorePose = new Pose(9, 123, Math.toRadians(315));
-    private final Pose identifyPose = new Pose(14, 115.35, Math.toRadians(360));
+    private final Pose identifyPose = new Pose(14, 120.35, Math.toRadians(360));
     private final Pose rightGrab = new Pose(14.5, 111.2, Math.toRadians(360));
     private final Pose middleGrab = new Pose(15, 120, Math.toRadians(360));
-    private final Pose leftGrab = new Pose(17, 120.5, Math.toRadians(380));
+    private final Pose leftGrab = new Pose(17, 121.5, Math.toRadians(380));
     private final Pose leftDockPose = new Pose(7.5, 112, Math.toRadians(315));
     private final Pose middleDockPose = new Pose(7.5, 92, Math.toRadians(315));
     private final Pose rightDockPose = new Pose(7.5, 88, Math.toRadians(315));
@@ -211,7 +211,7 @@ public class PedroSample extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 3:
-                restSubsystems(1100, pathState);
+                restSubsystems(1200, pathState);
                 break;
             case 4:
                 scoutSubsystems(500, pathState);
@@ -614,6 +614,7 @@ public class PedroSample extends LinearOpMode {
         boolean firstSub = true;
 
         while (!opModeIsActive() && !isStopRequested()){
+            teamColor.update();
             if (gamepad1.start && firstSub){
                 clawRotationOverideFirst = true;
             }
@@ -702,6 +703,12 @@ public class PedroSample extends LinearOpMode {
                 previousLeft = false;
             }
 
+            if (gamepad1.right_trigger > 0.1){
+                teamColor.setColor(TeamColor.Color.BLUE);
+            }
+            if (gamepad1.left_trigger > 0.1){
+                teamColor.setColor(TeamColor.Color.RED);
+            }
 
             previousGamepad.copy(gamepad1);
             telemetry.addLine("X IS FORWARDS (greater X = more forwards) AND Y IS SIDEWAYS (greater Y = more left) RELATIVE TO DRIVER FOR BUCKET");
@@ -713,9 +720,11 @@ public class PedroSample extends LinearOpMode {
             telemetry.addData("clawRotFirst", clawRotationFirst);
             telemetry.addData("clawOverideSecond", clawRotationOverideSecond);
             telemetry.addData("clawRotSecond", clawRotationSecond);
+            telemetry.addData("teamColor",teamColor);
             telemetry.update();
         }
         waitForStart();
+        webcam.setColorLocatorTeam(teamColor.getColor(),false);
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(startPose);
         buildPaths(firstSubX,firstSubY,secondSubX,secondSubY);

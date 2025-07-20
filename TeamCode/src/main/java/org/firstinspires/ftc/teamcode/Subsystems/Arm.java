@@ -63,15 +63,15 @@ public class Arm {
     Servo wristServo;
     Servo rightShoulder; //Dominant servo
     Servo leftShoulder; //Copys rightShoulder
-    public static double extendoRetractedPos = .49;
-    public static double extendoExtendedPos = .22;
-    public static double extendoChamberPos = .49;
+    public static double extendoRetractedPos = .22;
+    public static double extendoExtendedPos = 0;
+    public static double extendoChamberPos = .22;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
-    public static double wristDownwardsPos = 0.12; //Should be facing towards the ground, only for INTAKING
-    public static double wristFullDownwardsPos = 0.1; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
-    public static double wristUpwardsPos = 0.9; //Should be facing the ceiling
+    public static double wristDownwardsPos = 0.7; //Should be facing towards the ground, only for INTAKING
+    public static double wristFullDownwardsPos = 0.74; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
+    public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
     //Shoulder Positions:
-    public static double shoulderInit = .2;
+    public static double shoulderInit = .22;
     public static double shoulderChamberIntake = 0.12;
     public static double shoulderBucket = .29;
     public static double shoulderBackwards = .12;

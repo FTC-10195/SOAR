@@ -39,13 +39,13 @@ public class PedroChamberRed extends LinearOpMode {
     private final Pose startPose = new Pose(7, 64, Math.toRadians(0));  // Starting position
     private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));  // Starting position
     private final Pose humanIntakePose = new Pose(11, 35, Math.toRadians(0));
-    private final Pose identifyPose = new Pose(21.5, 42.7, Math.toRadians(-38));
-    private final Pose middleGrabPose = new Pose(22, 35, Math.toRadians(-38));
-    private final Pose rightGrabPose = new Pose(22, 25.7, Math.toRadians(-38));
+    private final Pose identifyPose = new Pose(21.5, 43.2, Math.toRadians(-38));
+    private final Pose middleGrabPose = new Pose(22, 32.5, Math.toRadians(-38));
+    private final Pose rightGrabPose = new Pose(22, 23.2, Math.toRadians(-38));
     private final Pose depositFirstLeftPose = new Pose(21.5, identifyPose.getY() + 3, Math.toRadians(-125));
     private final Pose depositFirstMiddlePose = new Pose(middleGrabPose.getX(), middleGrabPose.getY() + 2, Math.toRadians(-125));
-    private final Pose depositSecondMiddlePose = new Pose(humanIntakePose.getX() + 6, middleGrabPose.getY() - 3, Math.toRadians(0));
-    private final Pose depositSecondRightPose = new Pose(humanIntakePose.getX() + 6, rightGrabPose.getY() - 3, Math.toRadians(0));
+    private final Pose depositSecondMiddlePose = new Pose(humanIntakePose.getX() + 7, middleGrabPose.getY() - 3, Math.toRadians(0));
+    private final Pose depositSecondRightPose = new Pose(humanIntakePose.getX() + 7, rightGrabPose.getY() - 3, Math.toRadians(0));
     private final Pose dockLeftPose = new Pose(15, 125, Math.toRadians(0));
     private final Pose dockMiddlePose = new Pose(15, 105, Math.toRadians(0));
     private final Pose dockRightPose = new Pose(15, 80, Math.toRadians(0));
@@ -74,13 +74,17 @@ public class PedroChamberRed extends LinearOpMode {
         //BARNACLE LEFT
         //firstGrabMiddle -> depositFirstMiddle -> secondGrabRightPreviousMiddle -> depositSecondMiddle -> scoring
 
-        firstGrabMiddle = new Path(new BezierLine(new Point(identifyPose), new Point(middleGrabPose.getX(), middleGrabPose.getY() - .7)));
+        firstGrabMiddle = new Path(new BezierLine(new Point(identifyPose), new Point(middleGrabPose.getX(), middleGrabPose.getY())));
         firstGrabMiddle.setLinearHeadingInterpolation(identifyPose.getHeading(), middleGrabPose.getHeading());
 
         depositFirstMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(depositFirstMiddlePose)));
         depositFirstMiddle.setLinearHeadingInterpolation(middleGrabPose.getHeading(), depositFirstMiddlePose.getHeading());
 
-        secondGrabRightPreviousMiddle = new Path(new BezierLine(new Point(depositFirstMiddlePose), new Point(rightGrabPose)));
+        secondGrabRightPreviousMiddle = new Path(new BezierCurve(new Point(depositFirstMiddlePose),
+                new Point(identifyPose),
+                new Point(rightGrabPose)
+        )
+        );
         secondGrabRightPreviousMiddle.setLinearHeadingInterpolation(depositFirstMiddlePose.getHeading(), rightGrabPose.getHeading());
 
         depositSecondRight = new Path(new BezierLine(new Point(rightGrabPose), new Point(depositSecondRightPose)));
@@ -102,7 +106,7 @@ public class PedroChamberRed extends LinearOpMode {
         //BARNACLE RIGHT
         //identify -> depositFirst1 -> secondGrabMiddle -> depositSecond1 -> scoring
 
-        secondGrabMiddle = new Path(new BezierLine(new Point(depositFirstLeftPose), new Point(middleGrabPose)));
+        secondGrabMiddle = new Path(new BezierLine(new Point(depositFirstLeftPose), new Point(middleGrabPose.getX(), middleGrabPose.getY() +2)));
         secondGrabMiddle.setLinearHeadingInterpolation(depositFirstLeftPose.getHeading(), middleGrabPose.getHeading());
 
         depositSecondMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(depositSecondMiddlePose)));
@@ -118,6 +122,7 @@ public class PedroChamberRed extends LinearOpMode {
                 new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN)
         ));
         scoreFirstMiddle.setLinearHeadingInterpolation(humanIntakeMiddlePose.getHeading(), scorePose.getHeading());
+        scoreFirstMiddle.setZeroPowerAccelerationMultiplier(1);
 
         scoreFirstRight = new Path(new BezierCurve(
                 new Point(humanIntakeRightPose.getX(), humanIntakeRightPose.getY(), Point.CARTESIAN),
@@ -126,6 +131,7 @@ public class PedroChamberRed extends LinearOpMode {
                 new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN)
         ));
         scoreFirstRight.setLinearHeadingInterpolation(humanIntakeRightPose.getHeading(), scorePose.getHeading());
+        scoreFirstRight.setZeroPowerAccelerationMultiplier(1);
 
 
         humanIntakeSecond = new Path(new BezierCurve(
@@ -150,12 +156,14 @@ public class PedroChamberRed extends LinearOpMode {
                 new Point(scorePose.getX(), scorePose.getY() +4, Point.CARTESIAN)
         ));
         scoreSecond.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
+        scoreSecond.setZeroPowerAccelerationMultiplier(1);
         scoreThird = new Path(new BezierCurve(
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
                 new Point(22, 62, Point.CARTESIAN),
                 new Point(scorePose.getX(), scorePose.getY() +6, Point.CARTESIAN)
         ));
         scoreThird.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
+        scoreThird.setZeroPowerAccelerationMultiplier(1);
 
         dockLeft = new Path(new BezierLine(new Point(scorePose), new Point(dockLeftPose)));
         dockLeft.setLinearHeadingInterpolation(scorePose.getHeading(), dockLeftPose.getHeading());
@@ -241,14 +249,14 @@ public class PedroChamberRed extends LinearOpMode {
                     case MIDDLE:
                     case RIGHT:
                         //Sample 1
-                        intakeSubsystems(900, pathState);
+                        intakeSubsystems(1000, pathState);
                         break;
                 }
                 break;
             case 10:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
-                        intakeSubsystems(900, pathState);
+                        intakeSubsystems(1000, pathState);
                         break;
                     case MIDDLE:
                     case RIGHT:
@@ -284,7 +292,7 @@ public class PedroChamberRed extends LinearOpMode {
             case 12:
                 switch (barnacleCamera.getBarnacleLocation()) {
                     case LEFT:
-                        if (System.currentTimeMillis() - timeSnapshot < 500) {
+                        if (System.currentTimeMillis() - timeSnapshot < 700) {
                             arm.extendo(Arm.Extendo.RETRACTED);
                         }else{
                             arm.extendo(Arm.Extendo.EXTENDED);
@@ -322,7 +330,7 @@ public class PedroChamberRed extends LinearOpMode {
                         arm.shoulder(Arm.Shoulder.FORWARDS);
                         arm.wrist(Arm.Wrist.DOWNWARDS);
                         arm.intake(Arm.Intake.INTAKE);
-                        if (System.currentTimeMillis() - timeSnapshot > 1300) {
+                        if (System.currentTimeMillis() - timeSnapshot > 1800) {
                             setPathState(pathState + 1);
                             timeSnapshot = System.currentTimeMillis();
                             arm.extendo(Arm.Extendo.EXTENDED);
@@ -477,11 +485,13 @@ public class PedroChamberRed extends LinearOpMode {
                         }
                         break;
                     case RIGHT:
+                        follower.setMaxPower(.9);
                         follower.followPath(scoreFirstMiddle);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case MIDDLE:
+                        follower.setMaxPower(.9);
                         follower.followPath(scoreFirstRight);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
@@ -491,23 +501,25 @@ public class PedroChamberRed extends LinearOpMode {
             case 21:
                 switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
+                        follower.setMaxPower(.9);
                         follower.followPath(scoreFirstMiddle);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        scoreSubsystems(2000,pathState);
+                        scoreSubsystems(2500,pathState);
                         break;
                 }
                 break;
             case 22:
                 switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
-                        scoreSubsystems(2000,pathState);
+                        scoreSubsystems(2500,pathState);
                         break;
                     case RIGHT:
                     case MIDDLE:
+                        follower.setMaxPower(1);
                         follower.followPath(humanIntakeSecond);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
@@ -517,6 +529,7 @@ public class PedroChamberRed extends LinearOpMode {
             case 23:
                 switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
+                        follower.setMaxPower(1);
                         follower.followPath(humanIntakeSecond);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
@@ -535,6 +548,7 @@ public class PedroChamberRed extends LinearOpMode {
                     case RIGHT:
                     case MIDDLE:
                         follower.followPath(scoreSecond);
+                        follower.setMaxPower(.9);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
@@ -543,13 +557,14 @@ public class PedroChamberRed extends LinearOpMode {
             case 25:
                 switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
+                        follower.setMaxPower(.9);
                         follower.followPath(scoreSecond);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
                     case MIDDLE:
-                        scoreSubsystems(2000,pathState);
+                        scoreSubsystems(2500,pathState);
                         break;
                 }
                 break;
@@ -561,6 +576,7 @@ public class PedroChamberRed extends LinearOpMode {
                     case RIGHT:
                     case MIDDLE:
                         follower.followPath(humanIntakeThird);
+                        follower.setMaxPower(1);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
                         break;
@@ -569,6 +585,7 @@ public class PedroChamberRed extends LinearOpMode {
             case 27:
                 switch (barnacleCamera.getBarnacleLocation()){
                     case LEFT:
+                        follower.setMaxPower(1);
                         follower.followPath(humanIntakeThird);
                         timeSnapshot = System.currentTimeMillis();
                         setPathState(pathState + 1);
@@ -630,15 +647,22 @@ public class PedroChamberRed extends LinearOpMode {
                         setPathState(pathState + 1);
                         break;
                     case RIGHT:
+                        arm.intake(Arm.Intake.DEPOSIT);
                         humanIntakeSubsystems(0,pathState);
                         break;
                     case MIDDLE:
+                        arm.intake(Arm.Intake.DEPOSIT);
                         humanIntakeSubsystems(0,pathState);
                         break;
                 }
                 break;
             case 32:
+                arm.intake(Arm.Intake.DEPOSIT);
                 humanIntakeSubsystems(0,pathState);
+                break;
+            case 33:
+                arm.intake(Arm.Intake.DEPOSIT);
+                break;
 
         }
 

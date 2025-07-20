@@ -85,6 +85,8 @@ public class ChamberRed extends LinearOpMode {
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
                 if (!webcamActive) {
                     webcam.setDriveStage(Webcam.DRIVE_STAGE.DROP);
+                    arm.shoulderLerpStartTime = System.currentTimeMillis();
+                    arm.shoulder(Arm.Shoulder.DOWNWARDS);
                 }
             }
             if (switchMode) {
