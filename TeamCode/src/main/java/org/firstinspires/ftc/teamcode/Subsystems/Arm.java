@@ -31,6 +31,7 @@ public class Arm {
     }
 
     public enum Wrist {
+        CHAMBER_SLIDE_DEPOSIT,
         FORWARD, //Used for most tasks
         DOWNWARDS, //Used for intaking
         FULL_DOWNWARDS, //USED FOR SCOUTING ONLY
@@ -67,6 +68,7 @@ public class Arm {
     public static double extendoExtendedPos = 0;
     public static double extendoChamberPos = .22;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
+    public static double wristChamberSlideDepositPos = 0.55; //Used for spec auto
     public static double wristDownwardsPos = 0.7; //Should be facing towards the ground, only for INTAKING
     public static double wristFullDownwardsPos = 0.74; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
     public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
@@ -189,6 +191,9 @@ public class Arm {
         switch (wristState) {
             case FORWARD:
                 wristServo.setPosition(wristForwardPos);
+                break;
+            case CHAMBER_SLIDE_DEPOSIT:
+                wristServo.setPosition(wristChamberSlideDepositPos);
                 break;
             case DOWNWARDS:
                 wristServo.setPosition(wristDownwardsPos);

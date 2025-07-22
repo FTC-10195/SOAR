@@ -39,21 +39,30 @@ public class PedroSpecCPE extends LinearOpMode {
     private final Pose startPose = new Pose(7, 64, Math.toRadians(0));  // Starting position
     private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));  // Starting position
     private final Pose humanIntakePose = new Pose(11, 35, Math.toRadians(0));
-    private final Pose identifyPose = new Pose(21.5, 43.2, Math.toRadians(-38));
-    private final Pose middleGrabPose = new Pose(22, 32.5, Math.toRadians(-38));
-    private final Pose rightGrabPose = new Pose(22, 23.2, Math.toRadians(-38));
-    private final Pose depositLeftPose = new Pose(21.5, identifyPose.getY() + 3, Math.toRadians(-125));
-    private final Pose depositMiddlePose = new Pose(humanIntakePose.getX() + 7, middleGrabPose.getY() - 3, Math.toRadians(0));
-    private final Pose depositRightPose = new Pose(humanIntakePose.getX() + 7, rightGrabPose.getY() - 3, Math.toRadians(0));
-    private final Pose humanIntakeMiddlePose = new Pose(humanIntakePose.getX(), depositMiddlePose.getY(), Math.toRadians(0));
+    private final Pose leftGrabPose = new Pose(21.5, 43.7, Math.toRadians(-38));
+    private final Pose middleGrabPose = new Pose(22, 35.5, Math.toRadians(-38));
+    private final Pose rightGrabPose = new Pose(22, 23, Math.toRadians(-34));
+    private final Pose depositLeftPose = new Pose(21.5, leftGrabPose.getY() + 3, Math.toRadians(-125));
+    private final Pose depositMiddlePose = new Pose(21.5, middleGrabPose.getY() + 3, Math.toRadians(-125));
+    private final Pose depositRightPose = new Pose(humanIntakePose.getX() + 10, rightGrabPose.getY(), Math.toRadians(0));
     private final Pose humanIntakeRightPose = new Pose(humanIntakePose.getX(), depositRightPose.getY(), Math.toRadians(0));
-    private Path scorePreload, grabLeft, grabMiddle, grabRight, depositLeft, depositMiddle, depositRight, humanIntakeFirst, scoreFirst, scoreSecond, scoreThird, humanIntakeSecond, humanIntakeThird;
+    private final Pose parkPose = new Pose(0, 0, Math.toRadians(90));
+    private Path scorePreload, grabLeft, grabMiddle, grabRight, depositLeft, depositMiddle, depositRight, humanIntakeFirst, scoreFirst, scoreSecond, scoreThird, scoreFourth, humanIntakeSecond, humanIntakeThird, humanIntakeFourth, park;
 
 
     long timeSnapshot = System.currentTimeMillis();
 
 
     public void buildPaths() {
+        park = new Path(new BezierCurve(
+                new Point(scorePose.getX(), scorePose.getY() - 2, Point.CARTESIAN),
+                new Point(25, 85, Point.CARTESIAN),
+                new Point(parkPose.getX(), parkPose.getY(), Point.CARTESIAN)
+    ));
+        park.setLinearHeadingInterpolation(scorePose.getHeading(), parkPose.getHeading());
+        park.setZeroPowerAccelerationMultiplier(4);
+
+
         scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose)));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
         scorePreload.setZeroPowerAccelerationMultiplier(3);
@@ -61,16 +70,13 @@ public class PedroSpecCPE extends LinearOpMode {
         grabLeft = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(10.409, 64.483, Point.CARTESIAN),
-                new Point(identifyPose.getX(), identifyPose.getY(), Point.CARTESIAN)
+                new Point(leftGrabPose.getX(), leftGrabPose.getY(), Point.CARTESIAN)
         ));
-        grabLeft.setLinearHeadingInterpolation(scorePose.getHeading(), identifyPose.getHeading());
+        grabLeft.setLinearHeadingInterpolation(scorePose.getHeading(), leftGrabPose.getHeading());
 
-
-        //BARNACLE LEFT;
-
-        grabRight = new Path(new BezierCurve(new Point(middleGrabPose),
-                new Point(identifyPose),
-                new Point(rightGrabPose)
+        grabRight = new Path(new BezierCurve(new Point(depositMiddlePose.getX(), depositMiddlePose.getY(), Point.CARTESIAN),
+                new Point(rightGrabPose.getX(), rightGrabPose.getY() + 5, Point.CARTESIAN),
+                new Point(rightGrabPose.getX(), rightGrabPose.getY(), Point.CARTESIAN)
         )
         );
         grabRight.setLinearHeadingInterpolation(middleGrabPose.getHeading(), rightGrabPose.getHeading());
@@ -81,8 +87,8 @@ public class PedroSpecCPE extends LinearOpMode {
         humanIntakeFirst = new Path(new BezierLine(new Point(depositRightPose), new Point(humanIntakeRightPose)));
         humanIntakeFirst.setLinearHeadingInterpolation(depositRightPose.getHeading(), humanIntakeRightPose.getHeading());
 
-        depositLeft = new Path(new BezierLine(new Point(identifyPose), new Point(depositLeftPose)));
-        depositLeft.setLinearHeadingInterpolation(identifyPose.getHeading(), depositLeftPose.getHeading());
+        depositLeft = new Path(new BezierLine(new Point(leftGrabPose), new Point(depositLeftPose)));
+        depositLeft.setLinearHeadingInterpolation(leftGrabPose.getHeading(), depositLeftPose.getHeading());
 
         grabMiddle = new Path(new BezierLine(new Point(depositLeftPose), new Point(middleGrabPose.getX(), middleGrabPose.getY())));
         grabMiddle.setLinearHeadingInterpolation(depositLeftPose.getHeading(), middleGrabPose.getHeading());
@@ -92,43 +98,59 @@ public class PedroSpecCPE extends LinearOpMode {
 
         scoreFirst = new Path(new BezierCurve(
                 new Point(humanIntakeRightPose.getX(), humanIntakeRightPose.getY(), Point.CARTESIAN),
-                new Point(30, 33, Point.CARTESIAN),
-                new Point(17, 64, Point.CARTESIAN),
+                new Point(18, 32, Point.CARTESIAN),
+                new Point(10, 66, Point.CARTESIAN),
                 new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN)
         ));
         scoreFirst.setLinearHeadingInterpolation(humanIntakeRightPose.getHeading(), scorePose.getHeading());
-        scoreFirst.setZeroPowerAccelerationMultiplier(1);
 
 
         humanIntakeSecond = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN),
-                new Point(26, 64, Point.CARTESIAN),
-                new Point(40, 33, Point.CARTESIAN),
-                new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN)
+                new Point(10, 71, Point.CARTESIAN),
+                new Point(50, 31, Point.CARTESIAN),
+                new Point(humanIntakePose.getX() - 3, humanIntakePose.getY(), Point.CARTESIAN)
         ));
         humanIntakeSecond.setLinearHeadingInterpolation(scorePose.getHeading(), humanIntakePose.getHeading());
 
         humanIntakeThird = new Path(new BezierCurve(
                 new Point(scorePose.getX(), scorePose.getY() + 4, Point.CARTESIAN),
-                new Point(26, 64, Point.CARTESIAN),
-                new Point(40, 33, Point.CARTESIAN),
-                new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN)
+                new Point(10, 71, Point.CARTESIAN),
+                new Point(50, 31, Point.CARTESIAN),
+                new Point(humanIntakePose.getX() - 3, humanIntakePose.getY(), Point.CARTESIAN)
         ));
         humanIntakeThird.setLinearHeadingInterpolation(scorePose.getHeading(), humanIntakePose.getHeading());
+        humanIntakeFourth = new Path(new BezierCurve(
+                new Point(scorePose.getX(), scorePose.getY() + 6, Point.CARTESIAN),
+                new Point(10, 71, Point.CARTESIAN),
+                new Point(50, 31, Point.CARTESIAN),
+                new Point(humanIntakePose.getX() - 3, humanIntakePose.getY(), Point.CARTESIAN)
+        ));
+        humanIntakeFourth.setLinearHeadingInterpolation(scorePose.getHeading(), humanIntakePose.getHeading());
 
         scoreSecond = new Path(new BezierCurve(
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
-                new Point(22, 62, Point.CARTESIAN),
+                new Point(18, 32, Point.CARTESIAN),
+                new Point(7, 75, Point.CARTESIAN),
                 new Point(scorePose.getX(), scorePose.getY() + 4, Point.CARTESIAN)
         ));
         scoreSecond.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
 
         scoreThird = new Path(new BezierCurve(
                 new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
-                new Point(22, 62, Point.CARTESIAN),
+                new Point(18, 32, Point.CARTESIAN),
+                new Point(7, 77, Point.CARTESIAN),
                 new Point(scorePose.getX(), scorePose.getY() + 6, Point.CARTESIAN)
         ));
         scoreThird.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
+        scoreFourth = new Path(new BezierCurve(
+                new Point(humanIntakePose.getX(), humanIntakePose.getY(), Point.CARTESIAN),
+                new Point(18, 32, Point.CARTESIAN),
+                new Point(7, 70, Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY() - 2, Point.CARTESIAN)
+        ));
+        scoreFourth.setLinearHeadingInterpolation(humanIntakePose.getHeading(), scorePose.getHeading());
+
 
     }
 
@@ -145,7 +167,6 @@ public class PedroSpecCPE extends LinearOpMode {
                 break;
             case 1:
                 if (System.currentTimeMillis() - timeSnapshot > 700) {
-
                     arm.intake(Arm.Intake.CLOSE);
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
@@ -159,9 +180,10 @@ public class PedroSpecCPE extends LinearOpMode {
                 //  restSubsystems(1000,pathState);
                 break;
             case 3:
-                scoreSubsystems(1400, pathState);
+                scoreSubsystems(1100, pathState);
                 break;
             case 4:
+                arm.intake(Arm.Intake.INTAKE);
                 follower.followPath(grabLeft);
                 timeSnapshot = System.currentTimeMillis();
                 setPathState(pathState + 1);
@@ -174,19 +196,25 @@ public class PedroSpecCPE extends LinearOpMode {
                 restSubsystems(1000, pathState);
                 break;
             case 7:
-                scoutSubsystems(800, pathState);
+                scoutSubsystems(1000, pathState);
                 arm.clawRotate(Arm.ClawRotation.LEFTDIAG);
                 break;
             case 8:
-                intakeSubsystems(900, pathState);
+                intakeSubsystems(800, pathState);
                 break;
             case 9:
                 follower.followPath(depositLeft);
                 timeSnapshot = System.currentTimeMillis();
                 setPathState(pathState + 1);
                 arm.shoulder(Arm.Shoulder.FORWARDS);
+                arm.extendo(Arm.Extendo.RETRACTED);
             case 10:
-                if (System.currentTimeMillis() - timeSnapshot > 1200) {
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
+                    arm.extendo(Arm.Extendo.EXTENDED);
+                } else {
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                }
+                if (System.currentTimeMillis() - timeSnapshot > 800) {
                     arm.intake(Arm.Intake.DEPOSIT);
                     follower.followPath(grabMiddle);
                     timeSnapshot = System.currentTimeMillis();
@@ -194,13 +222,18 @@ public class PedroSpecCPE extends LinearOpMode {
                 }
                 break;
             case 11:
-                if (System.currentTimeMillis() - timeSnapshot > 1300) {
+                if (System.currentTimeMillis() - timeSnapshot < 600 && System.currentTimeMillis() - timeSnapshot > 100) {
+                    arm.extendo(Arm.Extendo.RETRACTED);
+                } else {
+                    arm.extendo(Arm.Extendo.EXTENDED);
+                }
+                if (System.currentTimeMillis() - timeSnapshot > 1400) {
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
                 }
                 break;
             case 12:
-                intakeSubsystems(900, pathState);
+                intakeSubsystems(800, pathState);
                 break;
             case 13:
                 follower.followPath(depositMiddle);
@@ -209,22 +242,27 @@ public class PedroSpecCPE extends LinearOpMode {
                 setPathState(pathState + 1);
                 break;
             case 14:
-                if (System.currentTimeMillis() - timeSnapshot < 800) {
+                if (System.currentTimeMillis() - timeSnapshot < 600) {
                     arm.extendo(Arm.Extendo.RETRACTED);
-                } else if (System.currentTimeMillis() - timeSnapshot > 800 && System.currentTimeMillis() - timeSnapshot < 1300) {
-                    arm.extendo(Arm.Extendo.EXTENDED);
                 } else {
+                    arm.extendo(Arm.Extendo.EXTENDED);
+                }
+
+                if (System.currentTimeMillis() - timeSnapshot > 900) {
+                    arm.intake(Arm.Intake.DEPOSIT);
+                }
+                if (System.currentTimeMillis() - timeSnapshot > 1000) {
+                    arm.extendo(Arm.Extendo.RETRACTED);
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
-                    arm.extendo(Arm.Extendo.EXTENDED);
                     follower.followPath(grabRight);
-                    arm.intake(Arm.Intake.DEPOSIT);
                 }
                 break;
             case 15:
-                if (System.currentTimeMillis() - timeSnapshot < 800) {
+                arm.shoulder(Arm.Shoulder.FORWARDS);
+                if (System.currentTimeMillis() - timeSnapshot < 1100) {
                     arm.extendo(Arm.Extendo.RETRACTED);
-                } else if (System.currentTimeMillis() - timeSnapshot > 800 && System.currentTimeMillis() - timeSnapshot < 1300) {
+                } else if (System.currentTimeMillis() - timeSnapshot > 1100 && System.currentTimeMillis() - timeSnapshot < 1500) {
                     arm.extendo(Arm.Extendo.EXTENDED);
                 } else {
                     timeSnapshot = System.currentTimeMillis();
@@ -235,14 +273,98 @@ public class PedroSpecCPE extends LinearOpMode {
                 intakeSubsystems(900, pathState);
                 break;
             case 17:
-                humanIntakeSubsystems(0, pathState);
-                arm.intake(Arm.Intake.INTAKE);
+                humanIntakeSubsystems(300, pathState);
+                arm.intake(Arm.Intake.CLOSE);
                 break;
             case 18:
-                follower.followPath(humanIntakeFirst);
+                follower.followPath(depositRight);
+                arm.wrist(Arm.Wrist.CHAMBER_SLIDE_DEPOSIT);
                 timeSnapshot = System.currentTimeMillis();
                 setPathState(pathState + 1);
                 break;
+            case 19:
+                if (System.currentTimeMillis() - timeSnapshot > 600) {
+                    arm.intake(Arm.Intake.DEPOSIT);
+                }
+                if (System.currentTimeMillis() - timeSnapshot > 800){
+                    follower.followPath(humanIntakeFirst);
+                    timeSnapshot = System.currentTimeMillis();
+                    setPathState(pathState + 1);
+                }
+                break;
+            case 20:
+                humanIntakeSubsystems(700, pathState);
+                break;
+            case 21:
+                follower.followPath(scoreFirst);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 22:
+                restSubsystems(500, pathState);
+                break;
+            case 23:
+                scoreSubsystems(1500, pathState);
+                break;
+            case 24:
+                follower.followPath(humanIntakeSecond);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 25:
+                humanIntakeSubsystems(2200, pathState);
+                break;
+            case 26:
+                follower.followPath(scoreSecond);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 27:
+                scoreSubsystems(2000, pathState);
+                break;
+            case 28:
+                follower.followPath(humanIntakeThird);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 29:
+                humanIntakeSubsystems(2200, pathState);
+                break;
+            case 30:
+                follower.followPath(scoreThird);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 31:
+                scoreSubsystems(2000, pathState);
+                break;
+            case 32:
+                follower.followPath(humanIntakeFourth);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 33:
+                humanIntakeSubsystems(2200, pathState);
+                break;
+            case 34:
+                follower.followPath(scoreFourth);
+                timeSnapshot = System.currentTimeMillis();
+                setPathState(pathState + 1);
+                break;
+            case 35:
+                scoreSubsystems(2000, pathState);
+                break;
+            case 36:
+                follower.followPath(park);
+                timeSnapshot = System.currentTimeMillis();
+                arm.shoulder(Arm.Shoulder.UPWARDS);
+                verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
+                arm.wrist(Arm.Wrist.FORWARD);
+                setPathState(pathState + 1);
+                break;
+            case 37:
+               break;
+
         }
 
     }
@@ -310,6 +432,8 @@ public class PedroSpecCPE extends LinearOpMode {
             timeSnapshot = System.currentTimeMillis();
             arm.extendo(Arm.Extendo.EXTENDED);
             arm.shoulderLerpStartTime = System.currentTimeMillis();
+        } else if (System.currentTimeMillis() - timeSnapshot < 400) {
+            arm.extendo(Arm.Extendo.RETRACTED);
         } else {
             arm.extendo(Arm.Extendo.EXTENDED);
         }

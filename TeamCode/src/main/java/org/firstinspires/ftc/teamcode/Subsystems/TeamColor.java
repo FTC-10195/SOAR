@@ -16,6 +16,7 @@ public class TeamColor {
        RED,
        BLUE,
        YELLOW,
+       WHITE,
        BOTH,
        NONE
    }
@@ -26,6 +27,7 @@ public class TeamColor {
    public static double headlightOff = 0;
    public static double redColor = 0.279;
     public static double blueColor = 0.611;
+    public static double whiteColor = 1;
     public static double yellowColor = .34;
    public TeamColor(Color color){
        currentColor = color;
@@ -67,6 +69,9 @@ public class TeamColor {
                break;
            case YELLOW:
                rgbIndicator.setPosition(yellowColor);
+               break;
+           case WHITE:
+               rgbIndicator.setPosition(whiteColor);
                break;
        }
    }
