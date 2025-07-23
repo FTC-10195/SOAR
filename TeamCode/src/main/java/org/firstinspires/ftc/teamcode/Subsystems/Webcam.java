@@ -80,30 +80,38 @@ public class Webcam {
             .setDrawContours(false)                        // Show contours on the Stream Preview
             .setBlurSize(5)                               // Smooth the transitions between different colors in image
             .build();
+    ColorBlobLocatorProcessor colorLocatorNone = new ColorBlobLocatorProcessor.Builder()
+            .setTargetColorRange(new ColorRange(ColorSpace.RGB, new Scalar(0, 0, 0), new Scalar(0, 0, 0)))         // use a predefined color match
+            .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
+            .setRoi(ImageRegion.asUnityCenterCoordinates(-1, 1, 1, -1))  // search central 1/4 of camera view
+            .setDrawContours(false)                        // Show contours on the Stream Preview
+            .setBlurSize(5)                               // Smooth the transitions between different colors in image
+            .build();
     ColorBlobLocatorProcessor colorLocatorTeam;
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
     public static long driveTargetTimeInMilis = 1000;
     public static int tolerancePID = 9;
-    public static double kPX = 0.003525;
+    public static double kPX = 0.004525;
     public static double kIX = 0;
     public static double kDX = 0;
     public static double kFX = 0;
-    public static double kPY = -0.0042;
+    public static double kPY = -0.0022;
     public static double kIY = 0;
     public static double kDY = 0;
     public static double kFY = 0;
     public static int CAMERA_WIDTH_PX = 320;
     public static int CAMERA_LENGTH_PX = 240;
-    public static double LATERAL_OFFSET_PX = -20;
+    public static double LATERAL_OFFSET_PX = -30;
     public static double CAMERA_WIDTH_IN = 8.5;
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
-    public static int MIN_SAMPLE_AREA_PX = 500; //Filter out small blobs
-    public static int MAX_SAMPLE_AREA_PX = 100000; //If it gets this close you're cooked
+    public static int MIN_SAMPLE_AREA_PX = 1000; //Filter out small blobs
+    public static int MAX_SAMPLE_AREA_PX = 50000; //If it gets this close you're cooked
     public static double HORIZONTAL_OFFSET_PIX = 0;
-    public static double MAX_SPEED = 0.35;
+    public static double MAX_SPEED = 0.3;
+    double area = 0;
 
     PIDFController xPID = new PIDFController(kPX, kIX, kDX, kFX);
     PIDFController yPID = new PIDFController(kPY, kIY, kDY, kFY);
@@ -118,7 +126,7 @@ public class Webcam {
         return inches;
     }
 
-    Point clawCenter = new Point(CAMERA_WIDTH_PX / 2 + HORIZONTAL_OFFSET_PIX, (CAMERA_LENGTH_PX / 2) + LATERAL_OFFSET_PX);
+    Point targetGrab = new Point(CAMERA_WIDTH_PX / 2 + HORIZONTAL_OFFSET_PIX, (CAMERA_LENGTH_PX / 2) + LATERAL_OFFSET_PX);
 
     double targetDistancePX = CAMERA_WIDTH_PX / 2; //Becomes the distance of the closest sample
     double targetDistanceX = CAMERA_WIDTH_PX / 2;
@@ -167,8 +175,8 @@ public class Webcam {
             case DRIVE:
                 snapshot();
                 intakeState = Arm.Intake.INTAKE;
-                double xVec = xPID.calculate(clawCenter.x, targetPos.x);
-                double yVec = yPID.calculate(clawCenter.y, targetPos.y);
+                double xVec = xPID.calculate(targetGrab.x, targetPos.x);
+                double yVec = yPID.calculate(targetGrab.y, targetPos.y);
                 double speed = Math.sqrt(Math.pow(xVec, 2) + Math.pow(yVec, 2));
                 packet.put("Old xVec", xVec);
                 packet.put("Old yVec", yVec);
@@ -186,7 +194,7 @@ public class Webcam {
                 if (
                         System.currentTimeMillis() - snapshotTime > driveTargetTimeInMilis ||
                                 targetDistancePX < tolerancePID ||
-                                (targetPos.x == clawCenter.x && targetPos.y == clawCenter.y)) {
+                                (targetPos.x == targetGrab.x && targetPos.y == targetGrab.y)) {
                     snapshotTime = System.currentTimeMillis();
                     arm.shoulderLerpStartTime = snapshotTime;
                     arm.shoulder(Arm.Shoulder.DOWNWARDS);
@@ -240,15 +248,27 @@ public class Webcam {
         return Math.toDegrees(Math.atan2(ly2 - ly1, lx2 - lx1));
     }
 
-    Point targetPos = clawCenter;
+    Point targetPos = targetGrab;
 
     public void setColorLocatorTeam(TeamColor.Color teamColor, boolean override) {
         if (teamColor == TeamColor.Color.RED) {
             colorLocatorTeam = colorLocatorRed;
+            if (override){
+                canSeeYellow = false;
+            }
         } else if (teamColor == TeamColor.Color.BLUE) {
             colorLocatorTeam = colorLocatorBlue;
-        } else {
+            if (override){
+                canSeeYellow = false;
+            }
+        } else if (teamColor == TeamColor.Color.WHITE) {
+            canSeeYellow = false;
+            colorLocatorTeam = colorLocatorWhite;
+        }else if (teamColor == TeamColor.Color.YELLOW){
             colorLocatorTeam = colorLocatorYellow;
+        }else if (teamColor == TeamColor.Color.NONE){
+            canSeeYellow = false;
+            colorLocatorTeam = colorLocatorNone;
         }
 
     }
@@ -256,7 +276,7 @@ public class Webcam {
     boolean canSeeYellow = false;
 
     public void setColorLocatorMode(StateMachine.Mode mode, boolean override) {
-        if (mode == StateMachine.Mode.BUCKET) {
+        if (mode == StateMachine.Mode.BUCKET && !colorLocatorTeam.equals(colorLocatorWhite) && !colorLocatorTeam.equals(colorLocatorNone)) {
             canSeeYellow = true;
         } else {
             canSeeYellow = false;
@@ -265,14 +285,14 @@ public class Webcam {
 
     public void initiate(HardwareMap hardwareMap, TeamColor.Color teamColor, StateMachine.Mode mode, Telemetry telemetry) {
         portal = new VisionPortal.Builder()
-                .addProcessors(colorLocatorRed, colorLocatorBlue, colorLocatorYellow)
+                .addProcessors(colorLocatorRed, colorLocatorBlue, colorLocatorYellow, colorLocatorWhite, colorLocatorNone)
                 .setCameraResolution(new Size(CAMERA_WIDTH_PX, CAMERA_LENGTH_PX))
                 .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
                 .enableLiveView(false)
                 .build();
-        //FtcDashboard.getInstance().startCameraStream(portal, 0);
-        setColorLocatorTeam(teamColor, true);
-        setColorLocatorMode(mode, true);
+        FtcDashboard.getInstance().startCameraStream(portal, 0);
+        setColorLocatorTeam(teamColor, false);
+        setColorLocatorMode(mode, false);
         telemetry.setMsTransmissionInterval(100);   // Speed up telemetry updates, Just use for debugging.
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.MONOSPACE);
     }
@@ -293,10 +313,10 @@ public class Webcam {
             double count = myContourPoints.length;
             Point centroid = new Point((double) (sumX / count), (double) (sumY / count));
 
-            distanceYPx = (clawCenter.y - centroid.y);
-            distanceXPx = (clawCenter.x - centroid.x);
+            distanceYPx = (targetGrab.y - centroid.y);
+            distanceXPx = (targetGrab.x - centroid.x);
             distancePx = Math.sqrt(Math.pow(distanceXPx, 2) + Math.pow(distanceYPx, 2));
-            if (distancePx < targetDistancePX && distanceXPx != 10000 && distanceYPx != 1000) {
+            if (distancePx < targetDistancePX && distanceXPx != 1000 && distanceYPx != 1000) {
                 //Sets variables depending on what the target is
                 targetDistancePX = distancePx;
                 targetVectorPx = new Vector2d(distanceXPx, distanceYPx);
@@ -304,7 +324,7 @@ public class Webcam {
                 targetDistanceY = distanceYPx;
                 targetVectorInches = new Vector2d(-convertHorizontalPxToInches(distanceXPx), convertVerticalPxToInches(distanceYPx));
                 targetPos = centroid;
-
+                area = blob.getContourArea();
 
                 for (Point p : myContourPoints) {
 
@@ -357,11 +377,10 @@ public class Webcam {
 
     public void snapshot() {
         //Reset the variables everytime a snapshot is taken
-        targetDistancePX = 10000;
-        targetDistancePX = 10000;
-        targetDistanceY = 10000;
+        targetDistancePX = 1000;
+        targetDistanceY = 1000;
         targetVectorInches = new Vector2d(0, 0);
-        targetPos = clawCenter; //The vector 2 position on the camera where the sample is located
+        targetPos = targetGrab; //The vector 2 position on the camera where the sample is located
         bottomLeft = null;
         bottomRight = null;
         topLeft = null;
@@ -394,11 +413,13 @@ public class Webcam {
         telemetry.addData("clawCenter",clawCenter);
       */
         telemetry.addData("colorLocatorTeam", colorLocatorTeam);
+        telemetry.addData("canSeeYellow",canSeeYellow);
     }
     public void statusFTCDashboard(TelemetryPacket packet){
         packet.put("Webcam error", targetDistancePX);
         packet.put("Webcam error X", targetDistanceX);
         packet.put("Webcam error Y", targetDistanceY);
+        packet.put("Sample Area",area);
     }
 
     public void setClawRotation(Arm.ClawRotation rot) {

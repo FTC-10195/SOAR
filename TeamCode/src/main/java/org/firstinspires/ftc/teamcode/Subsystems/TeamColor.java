@@ -44,6 +44,9 @@ public class TeamColor {
                setColor(Color.BLUE);
                break;
            case BLUE:
+               setColor(Color.WHITE);
+               break;
+           case WHITE:
                setColor(Color.RED);
                break;
            case YELLOW:
@@ -73,6 +76,8 @@ public class TeamColor {
            case WHITE:
                rgbIndicator.setPosition(whiteColor);
                break;
+           case NONE:
+               rgbIndicator.setPosition(0);
        }
    }
    public void status(Telemetry telemetry){

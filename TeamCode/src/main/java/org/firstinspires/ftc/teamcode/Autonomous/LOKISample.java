@@ -26,7 +26,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @Autonomous
-public class PedroSample extends LinearOpMode {
+public class LOKISample extends LinearOpMode {
     double driveErrorX = 1000;
     double driveErrorY = 1000;
     public double firstSubX = 0;
