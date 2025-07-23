@@ -16,7 +16,8 @@ public class Arm {
     public enum Extendo {
         RETRACTED,
         EXTENDED,
-        CHAMBER
+        CHAMBER,
+        BUCKET
     }
 
     public enum Shoulder {
@@ -66,6 +67,7 @@ public class Arm {
     Servo leftShoulder; //Copys rightShoulder
     public static double extendoRetractedPos = .22;
     public static double extendoExtendedPos = 0;
+    public static double extendoBucketPos = 0.02;
     public static double extendoChamberPos = .22;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
     public static double wristChamberSlideDepositPos = 0.55; //Used for spec auto
@@ -185,6 +187,9 @@ public class Arm {
                 break;
             case CHAMBER:
                 extendoServo.setPosition(extendoChamberPos);
+                break;
+            case BUCKET:
+                extendoServo.setPosition(extendoBucketPos);
                 break;
 
         }

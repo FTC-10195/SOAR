@@ -91,7 +91,7 @@ public class Webcam {
     VisionPortal portal;
     public DRIVE_STAGE currentDriveStage = DRIVE_STAGE.DONE;
     public Arm.Intake intakeState = Arm.Intake.INTAKE;
-    public static long driveTargetTimeInMilis = 1000;
+    public static long driveTargetTimeInMilis = 800;
     public static int tolerancePID = 9;
     public static double kPX = 0.004525;
     public static double kIX = 0;
@@ -108,7 +108,7 @@ public class Webcam {
     public static double CAMERA_LENGTH_IN = 6.5;
     public static double LATERAL_OFFSET_IN = -1.25; // Claw grabs about 1.25 inches on the y-axis below the center of camera
     public static int MIN_SAMPLE_AREA_PX = 1000; //Filter out small blobs
-    public static int MAX_SAMPLE_AREA_PX = 50000; //If it gets this close you're cooked
+    public static int MAX_SAMPLE_AREA_PX = 25000; //If it gets this close you're cooked
     public static double HORIZONTAL_OFFSET_PIX = 0;
     public static double MAX_SPEED = 0.3;
     double area = 0;
