@@ -95,11 +95,28 @@ public class ChamberRed extends LinearOpMode {
             boolean switchCameraActive = gamepad1.share && !previousGamepad1.share;
             boolean switchMode = gamepad1.circle && !previousGamepad1.circle;
             boolean switchColor = gamepad1.cross && !previousGamepad1.cross;
+
+            Arm.ClawRotation clawRotOveride = Arm.ClawRotation.Horz1;
+
             mode = stateMachine.switchMode(mode, switchMode);
             state = stateMachine.setState(state, mode, RT, LT, RB, LB, telemetry);
             teamColor.status(telemetry);
             if (switchCameraActive){
                 webcamActive = !webcamActive;
+            }
+            if (!webcamActive){
+                if (gamepad1.dpad_up){
+                    clawRotOveride = Arm.ClawRotation.Horz1;
+                }
+                if (gamepad1.dpad_left){
+                    clawRotOveride = Arm.ClawRotation.LEFTDIAG;
+                }
+                if (gamepad1.dpad_right){
+                    clawRotOveride = Arm.ClawRotation.RIGHTDIAG;
+                }
+                if (gamepad1.dpad_down){
+                    clawRotOveride = Arm.ClawRotation.Vert;
+                }
             }
             if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()) {
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DONE);
@@ -107,6 +124,8 @@ public class ChamberRed extends LinearOpMode {
                 arm.intake(Arm.Intake.INTAKE);
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
                 if (!webcamActive) {
+                    webcam.setClawRotation(clawRotOveride);
+                    arm.clawRotate(clawRotOveride);
                     webcam.setDriveStage(Webcam.DRIVE_STAGE.DROP);
                     arm.shoulderLerpStartTime = System.currentTimeMillis();
                     arm.shoulder(Arm.Shoulder.DOWNWARDS);
