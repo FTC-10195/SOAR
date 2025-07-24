@@ -90,6 +90,10 @@ public class Arm {
     public static double clawDiag2 = .2;
     public static double clawHorz1 = .4;
     public static double clawHorz2 = 1;
+    public double wristOffset = 0;
+    public double shoulderOffset = 0;
+    public double wristOffsetGain = .01;
+    public double shoulderOffsetGain = .01;
 
     public long shoulderLerpStartTime = System.currentTimeMillis();
     public static long SHOULDER_LERP_TIME_IN_MILLIS = 400;
@@ -153,28 +157,28 @@ public class Arm {
         telemetry.addData("shoulderLerpStartTime", shoulderLerpStartTime);
         switch (shoulderState) {
             case DOWNWARDS:
-                rightShoulder.setPosition(lerp(shoulderForwards,shoulderDownwards));
+                rightShoulder.setPosition(lerp(shoulderForwards + shoulderOffset,shoulderDownwards+ shoulderOffset));
                 break;
             case UPWARDS:
-                rightShoulder.setPosition(shoulderUpwards);
+                rightShoulder.setPosition(shoulderUpwards+ shoulderOffset);
                 break;
             case FORWARDS:
-                rightShoulder.setPosition(shoulderForwards);
+                rightShoulder.setPosition(shoulderForwards+ shoulderOffset);
                 break;
             case BACKWARDS:
-                rightShoulder.setPosition(shoulderBackwards);
+                rightShoulder.setPosition(shoulderBackwards+ shoulderOffset);
                 break;
             case INIT:
-                rightShoulder.setPosition(shoulderInit);
+                rightShoulder.setPosition(shoulderInit+ shoulderOffset);
                 break;
             case BUCKET:
-                rightShoulder.setPosition(shoulderBucket);
+                rightShoulder.setPosition(shoulderBucket+ shoulderOffset);
                 break;
             case CHAMBER_INTAKE:
-                rightShoulder.setPosition(shoulderChamberIntake);
+                rightShoulder.setPosition(shoulderChamberIntake+ shoulderOffset);
                 break;
             case CHAMBER_SCORE:
-                rightShoulder.setPosition(shoulderChamberScore);
+                rightShoulder.setPosition(shoulderChamberScore+ shoulderOffset);
                 break;
         }
         leftShoulder.setPosition(1 - rightShoulder.getPosition());
@@ -195,19 +199,19 @@ public class Arm {
         }
         switch (wristState) {
             case FORWARD:
-                wristServo.setPosition(wristForwardPos);
+                wristServo.setPosition(wristForwardPos + wristOffset);
                 break;
             case CHAMBER_SLIDE_DEPOSIT:
-                wristServo.setPosition(wristChamberSlideDepositPos);
+                wristServo.setPosition(wristChamberSlideDepositPos+ wristOffset);
                 break;
             case DOWNWARDS:
-                wristServo.setPosition(wristDownwardsPos);
+                wristServo.setPosition(wristDownwardsPos+ wristOffset);
                 break;
             case FULL_DOWNWARDS:
-                wristServo.setPosition(wristFullDownwardsPos);
+                wristServo.setPosition(wristFullDownwardsPos+ wristOffset);
                 break;
             case UPWARDS:
-                wristServo.setPosition(wristUpwardsPos);
+                wristServo.setPosition(wristUpwardsPos+ wristOffset);
                 break;
         }
         switch (intakeState) {
@@ -238,9 +242,8 @@ public class Arm {
                 clawRotationServo.setPosition(clawDiag2);
                 break;
         }
-        telemetry.addData("Wrist", wristState);
-        telemetry.addData("ClawState", intakeState);
-        telemetry.addData("ClawRotation", clawRotation);
+        telemetry.addData("WristOffset", wristOffset);
+        telemetry.addData("ShoulderOffset", shoulderOffset);
     }
 
 

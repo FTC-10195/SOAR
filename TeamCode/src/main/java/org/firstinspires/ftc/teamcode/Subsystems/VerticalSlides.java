@@ -37,6 +37,8 @@ public class VerticalSlides {
     public static int BARNACLE = 800;
     double maxPower = 1;
     double lockPower = .1;
+    public int offset = 0;
+    public int offsetGain = 5;
     public static double downPower = .4;
     boolean lock = false;
     int lockPosition;
@@ -59,19 +61,19 @@ public class VerticalSlides {
         pidfController.setF(kF);
         switch (slidePosition) {
             case DOWN:
-                targetPos = down;
+                targetPos = down + offset;
                 maxPower =downPower;
                 break;
             case BUCKET:
-                targetPos = BUCKET;
+                targetPos = BUCKET + offset;
                 maxPower = 1;
                 break;
             case CHAMBER:
-                targetPos = CHAMBER;
+                targetPos = CHAMBER + offset;
                 maxPower =1;
                 break;
             case BARNACLE:
-                targetPos = BARNACLE;
+                targetPos = BARNACLE + offset;
                 maxPower = 1;
                 break;
         }

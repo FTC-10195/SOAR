@@ -61,7 +61,30 @@ public class ChamberRed extends LinearOpMode {
             currentGamepad1.copy(gamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad2.copy(gamepad2);
-            verticalSlides.reset(gamepad1.options);
+            verticalSlides.reset(gamepad1.options || gamepad2.right_bumper);
+            if (gamepad2.right_trigger > .1){
+                verticalSlides.offset += verticalSlides.offsetGain;
+            }
+            if (gamepad2.left_trigger > .1){
+                verticalSlides.offset -= verticalSlides.offsetGain;
+            }
+            boolean up2 = gamepad2.dpad_up && !previousGamepad2.dpad_up;
+            boolean down2 = gamepad2.dpad_down && !previousGamepad2.dpad_down;
+            boolean triangle2 = gamepad2.triangle && !previousGamepad2.triangle;
+            boolean cross2 = gamepad2.cross && !previousGamepad2.cross;
+            if (up2){
+                arm.wristOffset += arm.wristOffsetGain;
+            }
+            if (down2){
+                arm.wristOffset -= arm.wristOffsetGain;
+            }
+            if (triangle2){
+                arm.shoulderOffset += arm.shoulderOffsetGain;
+            }
+            if (cross2){
+                arm.shoulderOffset -= arm.shoulderOffsetGain;
+            }
+
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger < 0.1;
             boolean LT = gamepad1.left_trigger > 0.1 && previousGamepad1.left_trigger < 0.1;
             boolean RB = gamepad1.right_bumper && !previousGamepad1.right_bumper;
