@@ -311,6 +311,10 @@ public class PedroSpecCPE extends LinearOpMode {
                 break;
             case 25:
                 humanIntakeSubsystems(2200, pathState);
+                if (System.currentTimeMillis() - timeSnapshot < 400){
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
+                }
                 break;
             case 26:
                 follower.followPath(scoreSecond);
@@ -327,6 +331,10 @@ public class PedroSpecCPE extends LinearOpMode {
                 break;
             case 29:
                 humanIntakeSubsystems(2200, pathState);
+                if (System.currentTimeMillis() - timeSnapshot < 400){
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
+                }
                 break;
             case 30:
                 follower.followPath(scoreThird);
@@ -343,6 +351,10 @@ public class PedroSpecCPE extends LinearOpMode {
                 break;
             case 33:
                 humanIntakeSubsystems(2200, pathState);
+                if (System.currentTimeMillis() - timeSnapshot < 400){
+                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
+                }
                 break;
             case 34:
                 follower.followPath(scoreFourth);
