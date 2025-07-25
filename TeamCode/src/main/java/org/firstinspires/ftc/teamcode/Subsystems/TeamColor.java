@@ -62,7 +62,6 @@ public class TeamColor {
        rgbIndicator = hardwareMap.servo.get("rgb");
    }
    public void update(){
-       headlight.setPosition(headlightOn);
        switch (currentColor){
            case RED:
                rgbIndicator.setPosition(redColor);
@@ -78,6 +77,11 @@ public class TeamColor {
                break;
            case NONE:
                rgbIndicator.setPosition(0);
+       }
+   }
+   public void runHeadlights(boolean run){
+       if (run){
+           headlight.setPosition(headlightOn);
        }
    }
    public void status(Telemetry telemetry){

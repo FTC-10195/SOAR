@@ -17,7 +17,8 @@ public class Arm {
         RETRACTED,
         EXTENDED,
         CHAMBER,
-        BUCKET
+        BUCKET,
+        BUCKET_SECONDARY
     }
 
     public enum Shoulder {
@@ -29,6 +30,7 @@ public class Arm {
         BACKWARDS,
         CHAMBER_INTAKE,
         BUCKET,
+        BUCKET_SECONDARY
     }
 
     public enum Wrist {
@@ -68,6 +70,7 @@ public class Arm {
     public static double extendoRetractedPos = .22;
     public static double extendoExtendedPos = 0;
     public static double extendoBucketPos = 0.02;
+    public static double extendoBucketSecondaryPos = 0.1;
     public static double extendoChamberPos = .22;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
     public static double wristChamberSlideDepositPos = 0.55; //Used for spec auto
@@ -76,9 +79,10 @@ public class Arm {
     public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
     //Shoulder Positions:
     public static double shoulderInit = .22;
-    public static double shoulderChamberIntake = 0.12;
-    public static double shoulderBucket = .29;
-    public static double shoulderBackwards = .12;
+    public static double shoulderChamberIntake = 0.13;
+    public static double shoulderBucket = .3;
+    public static double shoulderBucketSecondary = .2;
+    public static double shoulderBackwards = .13;
     public static double shoulderUpwards = 0.45;
     public static double shoulderForwards = 0.58;   //Should be parallel to the ground
     public static double shoulderChamberScore = 0.55;
@@ -174,6 +178,9 @@ public class Arm {
             case BUCKET:
                 rightShoulder.setPosition(shoulderBucket+ shoulderOffset);
                 break;
+            case BUCKET_SECONDARY:
+                rightShoulder.setPosition(shoulderBucketSecondary+ shoulderOffset);
+                break;
             case CHAMBER_INTAKE:
                 rightShoulder.setPosition(shoulderChamberIntake+ shoulderOffset);
                 break;
@@ -194,6 +201,9 @@ public class Arm {
                 break;
             case BUCKET:
                 extendoServo.setPosition(extendoBucketPos);
+                break;
+            case BUCKET_SECONDARY:
+                extendoServo.setPosition(extendoBucketSecondaryPos);
                 break;
 
         }

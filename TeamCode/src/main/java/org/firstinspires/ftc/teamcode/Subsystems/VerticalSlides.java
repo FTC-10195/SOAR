@@ -15,30 +15,34 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class VerticalSlides {
     public static double kP = 0.006;
-    public static  double kI = 0;
+    public static double kI = 0;
     public static double kD = 0;
-    public static  double kF = 0;
+    public static double kF = 0;
     public static double POSITION_TOLERANCE = 20;
+
     public enum SlidePositions {
         DOWN,
         BUCKET,
         CHAMBER,
         BARNACLE
     }
+
     double targetPos;
+    public boolean secondaryBucket = false;
     PIDFController pidfController = new PIDFController(kP, kI, kD, kF);
 
     SlidePositions slidePosition = SlidePositions.DOWN;
     DcMotor rightSlide;
     DcMotor leftSlide;
-    public static int BUCKET = 1900;
+    public static int BUCKET = 1950;
+    public static int BUCKET_SECONDARY = 1700;
     int down = 0;
     public static int CHAMBER = 1600;
     public static int BARNACLE = 800;
     double maxPower = 1;
     double lockPower = .1;
     public int offset = 0;
-    public int offsetGain = 5;
+    public int offsetGain = 20;
     public static double downPower = .4;
     boolean lock = false;
     int lockPosition;
@@ -62,23 +66,26 @@ public class VerticalSlides {
         switch (slidePosition) {
             case DOWN:
                 targetPos = down + offset;
-                maxPower =downPower;
+                maxPower = downPower;
                 break;
             case BUCKET:
                 targetPos = BUCKET + offset;
+                if (secondaryBucket){
+                    targetPos = BUCKET_SECONDARY + offset;
+                }
                 maxPower = 1;
                 break;
             case CHAMBER:
                 targetPos = CHAMBER + offset;
-                maxPower =1;
+                maxPower = 1;
                 break;
             case BARNACLE:
                 targetPos = BARNACLE + offset;
                 maxPower = 1;
                 break;
         }
-        double power = pidfController.calculate(leftSlide.getCurrentPosition(),targetPos);
-        if (Math.abs(power) > maxPower){
+        double power = pidfController.calculate(leftSlide.getCurrentPosition(), targetPos);
+        if (Math.abs(power) > maxPower) {
             power = maxPower * Math.signum(power);
         }
         leftSlide.setPower(power);
@@ -131,9 +138,10 @@ public class VerticalSlides {
             rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
     }
-    public void status(Telemetry telemetry){
-        telemetry.addData("LeftSlidePos",leftSlide.getCurrentPosition());
-        telemetry.addData("RightSlidePos",rightSlide.getCurrentPosition());
+
+    public void status(Telemetry telemetry) {
+        telemetry.addData("LeftSlidePos", leftSlide.getCurrentPosition());
+        telemetry.addData("RightSlidePos", rightSlide.getCurrentPosition());
     }
 
     public Action updateAction() {

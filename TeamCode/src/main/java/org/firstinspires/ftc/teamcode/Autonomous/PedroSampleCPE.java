@@ -47,9 +47,9 @@ public class PedroSampleCPE extends LinearOpMode {
     DriveTrain driveTrain = new DriveTrain();
     Webcam webcam = new Webcam();
     private final Pose startPose = new Pose(7, 111, Math.toRadians(270));  // Starting position
-    private final Pose scorePose = new Pose(10, 120, Math.toRadians(315));
+    private final Pose scorePose = new Pose(9, 122, Math.toRadians(315));
     private final Pose rightGrabPose = new Pose(14, 112, Math.toRadians(360));
-    private final Pose middleGrabPose = new Pose(14, 120.5, Math.toRadians(360));
+    private final Pose middleGrabPose = new Pose(14, 121, Math.toRadians(360));
     private final Pose leftGrabPose = new Pose(16, 120.5, Math.toRadians(380));
     private Path scorePreload, park, grabRight, grabMiddle, grabLeft, scoreRight, scoreMiddle, scoreLeft, scoreSub1, scoreSub2;
     //sub3 and sub4 are for when the barnacle is on the right
@@ -57,10 +57,11 @@ public class PedroSampleCPE extends LinearOpMode {
     private Point grabSub1Pose, grabSub2Pose;
     private Path grabSub1, grabSub2;
     long timeSnapshot = System.currentTimeMillis();
+    boolean runHeadlights = false;
 
 
     public void buildPaths(double fx, double fy, double sx, double sy) {
-        scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose.getX() - 1,scorePose.getY())));
+        scorePreload = new Path(new BezierLine(new Point(startPose), new Point(scorePose.getX() - 1, scorePose.getY())));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
         grabRight = new Path(new BezierLine(new Point(scorePose), new Point(rightGrabPose)));
@@ -74,7 +75,7 @@ public class PedroSampleCPE extends LinearOpMode {
 
         grabSub1Pose = new Point(67.501 + fx, 103.001 + fy, Point.CARTESIAN);
         grabSub1 = new Path(new BezierCurve(
-                new Point(scorePose.getX() , scorePose.getY(), Point.CARTESIAN),
+                new Point(scorePose.getX(), scorePose.getY(), Point.CARTESIAN),
                 new Point(62.13084112149532 + fx, 110.35514018691589 + fy, Point.CARTESIAN),
                 grabSub1Pose
         )
@@ -85,7 +86,7 @@ public class PedroSampleCPE extends LinearOpMode {
         grabSub2Pose = new Point(67.502 + sx, 103.002 + sy, Point.CARTESIAN);
         grabSub2 = new Path(new BezierCurve(
                 new Point(scorePose.getX() - 2, scorePose.getY(), Point.CARTESIAN),
-                new Point(62.13084112149532 + sx, 110.35514018691589 +sy, Point.CARTESIAN),
+                new Point(62.13084112149532 + sx, 110.35514018691589 + sy, Point.CARTESIAN),
                 grabSub2Pose
         )
         );
@@ -98,14 +99,14 @@ public class PedroSampleCPE extends LinearOpMode {
         scoreMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(scorePose)));
         scoreMiddle.setLinearHeadingInterpolation(middleGrabPose.getHeading(), scorePose.getHeading());
 
-        scoreLeft = new Path(new BezierLine(new Point(leftGrabPose.getX() -1, leftGrabPose.getY()), new Point(scorePose)));
+        scoreLeft = new Path(new BezierLine(new Point(leftGrabPose.getX(), leftGrabPose.getY()), new Point(scorePose)));
         scoreLeft.setLinearHeadingInterpolation(leftGrabPose.getHeading(), scorePose.getHeading());
 
         scoreSub1 = new Path(
                 new BezierCurve(
                         grabSub1Pose,
                         new Point(62.13084112149532 + fx, 110.35514018691589 + fy, Point.CARTESIAN),
-                        new Point(scorePose.getX() - 2, scorePose.getY(), Point.CARTESIAN)
+                        new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN)
                 )
         );
         scoreSub1.setLinearHeadingInterpolation(Math.toRadians(270), scorePose.getHeading());
@@ -113,8 +114,8 @@ public class PedroSampleCPE extends LinearOpMode {
         scoreSub2 = new Path(
                 new BezierCurve(
                         grabSub2Pose,
-                        new Point(62.13084112149532 +sx, 110.35514018691589 + sy, Point.CARTESIAN),
-                        new Point(scorePose.getX() - 2, scorePose.getY(), Point.CARTESIAN)
+                        new Point(62.13084112149532 + sx, 110.35514018691589 + sy, Point.CARTESIAN),
+                        new Point(scorePose.getX(), scorePose.getY() + 2, Point.CARTESIAN)
                 )
         );
         scoreSub2.setLinearHeadingInterpolation(Math.toRadians(270), scorePose.getHeading());
@@ -156,11 +157,11 @@ public class PedroSampleCPE extends LinearOpMode {
                 scoreSubsystems(1400, pathState);
                 break;
             case 8:
-             //   if (System.currentTimeMillis() - timeSnapshot > 200) {
-                    follower.followPath(grabMiddle);
-                    setPathState(pathState + 1);
-                    timeSnapshot = System.currentTimeMillis();
-            //    }
+                //   if (System.currentTimeMillis() - timeSnapshot > 200) {
+                follower.followPath(grabMiddle);
+                setPathState(pathState + 1);
+                timeSnapshot = System.currentTimeMillis();
+                //    }
                 break;
             case 9:
                 restSubsystems(800, pathState);
@@ -196,7 +197,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 intakeSubsystems(800, pathState);
                 break;
             case 18:
-                follower.followPath(scoreMiddle);
+                follower.followPath(scoreLeft);
                 setPathState(pathState + 1);
                 timeSnapshot = System.currentTimeMillis();
                 break;
@@ -214,30 +215,31 @@ public class PedroSampleCPE extends LinearOpMode {
                 restSubsystems(800, pathState);
                 break;
             case 22:
-                scoutSubsystems(1000,pathState);
+                scoutSubsystems(1000, pathState);
                 break;
             case 23:
                 driveErrorX = Math.abs(follower.getPose().getX() - grabSub1Pose.getX());
                 driveErrorY = Math.abs(follower.getPose().getY() - grabSub1Pose.getY());
-                if (driveErrorX < 2 && driveErrorY < 2){
+                if (driveErrorX < 2 && driveErrorY < 2) {
                     follower.breakFollowing();
                     setPathState(pathState + 1);
+                    runHeadlights = true;
                     timeSnapshot = System.currentTimeMillis();
                 }
                 break;
             case 24:
-                if (System.currentTimeMillis() - timeSnapshot > 500){
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
                     webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
                     setPathState(pathState + 1);
                     timeSnapshot = System.currentTimeMillis();
                 }
                 break;
             case 25:
-                if (clawRotationOverideFirst){
+                if (clawRotationOverideFirst) {
                     webcam.sampleRotation = clawRotationFirst;
                 }
-                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
-                    if (clawRotationOverideFirst){
+                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE) {
+                    if (clawRotationOverideFirst) {
                         arm.clawRotate(clawRotationFirst);
                         webcam.sampleRotation = clawRotationFirst;
                     }
@@ -246,13 +248,13 @@ public class PedroSampleCPE extends LinearOpMode {
                 }
                 break;
             case 26:
-                if (clawRotationOverideFirst){
+                if (clawRotationOverideFirst) {
                     webcam.sampleRotation = clawRotationFirst;
                     arm.clawRotate(clawRotationFirst);
                 }
-                if (System.currentTimeMillis() - timeSnapshot > 300 && System.currentTimeMillis() - timeSnapshot < 500) {
+                if (System.currentTimeMillis() - timeSnapshot < 300) {
                     arm.intake(Arm.Intake.CLOSE);
-                } else if (System.currentTimeMillis() - timeSnapshot > 500){
+                } else {
                     follower.followPath(scoreSub1);
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
@@ -266,10 +268,10 @@ public class PedroSampleCPE extends LinearOpMode {
                 }
                 break;
             case 28:
-                restSubsystems(1000,pathState);
+                restSubsystems(1000, pathState);
                 break;
             case 29:
-                scoreSubsystems(1400,pathState);
+                scoreSubsystems(1400, pathState);
                 break;
             case 30:
                 if (System.currentTimeMillis() - timeSnapshot > 200) {
@@ -279,36 +281,36 @@ public class PedroSampleCPE extends LinearOpMode {
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
                 }
-               break;
+                break;
             case 31:
                 restSubsystems(800, pathState);
                 break;
             case 32:
-                scoutSubsystems(1000,pathState);
+                scoutSubsystems(1000, pathState);
                 break;
             case 33:
                 driveErrorX = Math.abs(follower.getPose().getX() - grabSub2Pose.getX());
                 driveErrorY = Math.abs(follower.getPose().getY() - grabSub2Pose.getY());
-                if (driveErrorX < 2 && driveErrorY < 2){
+                if (driveErrorX < 2 && driveErrorY < 2) {
                     follower.breakFollowing();
                     setPathState(pathState + 1);
                     timeSnapshot = System.currentTimeMillis();
                 }
                 break;
             case 34:
-                if (System.currentTimeMillis() - timeSnapshot > 500){
+                if (System.currentTimeMillis() - timeSnapshot > 500) {
                     webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
                     setPathState(pathState + 1);
                     timeSnapshot = System.currentTimeMillis();
                 }
                 break;
             case 35:
-                if (clawRotationOverideSecond){
+                if (clawRotationOverideSecond) {
                     arm.clawRotate(clawRotationSecond);
                     webcam.sampleRotation = clawRotationSecond;
                 }
-                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE){
-                    if (clawRotationOverideSecond){
+                if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DONE) {
+                    if (clawRotationOverideSecond) {
                         arm.clawRotate(clawRotationSecond);
                         webcam.sampleRotation = clawRotationSecond;
                     }
@@ -317,13 +319,13 @@ public class PedroSampleCPE extends LinearOpMode {
                 }
                 break;
             case 36:
-                if (clawRotationOverideSecond){
+                if (clawRotationOverideSecond) {
                     arm.clawRotate(clawRotationSecond);
                     webcam.sampleRotation = clawRotationSecond;
                 }
-                if (System.currentTimeMillis() - timeSnapshot > 300 && System.currentTimeMillis() - timeSnapshot < 500) {
+                if (System.currentTimeMillis() - timeSnapshot < 300) {
                     arm.intake(Arm.Intake.CLOSE);
-                }else if (System.currentTimeMillis() - timeSnapshot > 500){
+                } else {
                     follower.followPath(scoreSub2);
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
@@ -337,10 +339,10 @@ public class PedroSampleCPE extends LinearOpMode {
                 }
                 break;
             case 38:
-                restSubsystems(1000,pathState);
+                restSubsystems(1000, pathState);
                 break;
             case 39:
-                scoreSubsystems(1400,pathState);
+                scoreSubsystems(1500, pathState);
                 break;
 
         }
@@ -550,7 +552,7 @@ public class PedroSampleCPE extends LinearOpMode {
                             break;
                     }
 
-                    }else{
+                } else {
                     switch (teamColorSecond) {
                         case RED:
                             teamColorSecond = (TeamColor.Color.BLUE);
@@ -571,7 +573,7 @@ public class PedroSampleCPE extends LinearOpMode {
                     }
                 }
                 triggerPressed = true;
-            }else if (gamepad1.right_trigger < .1){
+            } else if (gamepad1.right_trigger < .1) {
                 triggerPressed = false;
             }
 
@@ -597,16 +599,17 @@ public class PedroSampleCPE extends LinearOpMode {
         buildPaths(firstSubX, firstSubY, secondSubX, secondSubY);
         if (isStopRequested()) return;
         while (opModeIsActive()) {
+            teamColor.runHeadlights(runHeadlights);
             verticalSlides.update();
             arm.update(telemetry, teamColor.getColor());
             autonomousPathUpdate();
             follower.update();
             if (webcam.currentDriveStage != Webcam.DRIVE_STAGE.DONE) {
                 TelemetryPacket packet = new TelemetryPacket();
-               // arm.intake(webcam.intakeState);
+                // arm.intake(webcam.intakeState);
                 webcam.update(driveTrain, arm, packet);
             }
-            if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DROP){
+            if (webcam.currentDriveStage == Webcam.DRIVE_STAGE.DROP) {
                 arm.clawRotate(webcam.sampleRotation);
             }
             teamColor.update();

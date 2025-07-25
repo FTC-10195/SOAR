@@ -2,12 +2,10 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.teamcode.PinpointDrive;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
@@ -45,6 +43,7 @@ public class ChamberRed extends LinearOpMode {
         StateMachine.States state = StateMachine.States.RESTING;
         Webcam webcam = new Webcam();
         webcam.initiate(hardwareMap, teamColor.getColor(), mode, telemetry);
+        boolean runHeadlights = false;
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
         boolean clawRan = false;
@@ -72,6 +71,7 @@ public class ChamberRed extends LinearOpMode {
             boolean down2 = gamepad2.dpad_down && !previousGamepad2.dpad_down;
             boolean triangle2 = gamepad2.triangle && !previousGamepad2.triangle;
             boolean cross2 = gamepad2.cross && !previousGamepad2.cross;
+            boolean circle2 = gamepad2.circle && !previousGamepad2.circle;
             if (up2){
                 arm.wristOffset += arm.wristOffsetGain;
             }
@@ -83,6 +83,9 @@ public class ChamberRed extends LinearOpMode {
             }
             if (cross2){
                 arm.shoulderOffset -= arm.shoulderOffsetGain;
+            }
+            if (circle2){
+                verticalSlides.secondaryBucket = !verticalSlides.secondaryBucket;
             }
 
             boolean RT = gamepad1.right_trigger > 0.1 && previousGamepad1.right_trigger < 0.1;
@@ -146,6 +149,7 @@ public class ChamberRed extends LinearOpMode {
             }
             switch (state) {
                 case RESTING:
+                    runHeadlights = false;
                     arm.extendo(Arm.Extendo.RETRACTED);
                     arm.shoulder(Arm.Shoulder.UPWARDS);
                     arm.wrist(Arm.Wrist.FORWARD);
@@ -154,6 +158,7 @@ public class ChamberRed extends LinearOpMode {
                     webcam.setClawRotation(Arm.ClawRotation.Horz1);
                     break;
                 case SCOUTING:
+                    runHeadlights = true;
                     if (System.currentTimeMillis() - extendoResetTime > 400) {
                         arm.extendo(Arm.Extendo.EXTENDED);
                     } else {
@@ -171,8 +176,13 @@ public class ChamberRed extends LinearOpMode {
                 case BUCKET:
                     arm.extendo(Arm.Extendo.EXTENDED);
                     arm.shoulder(Arm.Shoulder.BUCKET);
-                    arm.wrist(Arm.Wrist.UPWARDS);
-                    arm.clawRotate(Arm.ClawRotation.Vert);
+                    if (verticalSlides.secondaryBucket){
+                        arm.clawRotate(Arm.ClawRotation.Horz1);
+                        arm.wrist(Arm.Wrist.FORWARD);
+                    }else{
+                        arm.clawRotate(Arm.ClawRotation.Vert);
+                        arm.wrist(Arm.Wrist.UPWARDS);
+                    }
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.BUCKET);
                     break;
                 case CHAMBER:
@@ -225,6 +235,7 @@ public class ChamberRed extends LinearOpMode {
             if (gamepad1.square) {
                 ascentSquare = true;
             }
+            teamColor.runHeadlights(runHeadlights);
             TelemetryPacket packet = new TelemetryPacket();
             webcam.update(driveTrain, arm, packet);
             ascent.reset(gamepad1.options);

@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
-import org.firstinspires.ftc.teamcode.Subsystems.BarnacleCamera;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
@@ -34,7 +33,6 @@ public class PedroSpecCPE extends LinearOpMode {
     Arm arm = new Arm();
     DriveTrain driveTrain = new DriveTrain();
     Webcam webcam = new Webcam();
-    BarnacleCamera barnacleCamera = new BarnacleCamera();
     Path noPath;
     private final Pose startPose = new Pose(7, 64, Math.toRadians(0));  // Starting position
     private final Pose scorePose = new Pose(43, 64, Math.toRadians(0));  // Starting position
@@ -397,7 +395,6 @@ public class PedroSpecCPE extends LinearOpMode {
         arm.shoulder(Arm.Shoulder.UPWARDS);
         arm.extendo(Arm.Extendo.RETRACTED);
         arm.wrist(Arm.Wrist.FORWARD);
-        arm.intake(Arm.Intake.CLOSE);
         arm.clawRotate(Arm.ClawRotation.Horz1);
 
         if (System.currentTimeMillis() - timeSnapshot > timeToWaitMilis) {
@@ -483,7 +480,6 @@ public class PedroSpecCPE extends LinearOpMode {
             }
             webcam.status(telemetry);
             teamColor.update();
-            barnacleCamera.status(telemetry);
             telemetry.addData("Heading Error", follower.headingError);
             telemetry.addData("Path State", pathState);
             telemetry.addData("Position", follower.getPose().toString());
