@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.localization.Pose;
+import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -13,6 +16,9 @@ import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
+
+import pedroPathing.constants.FConstants;
+import pedroPathing.constants.LConstants;
 //import org.firstinspires.ftc.teamcode.Subsystems.Webcam;
 
 @TeleOp
@@ -22,12 +28,18 @@ public class ChamberRed extends LinearOpMode {
         //  Webcam webcam = new Webcam();
         //  webcam.initiate(hardwareMap,telemetry);
         // PinpointDrive drive = new PinpointDrive(hardwareMap, new Pose2d(0,0,0));
+        Constants constants;
+        Follower follower;
         waitForStart();
         if (isStopRequested()) return;
         StateMachine stateMachine = new StateMachine();
         boolean webcamActive = true;
         Arm arm = new Arm();
         DriveTrain driveTrain = new DriveTrain();
+        constants = new Constants();
+        constants.setConstants(FConstants.class, LConstants.class);
+
+        follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         VerticalSlides verticalSlides = new VerticalSlides();
         driveTrain.initiate(hardwareMap);
         verticalSlides.initiate(hardwareMap);
@@ -43,6 +55,8 @@ public class ChamberRed extends LinearOpMode {
         StateMachine.States state = StateMachine.States.RESTING;
         Webcam webcam = new Webcam();
         webcam.initiate(hardwareMap, teamColor.getColor(), mode, telemetry);
+        Pose lockPoint = new Pose(0,0,Math.toRadians(0));
+        boolean holdPID = false;
         boolean runHeadlights = false;
         boolean clawRotationRanLeft = false;
         boolean clawRotationRanRight = false;
@@ -72,6 +86,11 @@ public class ChamberRed extends LinearOpMode {
             boolean triangle2 = gamepad2.triangle && !previousGamepad2.triangle;
             boolean cross2 = gamepad2.cross && !previousGamepad2.cross;
             boolean circle2 = gamepad2.circle && !previousGamepad2.circle;
+            boolean LB2 = gamepad2.left_bumper && !previousGamepad2.left_bumper;
+            if (LB2){
+                lockPoint = follower.getPose();
+                holdPID = !holdPID;
+            }
             if (up2){
                 arm.wristOffset += arm.wristOffsetGain;
             }
@@ -252,6 +271,11 @@ public class ChamberRed extends LinearOpMode {
             } else {
                 arm.intake(webcam.intakeState);
                 stateMachine.setClawState(webcam.intakeState);
+            }
+            if (holdPID){
+                follower.holdPoint(lockPoint);
+                gamepad1.rumble(50);
+                gamepad2.rumble(50);
             }
             arm.intake(stateMachine.clawState);
             webcam.status(telemetry);
