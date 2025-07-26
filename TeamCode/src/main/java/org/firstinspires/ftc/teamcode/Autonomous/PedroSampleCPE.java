@@ -130,7 +130,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 1: // Move from scoring to barnacle identification position
-                scoreSubsystems(1300, pathState);
+                scoreSubsystems(1400, pathState);
                 break;
             case 2:
                 if (System.currentTimeMillis() - timeSnapshot > 200) {
@@ -178,7 +178,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 13:
-                scoreSubsystems(1400, pathState);
+                scoreSubsystems(1500, pathState);
                 break;
             case 14:
                 if (System.currentTimeMillis() - timeSnapshot > 200) {
@@ -202,7 +202,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 19:
-                scoreSubsystems(1400, pathState);
+                scoreSubsystems(1500, pathState);
                 break;
             case 20:
                 if (System.currentTimeMillis() - timeSnapshot > 200) {
