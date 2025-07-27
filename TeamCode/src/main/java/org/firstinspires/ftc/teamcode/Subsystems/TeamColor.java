@@ -1,11 +1,6 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -29,8 +24,15 @@ public class TeamColor {
     public static double blueColor = 0.611;
     public static double whiteColor = 1;
     public static double yellowColor = .34;
+    public static double greenColor = .5;
+    public boolean unclipMode = false;
+    public boolean bucektMode = false;
+    public boolean yellowUse = false;
+    public static int flashTime = 600;
+    long timeSnapshot = System.currentTimeMillis();
    public TeamColor(Color color){
        currentColor = color;
+       timeSnapshot = System.currentTimeMillis();
    }
    public void setColor(Color color){
        currentColor = color;
@@ -77,6 +79,20 @@ public class TeamColor {
                break;
            case NONE:
                rgbIndicator.setPosition(0);
+       }
+       if (unclipMode){
+           rgbIndicator.setPosition(greenColor);
+       }
+       if (bucektMode && !currentColor.equals(Color.WHITE)){
+           if (System.currentTimeMillis() - timeSnapshot > flashTime){
+               timeSnapshot = System.currentTimeMillis();
+               yellowUse = !yellowUse;
+           }
+       }else{
+           yellowUse = false;
+       }
+       if (yellowUse){
+           rgbIndicator.setPosition(yellowColor);
        }
    }
    public void runHeadlights(boolean run){

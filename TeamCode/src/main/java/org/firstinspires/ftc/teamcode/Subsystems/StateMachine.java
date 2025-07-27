@@ -18,14 +18,18 @@ public class StateMachine {
         CHAMBER_PRE_DEPOSIT,
         CHAMBER_HUMAN_INTAKE,
         CHAMBER,
-        CHAMBER_DEPOSIT
+        CHAMBER_DEPOSIT,
+        UNSCORE_SET,
+        UNSCORE_GRAB,
+        UNSCORE_TWIST,
+        UNSCORE_DROP
     }
     public long timeSnapshot = System.currentTimeMillis();
     public Arm.Intake clawState = Arm.Intake.INTAKE.CLOSE;
     public void setClawState(Arm.Intake newClawState){
         clawState = newClawState;
     }
-    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, Telemetry telemetry) {
+    public States setState(States state, Mode mode, boolean RT, boolean LT, boolean RB, boolean LB, boolean unscore, Telemetry telemetry) {
         States newState = state;
         if (RT) {
             if (state == States.SAMPLE_INTAKE || state == States.SCOUTING){
@@ -39,10 +43,10 @@ public class StateMachine {
                 if (state == States.CHAMBER_HUMAN_INTAKE) {
                     clawState = Arm.Intake.CLOSE;
                     newState = States.CHAMBER;
-                }else if (state == States.CHAMBER && clawState == Arm.Intake.CLOSE) {
+                }else if ((state == States.CHAMBER && clawState == Arm.Intake.CLOSE) || (state == States.UNSCORE_TWIST && clawState == Arm.Intake.CLOSE)) {
                     clawState = Arm.Intake.INTAKE;
-                }else if (state == States.CHAMBER && clawState != Arm.Intake.CLOSE){
-                    newState = States.RESTING;
+                }else if ((state == States.CHAMBER && clawState != Arm.Intake.CLOSE)|| (state == States.UNSCORE_TWIST && clawState == Arm.Intake.INTAKE)){
+                    clawState = Arm.Intake.CLOSE;
                 }else if (state == States.RESTING){
                     newState = States.CHAMBER;
                 }
@@ -86,7 +90,11 @@ public class StateMachine {
                     clawState = Arm.Intake.CLOSE;
                 }
             }else {
-                newState = States.CHAMBER_HUMAN_INTAKE;
+                if (state == States.CHAMBER){
+                    newState = States.UNSCORE_TWIST;
+                }else{
+                    newState = States.CHAMBER_HUMAN_INTAKE;
+                }
             }
         }
         if (RB) {

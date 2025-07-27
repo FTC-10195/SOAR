@@ -24,7 +24,10 @@ public class VerticalSlides {
         DOWN,
         BUCKET,
         CHAMBER,
-        BARNACLE
+        BARNACLE,
+        UNSCORE,
+        UNSCORE_2,
+        CHAMBER_CPE
     }
 
     double targetPos;
@@ -38,7 +41,10 @@ public class VerticalSlides {
     public static int BUCKET_SECONDARY = 1700;
     int down = 0;
     public static int CHAMBER = 1600;
+    public static int CHAMBER_CPE = 800;
     public static int BARNACLE = 800;
+    public static int UNSCORE = 800;
+    public static int UNSCORE_2 = 1100;
     double maxPower = 1;
     double lockPower = .1;
     public int offset = 0;
@@ -83,6 +89,17 @@ public class VerticalSlides {
                 targetPos = BARNACLE + offset;
                 maxPower = 1;
                 break;
+            case UNSCORE:
+                targetPos = UNSCORE + offset;
+                maxPower = 1;
+                break;
+            case UNSCORE_2:
+                targetPos = UNSCORE_2 + offset;
+                maxPower = 1;
+                break;
+            case CHAMBER_CPE:
+                targetPos = CHAMBER_CPE + offset;
+                maxPower = 1;
         }
         double power = pidfController.calculate(leftSlide.getCurrentPosition(), targetPos);
         if (Math.abs(power) > maxPower) {

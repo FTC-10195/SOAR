@@ -27,18 +27,22 @@ public class Arm {
         FORWARDS, //Parallel to the ground
         DOWNWARDS, //Used for intaking only
         CHAMBER_SCORE,
+        CHAMBER_SCORE_CPE,
         BACKWARDS,
         CHAMBER_INTAKE,
         BUCKET,
-        BUCKET_SECONDARY
+        BUCKET_SECONDARY,
+        UNSCORE
     }
 
     public enum Wrist {
         CHAMBER_SLIDE_DEPOSIT,
+        UNSCORE,
         FORWARD, //Used for most tasks
         DOWNWARDS, //Used for intaking
         FULL_DOWNWARDS, //USED FOR SCOUTING ONLY
-        UPWARDS, //Used for scoring chamber
+        UPWARDS,
+        CHAMBER_SCORE_CPE,
     }
 
     public enum Intake {
@@ -73,10 +77,12 @@ public class Arm {
     public static double extendoBucketSecondaryPos = 0.1;
     public static double extendoChamberPos = .22;
     public static double wristForwardPos = 0.45; //Should be facing straight forwards
+    public static double wristUnscorePos = 0.15;
     public static double wristChamberSlideDepositPos = 0.55; //Used for spec auto
     public static double wristDownwardsPos = 0.7; //Should be facing towards the ground, only for INTAKING
     public static double wristFullDownwardsPos = 0.74; //Should be facing towards the ground SCOUTING, CHAMBER SCORE
     public static double wristUpwardsPos = 0.1; //Should be facing the ceiling
+    public static double wristChamberScoreCPE = 0.2;
     //Shoulder Positions:
     public static double shoulderInit = .22;
     public static double shoulderChamberIntake = 0.13;
@@ -86,6 +92,8 @@ public class Arm {
     public static double shoulderUpwards = 0.45;
     public static double shoulderForwards = 0.58;   //Should be parallel to the ground
     public static double shoulderChamberScore = 0.55;
+    public static double shoulderChamberScoreCPE = 0.58;
+    public static double shoulderUnscore = 0.5;
     public static double shoulderDownwards = 0.675;   //Should be low enough to intake
     public static double clawClosed = .39;
     public static double clawOpen = .6;
@@ -101,18 +109,19 @@ public class Arm {
 
     public long shoulderLerpStartTime = System.currentTimeMillis();
     public static long SHOULDER_LERP_TIME_IN_MILLIS = 400;
-    public void setShoulderLerpStartTime(long time){
+
+    public void setShoulderLerpStartTime(long time) {
         shoulderLerpStartTime = time;
     }
 
-    public double lerp(double startPos, double endPos){
+    public double lerp(double startPos, double endPos) {
         long timePassed = System.currentTimeMillis() - shoulderLerpStartTime;
         double difference = endPos - startPos;
 
         //Must convert to doubles because it is a decimal while longs are not
-        double percentComplete = (double) timePassed/ (double) SHOULDER_LERP_TIME_IN_MILLIS;
+        double percentComplete = (double) timePassed / (double) SHOULDER_LERP_TIME_IN_MILLIS;
 
-        if (percentComplete > 1){
+        if (percentComplete > 1) {
             percentComplete = 1;
         }
         //Lerp it!
@@ -161,31 +170,34 @@ public class Arm {
         telemetry.addData("shoulderLerpStartTime", shoulderLerpStartTime);
         switch (shoulderState) {
             case DOWNWARDS:
-                rightShoulder.setPosition(lerp(shoulderForwards + shoulderOffset,shoulderDownwards+ shoulderOffset));
+                rightShoulder.setPosition(lerp(shoulderForwards + shoulderOffset, shoulderDownwards + shoulderOffset));
                 break;
             case UPWARDS:
-                rightShoulder.setPosition(shoulderUpwards+ shoulderOffset);
+                rightShoulder.setPosition(shoulderUpwards + shoulderOffset);
                 break;
             case FORWARDS:
-                rightShoulder.setPosition(shoulderForwards+ shoulderOffset);
+                rightShoulder.setPosition(shoulderForwards + shoulderOffset);
                 break;
             case BACKWARDS:
-                rightShoulder.setPosition(shoulderBackwards+ shoulderOffset);
+                rightShoulder.setPosition(shoulderBackwards + shoulderOffset);
                 break;
             case INIT:
-                rightShoulder.setPosition(shoulderInit+ shoulderOffset);
+                rightShoulder.setPosition(shoulderInit + shoulderOffset);
                 break;
             case BUCKET:
-                rightShoulder.setPosition(shoulderBucket+ shoulderOffset);
+                rightShoulder.setPosition(shoulderBucket + shoulderOffset);
                 break;
             case BUCKET_SECONDARY:
-                rightShoulder.setPosition(shoulderBucketSecondary+ shoulderOffset);
+                rightShoulder.setPosition(shoulderBucketSecondary + shoulderOffset);
                 break;
             case CHAMBER_INTAKE:
-                rightShoulder.setPosition(shoulderChamberIntake+ shoulderOffset);
+                rightShoulder.setPosition(shoulderChamberIntake + shoulderOffset);
                 break;
             case CHAMBER_SCORE:
-                rightShoulder.setPosition(shoulderChamberScore+ shoulderOffset);
+                rightShoulder.setPosition(shoulderChamberScore + shoulderOffset);
+                break;
+            case UNSCORE:
+                rightShoulder.setPosition(wristUnscorePos + shoulderOffset);
                 break;
         }
         leftShoulder.setPosition(1 - rightShoulder.getPosition());
@@ -212,16 +224,22 @@ public class Arm {
                 wristServo.setPosition(wristForwardPos + wristOffset);
                 break;
             case CHAMBER_SLIDE_DEPOSIT:
-                wristServo.setPosition(wristChamberSlideDepositPos+ wristOffset);
+                wristServo.setPosition(wristChamberSlideDepositPos + wristOffset);
                 break;
             case DOWNWARDS:
-                wristServo.setPosition(wristDownwardsPos+ wristOffset);
+                wristServo.setPosition(wristDownwardsPos + wristOffset);
                 break;
             case FULL_DOWNWARDS:
-                wristServo.setPosition(wristFullDownwardsPos+ wristOffset);
+                wristServo.setPosition(wristFullDownwardsPos + wristOffset);
                 break;
             case UPWARDS:
-                wristServo.setPosition(wristUpwardsPos+ wristOffset);
+                wristServo.setPosition(wristUpwardsPos + wristOffset);
+                break;
+            case UNSCORE:
+                wristServo.setPosition(wristUnscorePos + wristOffset);
+                break;
+            case CHAMBER_SCORE_CPE:
+                wristServo.setPosition(wristChamberScoreCPE + wristOffset);
                 break;
         }
         switch (intakeState) {
@@ -320,6 +338,7 @@ public class Arm {
             }
         };
     }
+
     public Action setTimeSnapshot(long time) {
         return new Action() {
             @Override
@@ -329,6 +348,7 @@ public class Arm {
             }
         };
     }
+
     public boolean isLerpComplete() {
         return System.currentTimeMillis() - shoulderLerpStartTime > SHOULDER_LERP_TIME_IN_MILLIS;
     }
