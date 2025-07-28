@@ -32,7 +32,8 @@ public class Arm {
         CHAMBER_INTAKE,
         BUCKET,
         BUCKET_SECONDARY,
-        UNSCORE
+        UNSCORE,
+        DEFENSE,
     }
 
     public enum Wrist {
@@ -85,6 +86,7 @@ public class Arm {
     public static double wristChamberScoreCPE = 0.2;
     //Shoulder Positions:
     public static double shoulderInit = .22;
+    public static double shoulderDefense = .3;
     public static double shoulderChamberIntake = 0.13;
     public static double shoulderBucket = .3;
     public static double shoulderBucketSecondary = .2;
@@ -198,6 +200,9 @@ public class Arm {
                 break;
             case UNSCORE:
                 rightShoulder.setPosition(wristUnscorePos + shoulderOffset);
+                break;
+            case DEFENSE:
+                rightShoulder.setPosition(shoulderDefense + shoulderOffset);
                 break;
         }
         leftShoulder.setPosition(1 - rightShoulder.getPosition());

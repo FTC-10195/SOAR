@@ -98,6 +98,8 @@ public class TeamColor {
    public void runHeadlights(boolean run){
        if (run){
            headlight.setPosition(headlightOn);
+       }else{
+           headlight.setPosition(headlightOff);
        }
    }
    public void status(Telemetry telemetry){

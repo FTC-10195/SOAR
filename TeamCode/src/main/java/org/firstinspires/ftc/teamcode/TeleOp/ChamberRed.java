@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.Subsystems.Arm;
 import org.firstinspires.ftc.teamcode.Subsystems.Ascent;
 import org.firstinspires.ftc.teamcode.Subsystems.DriveTrain;
+import org.firstinspires.ftc.teamcode.Subsystems.ElephantFoot;
 import org.firstinspires.ftc.teamcode.Subsystems.StateMachine;
 import org.firstinspires.ftc.teamcode.Subsystems.TeamColor;
 import org.firstinspires.ftc.teamcode.Subsystems.VerticalSlides;
@@ -53,6 +54,8 @@ public class ChamberRed extends LinearOpMode {
         Gamepad currentGamepad2 = new Gamepad();
         StateMachine.Mode mode = StateMachine.Mode.CHAMBER;
         StateMachine.States state = StateMachine.States.RESTING;
+        ElephantFoot elephantFoot = new ElephantFoot();
+        elephantFoot.initiate(hardwareMap);
         Webcam webcam = new Webcam();
         webcam.initiate(hardwareMap, teamColor.getColor(), mode, telemetry);
         Pose lockPoint = new Pose(0,0,Math.toRadians(0));
@@ -89,12 +92,16 @@ public class ChamberRed extends LinearOpMode {
             boolean circle2 = gamepad2.circle && !previousGamepad2.circle;
             boolean LB2 = gamepad2.left_bumper && !previousGamepad2.left_bumper;
             boolean square2 = gamepad2.square && !previousGamepad2.square;
-            if (square2){
+            boolean dpadUp = gamepad1.dpad_up && !previousGamepad1.dpad_up;
+            boolean dpadDown = gamepad1.dpad_down && !previousGamepad1.dpad_down;
+
+            if (dpadDown){
                 unclipper = !unclipper;
             }
-            if (LB2){
+            if (dpadUp){
                 lockPoint = follower.getPose();
                 holdPID = !holdPID;
+                elephantFoot.flip();
                 if (!holdPID){
                     follower.breakFollowing();
                 }
@@ -135,18 +142,6 @@ public class ChamberRed extends LinearOpMode {
                 webcamActive = !webcamActive;
             }
             if (!webcamActive){
-                if (gamepad1.dpad_up){
-                    clawRotOveride = Arm.ClawRotation.Horz1;
-                }
-                if (gamepad1.dpad_left){
-                    clawRotOveride = Arm.ClawRotation.LEFTDIAG;
-                }
-                if (gamepad1.dpad_right){
-                    clawRotOveride = Arm.ClawRotation.RIGHTDIAG;
-                }
-                if (gamepad1.dpad_down){
-                    clawRotOveride = Arm.ClawRotation.Vert;
-                }
             }
             if (state != StateMachine.States.SAMPLE_INTAKE && arm.isLerpComplete()) {
                 webcam.setDriveStage(Webcam.DRIVE_STAGE.DONE);
@@ -278,7 +273,8 @@ public class ChamberRed extends LinearOpMode {
             webcam.update(driveTrain, arm, packet);
             ascent.reset(gamepad1.options);
             if (unclipper){
-                arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
+                arm.shoulder(Arm.Shoulder.DEFENSE);
+                arm.wrist(Arm.Wrist.DOWNWARDS);
             }
             arm.update(telemetry, teamColor.getColor());
             verticalSlides.status(telemetry);
@@ -303,6 +299,7 @@ public class ChamberRed extends LinearOpMode {
             webcam.status(telemetry);
             webcam.statusFTCDashboard(packet);
             teamColor.unclipMode = unclipper;
+            elephantFoot.update();
             if (mode == StateMachine.Mode.BUCKET){
                 teamColor.bucektMode = true;
             }else{

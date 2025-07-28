@@ -47,10 +47,10 @@ public class PedroSampleCPE extends LinearOpMode {
     DriveTrain driveTrain = new DriveTrain();
     Webcam webcam = new Webcam();
     private final Pose startPose = new Pose(7, 111, Math.toRadians(270));  // Starting position
-    private final Pose scorePose = new Pose(9, 122, Math.toRadians(315));
+    private final Pose scorePose = new Pose(9, 121.7, Math.toRadians(315));
     private final Pose rightGrabPose = new Pose(14, 112, Math.toRadians(360));
     private final Pose middleGrabPose = new Pose(14, 121, Math.toRadians(360));
-    private final Pose leftGrabPose = new Pose(16, 120.5, Math.toRadians(380));
+    private final Pose leftGrabPose = new Pose(16, 121, Math.toRadians(380));
     private Path scorePreload, park, grabRight, grabMiddle, grabLeft, scoreRight, scoreMiddle, scoreLeft, scoreSub1, scoreSub2;
     //sub3 and sub4 are for when the barnacle is on the right
     //scoreRight 1 and 2 are for when barnacle is on the right
@@ -93,10 +93,10 @@ public class PedroSampleCPE extends LinearOpMode {
         grabSub2.setLinearHeadingInterpolation(scorePose.getHeading(), Math.toRadians(270));
         grabSub2.setZeroPowerAccelerationMultiplier(4);
 
-        scoreRight = new Path(new BezierLine(new Point(rightGrabPose), new Point(scorePose)));
+        scoreRight = new Path(new BezierLine(new Point(rightGrabPose), new Point(scorePose.getX(),scorePose.getY() + 2)));
         scoreRight.setLinearHeadingInterpolation(rightGrabPose.getHeading(), scorePose.getHeading());
 
-        scoreMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(scorePose)));
+        scoreMiddle = new Path(new BezierLine(new Point(middleGrabPose), new Point(scorePose.getX(),scorePose.getY()+2)));
         scoreMiddle.setLinearHeadingInterpolation(middleGrabPose.getHeading(), scorePose.getHeading());
 
         scoreLeft = new Path(new BezierLine(new Point(leftGrabPose.getX(), leftGrabPose.getY()), new Point(scorePose)));
@@ -134,7 +134,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 scoreSubsystems(1400, pathState);
                 break;
             case 2:
-                if (System.currentTimeMillis() - timeSnapshot > 200) {
+                if (System.currentTimeMillis() - timeSnapshot > 400) {
                     follower.followPath(grabRight);
                     setPathState(pathState + 1);
                     timeSnapshot = System.currentTimeMillis();
@@ -155,7 +155,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 7:
-                scoreSubsystems(1400, pathState);
+                scoreSubsystems(1600, pathState);
                 break;
             case 8:
                    if (System.currentTimeMillis() - timeSnapshot > 200) {
@@ -179,7 +179,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 13:
-                scoreSubsystems(1600, pathState);
+                scoreSubsystems(1500, pathState);
                 break;
             case 14:
                 if (System.currentTimeMillis() - timeSnapshot > 200) {
@@ -203,7 +203,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 timeSnapshot = System.currentTimeMillis();
                 break;
             case 19:
-                scoreSubsystems(1600, pathState);
+                scoreSubsystems(1700, pathState);
                 break;
             case 20:
                 if (System.currentTimeMillis() - timeSnapshot > 200) {
@@ -253,7 +253,7 @@ public class PedroSampleCPE extends LinearOpMode {
                     webcam.sampleRotation = clawRotationFirst;
                     arm.clawRotate(clawRotationFirst);
                 }
-                if (System.currentTimeMillis() - timeSnapshot < 300) {
+                if (System.currentTimeMillis() - timeSnapshot < 200) {
                     arm.intake(Arm.Intake.CLOSE);
                 } else {
                     follower.followPath(scoreSub1);
@@ -263,7 +263,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 break;
             case 27:
                 arm.shoulder(Arm.Shoulder.FORWARDS);
-                if (System.currentTimeMillis() - timeSnapshot > 500) {
+                if (System.currentTimeMillis() - timeSnapshot > 400) {
                     timeSnapshot = System.currentTimeMillis();
                     setPathState(pathState + 1);
                 }
@@ -299,7 +299,7 @@ public class PedroSampleCPE extends LinearOpMode {
                 }
                 break;
             case 34:
-                if (System.currentTimeMillis() - timeSnapshot > 500) {
+                if (System.currentTimeMillis() - timeSnapshot > 400) {
                     webcam.setDriveStage(Webcam.DRIVE_STAGE.DRIVE);
                     setPathState(pathState + 1);
                     timeSnapshot = System.currentTimeMillis();
@@ -324,7 +324,7 @@ public class PedroSampleCPE extends LinearOpMode {
                     arm.clawRotate(clawRotationSecond);
                     webcam.sampleRotation = clawRotationSecond;
                 }
-                if (System.currentTimeMillis() - timeSnapshot < 300) {
+                if (System.currentTimeMillis() - timeSnapshot < 200) {
                     arm.intake(Arm.Intake.CLOSE);
                 } else {
                     follower.followPath(scoreSub2);
