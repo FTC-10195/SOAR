@@ -70,6 +70,7 @@ public class ChamberRed extends LinearOpMode {
         boolean ascentSquare = false;
         Ascent ascent = new Ascent();
         ascent.initiate(hardwareMap);
+        verticalSlides.secondaryBucket = true;
         long extendoResetTime = System.currentTimeMillis();
         while (opModeIsActive()) {
             //     webcam.rotate(arm.getClawRotation(),telemetry);
@@ -94,6 +95,7 @@ public class ChamberRed extends LinearOpMode {
             boolean square2 = gamepad2.square && !previousGamepad2.square;
             boolean dpadUp = gamepad1.dpad_up && !previousGamepad1.dpad_up;
             boolean dpadDown = gamepad1.dpad_down && !previousGamepad1.dpad_down;
+            boolean square = gamepad1.square && !previousGamepad1.square;
 
             if (dpadDown){
                 unclipper = !unclipper;
@@ -225,15 +227,15 @@ public class ChamberRed extends LinearOpMode {
 
                     arm.shoulder(Arm.Shoulder.CHAMBER_SCORE);
                     arm.clawRotate(Arm.ClawRotation.Horz1);
-                    arm.wrist(Arm.Wrist.CHAMBER_SCORE_CPE);
-                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER_CPE);
+                    arm.wrist(Arm.Wrist.DOWNWARDS);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_DEPOSIT:
                     arm.intake(Arm.Intake.DEPOSIT);
                     arm.extendo(Arm.Extendo.CHAMBER);
-                    arm.shoulder(Arm.Shoulder.CHAMBER_SCORE_CPE);
-                    arm.wrist(Arm.Wrist.CHAMBER_SCORE_CPE);
-                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER_CPE);
+                    arm.shoulder(Arm.Shoulder.CHAMBER_SCORE);
+                    arm.wrist(Arm.Wrist.DOWNWARDS);
+                    verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.CHAMBER);
                     break;
                 case CHAMBER_PRE_DEPOSIT:
                     arm.extendo(Arm.Extendo.RETRACTED);
@@ -243,7 +245,7 @@ public class ChamberRed extends LinearOpMode {
                     break;
                 case CHAMBER_HUMAN_INTAKE:
                     arm.extendo(Arm.Extendo.RETRACTED);
-                    arm.shoulder(Arm.Shoulder.FORWARDS);
+                    arm.shoulder(Arm.Shoulder.CHAMBER_INTAKE);
                     arm.wrist(Arm.Wrist.FORWARD);
                     verticalSlides.setSlidePosition(VerticalSlides.SlidePositions.DOWN);
                     arm.clawRotate(Arm.ClawRotation.Horz1);
@@ -265,8 +267,8 @@ public class ChamberRed extends LinearOpMode {
             } else if (!gamepad1.triangle) {
                 ascentA = false;
             }
-            if (gamepad1.square) {
-                ascentSquare = true;
+            if (square) {
+                ascentSquare = !ascentSquare;
             }
             teamColor.runHeadlights(runHeadlights);
             TelemetryPacket packet = new TelemetryPacket();
